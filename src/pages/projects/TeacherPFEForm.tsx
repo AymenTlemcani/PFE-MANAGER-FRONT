@@ -18,8 +18,9 @@ interface Student {
   masterOption: string;
 }
 
-export function PFESubmissionForm() {
-  const user = useAuthStore(state => state.user);
+export function TeacherPFEForm() {
+  // Changed from PFESubmissionForm
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const { addProject } = useProjectContext();
   const [students, setStudents] = useState<Student[]>([]);
@@ -44,11 +45,11 @@ export function PFESubmissionForm() {
     const fetchStudents = async () => {
       try {
         // TODO: Replace with actual API call
-        const response = await fetch('/api/students');
+        const response = await fetch("/api/students");
         const data = await response.json();
-        setStudents(data.filter(s => s.id !== currentUserId)); // Exclude current user
+        setStudents(data.filter((s) => s.id !== currentUserId)); // Exclude current user
       } catch (error) {
-        console.error('Error fetching students:', error);
+        console.error("Error fetching students:", error);
       }
     };
     fetchStudents();
@@ -66,7 +67,7 @@ export function PFESubmissionForm() {
           setFormData(data.proposal);
         }
       } catch (error) {
-        console.error('Error checking existing proposal:', error);
+        console.error("Error checking existing proposal:", error);
       }
     };
 
@@ -79,15 +80,15 @@ export function PFESubmissionForm() {
     const fetchAvailablePartners = async () => {
       try {
         // Mock API call to fetch available partners
-        const response = await fetch('/api/students/available-partners');
+        const response = await fetch("/api/students/available-partners");
         const data = await response.json();
         setStudents(data.filter((s: Student) => s.id !== user?.id));
       } catch (error) {
-        console.error('Error fetching partners:', error);
+        console.error("Error fetching partners:", error);
       }
     };
 
-    if (user?.role === 'student') {
+    if (user?.role === "student") {
       fetchAvailablePartners();
     }
   }, [user]);
@@ -130,44 +131,25 @@ export function PFESubmissionForm() {
 
     try {
       const newProject = {
-        id: hasExistingProposal ? formData.id : Date.now(),
-        student1: {
-          id: user?.id,
-          firstName: user?.firstName,
-          lastName: user?.lastName
-        },
-        student2: formData.partnerId ? {
-          id: formData.partnerId,
-          pending: true
-        } : null,
+        id: Date.now(),
         ...formData,
-        status: "Pending Partner Validation",
+        supervisorId: user?.id, // Add supervisor ID
+        status: formData.partnerId ? "Pending Partner Validation" : "Pending Review",
         submittedDate: new Date().toISOString().split("T")[0],
+        type: "teacher_proposal", // Ensure type is set
+        submittedBy: "teacher",
+        students: [
+          formData.partnerId
+            ? {
+                id: formData.partnerId,
+                status: "pending",
+              }
+            : null,
+        ].filter(Boolean),
       };
 
-      // If has partner, send notification
-      if (formData.partnerId) {
-        await sendPartnerNotification(formData.partnerId, newProject.id);
-      }
-
-      // Replace existing proposal if any
-      const method = hasExistingProposal ? 'PUT' : 'POST';
-      const url = hasExistingProposal 
-        ? `/api/projects/${formData.id}`
-        : '/api/projects';
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProject),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit project');
-      }
-
       addProject(newProject);
-      navigate("/project");
+      navigate("/projects");
     } catch (error) {
       console.error("Error submitting PFE:", error);
       setErrors({ submit: "Failed to submit PFE. Please try again." });
@@ -214,14 +196,16 @@ export function PFESubmissionForm() {
               className="w-full rounded-md border border-gray-300 px-4 py-3"
             >
               <option value="">Work Individually</option>
-              {students.map(student => (
+              {students.map((student) => (
                 <option key={student.id} value={student.id}>
-                  {student.firstName} {student.lastName} - {student.masterOption}
+                  {student.firstName} {student.lastName} -{" "}
+                  {student.masterOption}
                 </option>
               ))}
             </select>
             <p className="text-sm text-gray-500">
-              Your selected partner will receive a notification to accept or reject the partnership
+              Your selected partner will receive a notification to accept or
+              reject the partnership
             </p>
           </div>
         </div>
@@ -238,7 +222,9 @@ export function PFESubmissionForm() {
         <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold text-gray-900">
-              {hasExistingProposal ? 'Update PFE Proposal' : 'Submit New PFE Project'}
+              {hasExistingProposal
+                ? "Update PFE Proposal"
+                : "Submit New PFE Project"}
             </h2>
             <button
               type="button"
@@ -259,7 +245,7 @@ export function PFESubmissionForm() {
 
         <div className="px-8 py-8 space-y-8">
           {/* Student Partnership Section - Only show for students */}
-          {user?.role === 'student' && renderPartnershipSection()}
+          {user?.role === "student" && renderPartnershipSection()}
 
           {/* Supervisors Section */}
           <div className="space-y-6">
@@ -428,13 +414,13 @@ export function PFESubmissionForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/project")}
+              onClick={() => navigate("/projects")}
               className="px-6 py-3 text-lg"
             >
               Cancel
             </Button>
             <Button type="submit" className="px-6 py-3 text-lg">
-              {hasExistingProposal ? 'Update Proposal' : 'Submit PFE'}
+              {hasExistingProposal ? "Update Proposal" : "Submit PFE"}
             </Button>
           </div>
         </div>
@@ -445,12 +431,12 @@ export function PFESubmissionForm() {
 
 async function sendPartnerNotification(partnerId: string, projectId: string) {
   // TODO: Implement notification sending
-  await fetch('/api/notifications', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  await fetch("/api/notifications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       recipientId: partnerId,
-      type: 'PARTNERSHIP_REQUEST',
+      type: "PARTNERSHIP_REQUEST",
       projectId: projectId,
     }),
   });

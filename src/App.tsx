@@ -8,9 +8,11 @@ import { UserManagementPage } from "./pages/admin/UserManagementPage";
 import { EmailConfigurationPage } from "./pages/admin/EmailConfigurationPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { ProjectsPage } from "./pages/projects/ProjectsPage";
-import { PFESubmissionForm } from "./pages/projects/PFESubmissionForm";
 import { StudentProjectPage } from "./pages/projects/StudentProjectPage";
 import { NotificationsProvider } from "./context/NotificationsContext";
+import { TeacherPFEForm } from "./pages/projects/TeacherPFEForm";
+import { StudentPFEForm } from "./pages/projects/StudentPFEForm";
+import { ProjectProvider } from "./context/ProjectProvider";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore(state => state.user);
@@ -43,30 +45,38 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const user = useAuthStore(state => state.user);
+
   return (
     <BrowserRouter>
-      <NotificationsProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="dashboard/users" element={<UserManagementPage />} />
-            <Route path="dashboard/emails" element={<EmailConfigurationPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="projects" element={<ProjectsPage />} />
-            <Route path="projects/new" element={<PFESubmissionForm />} />
-            <Route path="project" element={<StudentProjectPage />} />
-          </Route>
-        </Routes>
-      </NotificationsProvider>
+      <ProjectProvider>
+        <NotificationsProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="dashboard/users" element={<UserManagementPage />} />
+              <Route path="dashboard/emails" element={<EmailConfigurationPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="projects" element={<ProjectsPage />} />
+              <Route path="projects/new" element={
+                <ProtectedRoute>
+                  {user?.role === 'student' ? <StudentPFEForm /> : <TeacherPFEForm />}
+                </ProtectedRoute>
+              } />
+              <Route path="project" element={<StudentProjectPage />} />
+            </Route>
+          </Routes>
+        </NotificationsProvider>
+      </ProjectProvider>
     </BrowserRouter>
   );
 }

@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProjectContext } from "../../context/ProjectContext";
+import { useAuthStore } from "../../store/authStore";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -32,31 +33,93 @@ export function ProjectsPage() {
 }
 
 function ProjectsList({ projects }) {
+  const user = useAuthStore((state) => state.user);
+  
+  // Modified to show projects based on user role
+  const userProjects = projects.filter((p) => {
+    if (user?.role === 'student') {
+      return p.studentId === user?.id;
+    } else if (user?.role === 'teacher') {
+      return p.supervisorId === user?.id || p.coSupervisorId === user?.id;
+    }
+    return false;
+  });
+
+  if (!userProjects || userProjects.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No projects submitted yet. Click "Submit New PFE" to get started.
+      </div>
+    );
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Pending Partner Validation":
+        return "bg-yellow-100 text-yellow-800";
+      case "Pending Review":
+        return "bg-blue-100 text-blue-800";
+      case "Approved":
+        return "bg-green-100 text-green-800";
+      case "Rejected":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   return (
     <div className="divide-y divide-gray-200">
-      {projects.map((project) => (
+      {userProjects.map((project) => (
         <div key={project.id} className="py-4">
           <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-sm font-medium text-gray-900">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-gray-900">
                 {project.title}
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Option: {project.option} | Type: {project.type}
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                Submitted: {project.submittedDate}
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-500">
+                  <span className="font-medium">Option:</span> {project.option}
+                </p>
+                {project.type && (
+                  <p className="text-sm text-gray-500">
+                    <span className="font-medium">Type:</span> {project.type}
+                  </p>
+                )}
+                {project.partnerName && (
+                  <p className="text-sm text-gray-500">
+                    <span className="font-medium">Partner:</span>{" "}
+                    {project.partnerName}
+                  </p>
+                )}
+                <p className="text-sm text-gray-500">
+                  <span className="font-medium">Technologies:</span>{" "}
+                  {project.technologies}
+                </p>
+                <p className="text-sm text-gray-500">
+                  <span className="font-medium">Submitted:</span>{" "}
+                  {new Date(project.submittedDate).toLocaleDateString()}
+                </p>
+              </div>
             </div>
-            <span
-              className={`px-2 py-1 text-xs font-medium rounded-full ${
-                project.status === "In Progress"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
-            >
-              {project.status}
-            </span>
+            <div className="flex flex-col items-end gap-2">
+              <span
+                className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
+                  project.status
+                )}`}
+              >
+                {project.status}
+              </span>
+              {project.status === "Rejected" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/projects/new?edit=${project.id}`)}
+                >
+                  Edit & Resubmit
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       ))}
