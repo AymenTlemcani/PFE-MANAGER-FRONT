@@ -1,4 +1,5 @@
 import { BookOpen, Users, Clock, CheckCircle } from "lucide-react";
+import { useState } from "react";
 
 export function TeacherDashboard() {
   const stats = [

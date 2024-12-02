@@ -7,6 +7,8 @@ import { useAuthStore } from "./store/authStore";
 import { UserManagementPage } from "./pages/admin/UserManagementPage";
 import { EmailConfigurationPage } from "./pages/admin/EmailConfigurationPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
+import { ProjectsPage } from "./pages/projects/ProjectsPage";
+import { PFESubmissionForm } from "./pages/projects/PFESubmissionForm";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -39,6 +41,8 @@ function App() {
             element={<EmailConfigurationPage />}
           />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/projects/new" element={<PFESubmissionForm />} />
         </Route>
       </Routes>
     </BrowserRouter>
