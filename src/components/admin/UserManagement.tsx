@@ -1,13 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserPlus, Upload, PenSquare, Trash2, Search } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import { Dialog } from "../ui/Dialog";
 
 type UserRole = "student" | "teacher" | "company" | "admin";
 
 export function UserManagement() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [userType, setUserType] = useState<UserRole>("student");
+  const [users, setUsers] = useState<User[]>([
+    {
+      id: "1",
+      firstName: "Aymen",
+      lastName: "Tlemcani",
+      email: "aymen@example.com",
+      role: "student",
+    },
+    {
+      id: "11",
+      firstName: "Aymen",
+      lastName: "Tlemcani",
+      email: "Tlemcani@example.com",
+      role: "student",
+    },
+    {
+      id: "111",
+      firstName: "Aymen",
+      lastName: "Tlemcani",
+      email: "etudiant@example.com",
+      role: "student",
+    },
+    {
+      id: "1111",
+      firstName: "Aymen",
+      lastName: "Tlemcani",
+      email: "salaheddine@example.com",
+      role: "student",
+    },
+    {
+      id: "2",
+      firstName: "Asma",
+      lastName: "Amraoui",
+      email: "AmraouiAsma@example.com",
+      role: "teacher",
+    },
+    {
+      id: "3",
+      firstName: "Admin",
+      lastName: "Aymen",
+      email: "adminaymen@example.com",
+      role: "admin",
+    },
+    {
+      id: "4",
+      firstName: "Company",
+      lastName: "Rep",
+      email: "company@example.com",
+      role: "company",
+    },
+  ]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -22,11 +77,52 @@ export function UserManagement() {
     // TODO: Process the CSV file and import users
   };
 
+  const handleAddUser = () => {
+    setSelectedUser(null);
+    setIsUserModalOpen(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setIsUserModalOpen(true);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedUser) {
+      setUsers(users.filter((u) => u.id !== selectedUser.id));
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const onSaveUser = (userData: Omit<User, "id">) => {
+    if (selectedUser) {
+      // Edit existing user
+      setUsers(
+        users.map((u) =>
+          u.id === selectedUser.id ? { ...userData, id: selectedUser.id } : u
+        )
+      );
+    } else {
+      // Add new user
+      const newUser = {
+        ...userData,
+        id: Date.now().toString(), // Simple ID generation
+      };
+      setUsers([...users, newUser]);
+    }
+    setIsUserModalOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
-        <Button onClick={() => {}} className="flex items-center gap-2">
+        <Button onClick={handleAddUser} className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
           Add User
         </Button>
@@ -76,8 +172,29 @@ export function UserManagement() {
 
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <h3 className="text-lg font-medium text-gray-900 mb-4">User List</h3>
-        <UserList />
+        <UserList
+          users={users}
+          onEditUser={handleEditUser}
+          onDeleteUser={handleDeleteUser}
+        />
       </div>
+
+      <UserFormModal
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        onSave={onSaveUser}
+        user={selectedUser}
+      />
+
+      <Dialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        title="Delete User"
+        description={`Are you sure you want to delete ${selectedUser?.firstName} ${selectedUser?.lastName}?`}
+        confirmText="Delete"
+        confirmVariant="danger"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
@@ -90,40 +207,90 @@ interface User {
   role: string;
 }
 
-function UserList() {
+interface UserFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (user: Omit<User, "id">) => void;
+  user?: User | null;
+}
+
+function UserFormModal({ isOpen, onClose, onSave, user }: UserFormModalProps) {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "student",
+  });
+
+  useEffect(() => {
+    // Reset form data when dialog opens with user data or empty for new user
+    setFormData({
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      role: user?.role || "student",
+    });
+  }, [user, isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={user ? "Edit User" : "Add User"}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="First Name"
+          value={formData.firstName}
+          onChange={(e) =>
+            setFormData({ ...formData, firstName: e.target.value })
+          }
+          required
+        />
+        <Input
+          label="Last Name"
+          value={formData.lastName}
+          onChange={(e) =>
+            setFormData({ ...formData, lastName: e.target.value })
+          }
+          required
+        />
+        <Input
+          label="Email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          required
+        />
+        <select
+          value={formData.role}
+          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+          className="w-full rounded-md border border-gray-300 px-3 py-2"
+        >
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="company">Company</option>
+          <option value="admin">Admin</option>
+        </select>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit">{user ? "Save Changes" : "Add User"}</Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+function UserList({ users, onEditUser, onDeleteUser }) {
   const [searchEmail, setSearchEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | "all">("all");
-
-  const users: User[] = [
-    {
-      id: "1",
-      firstName: "John",
-      lastName: "Doe",
-      email: "john@example.com",
-      role: "student",
-    },
-    {
-      id: "2",
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "jane@example.com",
-      role: "teacher",
-    },
-    {
-      id: "3",
-      firstName: "Admin",
-      lastName: "User",
-      email: "admin@example.com",
-      role: "admin",
-    },
-    {
-      id: "4",
-      firstName: "Company",
-      lastName: "Rep",
-      email: "company@example.com",
-      role: "company",
-    },
-  ];
 
   const filteredUsers = users.filter((user) => {
     const emailMatch = user.email
@@ -197,13 +364,13 @@ function UserList() {
                   <div className="flex gap-2">
                     <button
                       className="text-blue-600 hover:text-blue-900"
-                      onClick={() => {}}
+                      onClick={() => onEditUser(user)}
                     >
                       <PenSquare className="h-4 w-4" />
                     </button>
                     <button
                       className="text-red-600 hover:text-red-900"
-                      onClick={() => {}}
+                      onClick={() => onDeleteUser(user)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
