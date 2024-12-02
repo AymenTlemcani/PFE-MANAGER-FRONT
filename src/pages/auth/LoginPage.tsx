@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { GraduationCap } from 'lucide-react';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
-import { useAuthStore } from '../../store/authStore';
-import { login } from '../../services/auth';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { GraduationCap, Globe } from "lucide-react";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/Button";
+import { useAuthStore } from "../../store/authStore";
+import { useLanguageStore } from "../../store/languageStore";
+import { useTranslation } from "../../hooks/useTranslation";
+import { login } from "../../services/auth";
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { language, setLanguage } = useLanguageStore();
+  const { t } = useTranslation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       const user = await login(email, password);
       setUser(user);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -32,46 +36,51 @@ export function LoginPage() {
 
   const handleDemoLogin = (demoEmail: string) => {
     setEmail(demoEmail);
-    setPassword('password');
+    setPassword("password");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="absolute top-4 right-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setLanguage(language === "en" ? "fr" : "en")}
+          className="flex items-center gap-2"
+        >
+          <Globe className="h-4 w-4" />
+          {language === "en" ? "Français" : "English"}
+        </Button>
+      </div>
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <GraduationCap className="mx-auto h-12 w-12 text-blue-600" />
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Sign in to PFE Platform
+            {t.login.title}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Email address"
+              label={t.login.emailLabel}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder={t.login.emailPlaceholder}
               disabled={loading}
             />
             <Input
-              label="Password"
+              label={t.login.passwordLabel}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t.login.passwordPlaceholder}
               disabled={loading}
             />
           </div>
-          {error && (
-            <p className="text-red-600 text-sm text-center">{error}</p>
-          )}
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
+          {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? t.login.signingIn : t.login.signIn}
           </Button>
         </form>
 
@@ -82,43 +91,43 @@ export function LoginPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-gray-50 text-gray-500">
-                Demo Accounts
+                {t.login.demoAccounts}
               </span>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleDemoLogin('admin@pfe.com')}
+              onClick={() => handleDemoLogin("admin@pfe.com")}
             >
-              Admin Demo
+              {t.login.adminDemo}
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleDemoLogin('teacher@pfe.com')}
+              onClick={() => handleDemoLogin("teacher@pfe.com")}
             >
-              Teacher Demo
+              {t.login.teacherDemo}
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleDemoLogin('student@pfe.com')}
+              onClick={() => handleDemoLogin("student@pfe.com")}
             >
-              Student Demo
+              {t.login.studentDemo}
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleDemoLogin('company@pfe.com')}
+              onClick={() => handleDemoLogin("company@pfe.com")}
             >
-              Company Demo
+              {t.login.companyDemo}
             </Button>
           </div>
           <p className="text-xs text-center text-gray-500">
-            Use password: "password" for all demo accounts
+            {t.login.demoPassword}
           </p>
         </div>
       </div>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Mail, Bell, Calendar } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import { useState } from "react";
+import { Mail, Bell, Calendar } from "lucide-react";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
 
 interface EmailPeriod {
   id: string;
@@ -15,20 +15,21 @@ interface EmailPeriod {
 export function EmailConfiguration() {
   const [periods, setPeriods] = useState<EmailPeriod[]>([
     {
-      id: '1',
-      name: 'Project Proposals',
-      sendDate: '2024-03-01',
-      reminderDate: '2024-03-15',
-      closingDate: '2024-03-30',
-      template: 'Dear {name},\n\nPlease submit your project proposal by {closingDate}...',
+      id: "1",
+      name: "Project Proposals",
+      sendDate: "2024-03-01",
+      reminderDate: "2024-03-15",
+      closingDate: "2024-03-30",
+      template:
+        "Dear {name},\n\nPlease submit your project proposal by {closingDate}...",
     },
     {
-      id: '2',
-      name: 'Defense Scheduling',
-      sendDate: '2024-06-01',
-      reminderDate: '2024-06-15',
-      closingDate: '2024-06-30',
-      template: 'Dear {name},\n\nThe defense scheduling period is now open...',
+      id: "2",
+      name: "Defense Scheduling",
+      sendDate: "2024-06-01",
+      reminderDate: "2024-06-15",
+      closingDate: "2024-06-30",
+      template: "Dear {name},\n\nThe defense scheduling period is now open...",
     },
   ]);
 
@@ -37,16 +38,18 @@ export function EmailConfiguration() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Email Configuration</h2>
+        <h2 className="text-xl font-semibold text-gray-900">
+          Email Configuration
+        </h2>
         <Button
           onClick={() => {
             setEditingPeriod({
               id: String(Date.now()),
-              name: '',
-              sendDate: '',
-              reminderDate: '',
-              closingDate: '',
-              template: '',
+              name: "",
+              sendDate: "",
+              reminderDate: "",
+              closingDate: "",
+              template: "",
             });
           }}
           className="flex items-center gap-2"
@@ -142,7 +145,7 @@ function EmailPeriodModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
-          {period.id ? 'Edit Email Period' : 'New Email Period'}
+          {period.id ? "Edit Email Period" : "New Email Period"}
         </h3>
 
         <div className="space-y-4">

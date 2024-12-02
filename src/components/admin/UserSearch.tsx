@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
 
 export function UserSearch() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
   const handleSearch = () => {
     // Mock search functionality
     const mockResults = [
       {
-        id: '1',
-        email: 'john@university.edu',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'student',
-        masterOption: 'GL',
+        id: "1",
+        email: "john@university.edu",
+        firstName: "John",
+        lastName: "Doe",
+        role: "student",
+        masterOption: "GL",
       },
     ];
     setSearchResults(mockResults);
