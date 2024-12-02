@@ -1,8 +1,9 @@
 import React from "react";
 import { Button } from "./Button";
+import type { ButtonProps } from "./Button";
 import { X } from "lucide-react";
 
-interface DialogProps {
+export interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -10,7 +11,7 @@ interface DialogProps {
   children?: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: "primary" | "danger";
+  confirmVariant?: ButtonProps["variant"];
   onConfirm?: () => void;
 }
 

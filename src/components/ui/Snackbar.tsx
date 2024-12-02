@@ -20,53 +20,67 @@ export function Snackbar({
   onUndo,
 }: SnackbarProps) {
   const progressRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<number>();
+  const timerRef = useRef<number>(); // Changed from NodeJS.Timeout to number
+  const rafRef = useRef<number>();
+  const startTimeRef = useRef<number>(0);
   const [isClosing, setIsClosing] = useState(false);
   const mountedRef = useRef(false);
-  const initialRenderRef = useRef(true);
 
+  const cleanup = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    startTimeRef.current = 0;
+  };
+
+  // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      cleanup();
     };
   }, []);
 
   useEffect(() => {
-    if (!isOpen || !mountedRef.current) return;
+    if (!isOpen) {
+      cleanup();
+      return;
+    }
 
-    const startProgress = () => {
+    cleanup();
+    setIsClosing(false);
+
+    // Synchronize animation with the actual timing
+    const startTime = performance.now();
+    startTimeRef.current = startTime;
+
+    const animate = (currentTime: number) => {
+      if (!mountedRef.current) return;
+
+      const elapsed = currentTime - startTime;
+      const remaining = Math.max(0, autoHideDuration - elapsed);
+      const progress = (remaining / autoHideDuration) * 100;
+
       if (progressRef.current) {
-        progressRef.current.style.transition = "none";
-        progressRef.current.style.width = "100%";
-        void progressRef.current.offsetWidth;
-        progressRef.current.style.transition = `width ${autoHideDuration}ms linear`;
-        progressRef.current.style.width = "0%";
+        progressRef.current.style.width = `${progress}%`;
+      }
+
+      if (remaining > 0) {
+        rafRef.current = requestAnimationFrame(animate);
       }
     };
 
-    if (initialRenderRef.current) {
-      requestAnimationFrame(() => {
-        startProgress();
-        initialRenderRef.current = false;
-      });
-    } else {
-      startProgress();
-    }
+    rafRef.current = requestAnimationFrame(animate);
 
-    timerRef.current = window.setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       if (mountedRef.current) {
         setIsClosing(true);
-        setTimeout(onClose, 300);
+        setTimeout(onClose, 300); // Animation duration
       }
     }, autoHideDuration);
 
-    return () => {
-      if (timerRef.current) {
-        window.clearTimeout(timerRef.current);
-      }
-    };
-  }, [isOpen, onClose, autoHideDuration]);
+    return cleanup;
+  }, [isOpen, autoHideDuration, onClose]);
 
   if (!isOpen) return null;
 

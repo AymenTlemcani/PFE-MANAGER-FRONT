@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { UserPlus, Upload, PenSquare, Trash2, Search } from "lucide-react";
-import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
-import { Dialog } from "../ui/Dialog";
+import { Button, Dialog, Input } from "../ui";
 import { SnackbarManager, SnackbarItem } from "../ui/SnackbarManager";
 import { useTranslation } from "../../hooks/useTranslation";
 
 type UserRole = "student" | "teacher" | "company" | "admin";
+
+interface UserListProps {
+  users: User[];
+  onEditUser: (user: User) => void;
+  onDeleteUser: (user: User) => void;
+}
 
 export function UserManagement() {
   const { t } = useTranslation();
@@ -67,14 +71,6 @@ export function UserManagement() {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [snackbars, setSnackbars] = useState<SnackbarItem[]>([]);
-
-  // Replace the deleted user state with a deletion history stack
-  const [deletionHistory, setDeletionHistory] = useState<
-    {
-      user: User;
-      index: number;
-    }[]
-  >([]);
 
   // Add a ref to store the latest users state
   const usersRef = useRef(users);
@@ -375,7 +371,7 @@ function UserFormModal({ isOpen, onClose, onSave, user }: UserFormModalProps) {
   );
 }
 
-function UserList({ users, onEditUser, onDeleteUser }) {
+function UserList({ users, onEditUser, onDeleteUser }: UserListProps) {
   const [searchEmail, setSearchEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | "all">("all");
 

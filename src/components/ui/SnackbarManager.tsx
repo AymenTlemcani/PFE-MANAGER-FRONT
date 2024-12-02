@@ -1,5 +1,6 @@
-import React from "react";
 import { Snackbar } from "./Snackbar";
+
+// import React from "react";
 
 export interface SnackbarItem {
   id: string;
@@ -19,7 +20,7 @@ export function SnackbarManager({ snackbars, onClose }: SnackbarManagerProps) {
       {snackbars.map((snackbar) => (
         <div key={snackbar.id} className="pointer-events-auto">
           <Snackbar
-            key={snackbar.id}
+            key={`${snackbar.id}-${snackbar.message}`}
             message={snackbar.message}
             type={snackbar.type}
             isOpen={true}
