@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useTranslation } from "../../hooks/useTranslation";
+import { Translation } from "../../i18n/types";
 
 const getRoleNavigation = (t: Translation) => ({
   admin: [

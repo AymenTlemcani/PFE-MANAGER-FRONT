@@ -1,58 +1,27 @@
 import { useState, useRef } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { useLanguageStore } from "../../store/languageStore";
+import { useTranslation } from "../../hooks/useTranslation";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Lock, Camera, X, Globe, Check } from "lucide-react";
+import { Translation } from "../../i18n/types";
 
-const translations = {
-  en: {
-    profileSettings: "Profile Settings",
-    firstName: "First Name",
-    lastName: "Last Name",
-    email: "Email",
-    cancel: "Cancel",
-    saveChanges: "Save Changes",
-    editProfile: "Edit Profile",
-    changePassword: "Change Password",
-    currentPassword: "Current Password",
-    newPassword: "New Password",
-    confirmPassword: "Confirm New Password",
-    updatePassword: "Update Password",
-    passwordsNotMatch: "New passwords do not match",
-    imageSizeError: "Image must be less than 5MB",
-    imageTypeError: "File must be an image",
-    language: "Language",
-    english: "English",
-    french: "French",
-  },
-  fr: {
-    profileSettings: "Paramètres du Profil",
-    firstName: "Prénom",
-    lastName: "Nom",
-    email: "E-mail",
-    cancel: "Annuler",
-    saveChanges: "Enregistrer",
-    editProfile: "Modifier le Profil",
-    changePassword: "Changer le Mot de Passe",
-    currentPassword: "Mot de Passe Actuel",
-    newPassword: "Nouveau Mot de Passe",
-    confirmPassword: "Confirmer le Mot de Passe",
-    updatePassword: "Mettre à jour",
-    passwordsNotMatch: "Les mots de passe ne correspondent pas",
-    imageSizeError: "L'image doit être inférieure à 5 Mo",
-    imageTypeError: "Le fichier doit être une image",
-    language: "Langue",
-    english: "Anglais",
-    french: "Français",
-  },
-};
+interface LanguageSelectProps {
+  value: "en" | "fr";
+  onChange: (value: "en" | "fr") => void;
+  t: Translation;
+}
 
-const LanguageSelect = ({ value, onChange, translations }) => {
+const LanguageSelect: React.FC<LanguageSelectProps> = ({
+  value,
+  onChange,
+  t,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const options = [
-    { value: "en", label: translations.english, icon: "🇬🇧" },
-    { value: "fr", label: translations.french, icon: "🇫🇷" },
+    { value: "en", label: t.profile.english, icon: "🇬🇧" },
+    { value: "fr", label: t.profile.french, icon: "🇫🇷" },
   ];
 
   return (
@@ -123,7 +92,7 @@ const LanguageSelect = ({ value, onChange, translations }) => {
 export function ProfilePage() {
   const { user } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
-  const t = translations[language];
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user?.firstName || "",
@@ -153,7 +122,7 @@ export function ProfilePage() {
     setPasswordError("");
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError(t.passwordsNotMatch);
+      setPasswordError(t.profile.passwordsNotMatch);
       return;
     }
 
@@ -171,12 +140,12 @@ export function ProfilePage() {
 
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setImageError(t.imageSizeError);
+        setImageError(t.profile.imageSizeError);
         return;
       }
 
       if (!file.type.startsWith("image/")) {
-        setImageError(t.imageTypeError);
+        setImageError(t.profile.imageTypeError);
         return;
       }
 
@@ -200,7 +169,7 @@ export function ProfilePage() {
       <div className="bg-white shadow-sm rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
-            {t.profileSettings}
+            {t.profile.profileSettings}
           </h2>
         </div>
         <div className="p-6">
@@ -256,7 +225,7 @@ export function ProfilePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t.firstName}
+                  {t.profile.firstName}
                 </label>
                 <Input
                   disabled={!isEditing}
@@ -271,7 +240,7 @@ export function ProfilePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t.lastName}
+                  {t.profile.lastName}
                 </label>
                 <Input
                   disabled={!isEditing}
@@ -287,7 +256,7 @@ export function ProfilePage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t.email}
+                {t.profile.email}
               </label>
               <Input
                 type="email"
@@ -301,6 +270,12 @@ export function ProfilePage() {
                 }
               />
             </div>
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t.profile.language}
+              </label>
+              <LanguageSelect value={language} onChange={setLanguage} t={t} />
+            </div>
             <div className="flex justify-end space-x-3">
               {isEditing ? (
                 <>
@@ -309,13 +284,13 @@ export function ProfilePage() {
                     variant="outline"
                     onClick={() => setIsEditing(false)}
                   >
-                    {t.cancel}
+                    {t.profile.cancel}
                   </Button>
-                  <Button type="submit">{t.saveChanges}</Button>
+                  <Button type="submit">{t.profile.saveChanges}</Button>
                 </>
               ) : (
                 <Button type="button" onClick={() => setIsEditing(true)}>
-                  {t.editProfile}
+                  {t.profile.editProfile}
                 </Button>
               )}
             </div>
@@ -328,7 +303,7 @@ export function ProfilePage() {
           <div className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-gray-400" />
             <h2 className="text-xl font-semibold text-gray-900">
-              {t.changePassword}
+              {t.profile.changePassword}
             </h2>
           </div>
         </div>
@@ -336,7 +311,7 @@ export function ProfilePage() {
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t.currentPassword}
+                {t.profile.currentPassword}
               </label>
               <Input
                 type="password"
@@ -351,7 +326,7 @@ export function ProfilePage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t.newPassword}
+                {t.profile.newPassword}
               </label>
               <Input
                 type="password"
@@ -366,7 +341,7 @@ export function ProfilePage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t.confirmPassword}
+                {t.profile.confirmPassword}
               </label>
               <Input
                 type="password"
@@ -383,7 +358,7 @@ export function ProfilePage() {
               <p className="text-sm text-red-600">{passwordError}</p>
             )}
             <div className="flex justify-end">
-              <Button type="submit">{t.updatePassword}</Button>
+              <Button type="submit">{t.profile.updatePassword}</Button>
             </div>
           </form>
         </div>

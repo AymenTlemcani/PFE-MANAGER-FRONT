@@ -30,4 +30,24 @@ export interface Translation {
     studentDemo: string;
     companyDemo: string;
   };
+  profile: {
+    profileSettings: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    cancel: string;
+    saveChanges: string;
+    editProfile: string;
+    changePassword: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+    updatePassword: string;
+    passwordsNotMatch: string;
+    imageSizeError: string;
+    imageTypeError: string;
+    language: string;
+    english: string;
+    french: string;
+  };
 }
