@@ -1,18 +1,32 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useProjectContext } from "../../context/ProjectContext";
+import { useAuthStore } from "../../store/authStore";
 
 interface FormErrors {
   [key: string]: string;
 }
 
+interface Student {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  masterOption: string;
+}
+
 export function PFESubmissionForm() {
+  const user = useAuthStore(state => state.user);
   const navigate = useNavigate();
   const { addProject } = useProjectContext();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [hasExistingProposal, setHasExistingProposal] = useState(false);
   const [formData, setFormData] = useState({
+    studentId: "", // Current student's ID
+    partnerId: "", // Selected partner's ID
     supervisorName: "",
     coSupervisorName: "",
     option: "",
@@ -24,6 +38,59 @@ export function PFESubmissionForm() {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+
+  // Fetch available students for partnership
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        // TODO: Replace with actual API call
+        const response = await fetch('/api/students');
+        const data = await response.json();
+        setStudents(data.filter(s => s.id !== currentUserId)); // Exclude current user
+      } catch (error) {
+        console.error('Error fetching students:', error);
+      }
+    };
+    fetchStudents();
+  }, []);
+
+  useEffect(() => {
+    const checkExistingProposal = async () => {
+      try {
+        // Check if student has an existing proposal
+        const response = await fetch(`/api/projects/student/${user?.id}`);
+        const data = await response.json();
+        if (data.proposal) {
+          setHasExistingProposal(true);
+          // Pre-fill form with existing data
+          setFormData(data.proposal);
+        }
+      } catch (error) {
+        console.error('Error checking existing proposal:', error);
+      }
+    };
+
+    if (user?.id) {
+      checkExistingProposal();
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    const fetchAvailablePartners = async () => {
+      try {
+        // Mock API call to fetch available partners
+        const response = await fetch('/api/students/available-partners');
+        const data = await response.json();
+        setStudents(data.filter((s: Student) => s.id !== user?.id));
+      } catch (error) {
+        console.error('Error fetching partners:', error);
+      }
+    };
+
+    if (user?.role === 'student') {
+      fetchAvailablePartners();
+    }
+  }, [user]);
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
@@ -63,14 +130,44 @@ export function PFESubmissionForm() {
 
     try {
       const newProject = {
-        id: Date.now(),
+        id: hasExistingProposal ? formData.id : Date.now(),
+        student1: {
+          id: user?.id,
+          firstName: user?.firstName,
+          lastName: user?.lastName
+        },
+        student2: formData.partnerId ? {
+          id: formData.partnerId,
+          pending: true
+        } : null,
         ...formData,
-        status: "Pending Approval",
+        status: "Pending Partner Validation",
         submittedDate: new Date().toISOString().split("T")[0],
       };
 
+      // If has partner, send notification
+      if (formData.partnerId) {
+        await sendPartnerNotification(formData.partnerId, newProject.id);
+      }
+
+      // Replace existing proposal if any
+      const method = hasExistingProposal ? 'PUT' : 'POST';
+      const url = hasExistingProposal 
+        ? `/api/projects/${formData.id}`
+        : '/api/projects';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProject),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit project');
+      }
+
       addProject(newProject);
-      navigate("/projects");
+      navigate("/project");
     } catch (error) {
       console.error("Error submitting PFE:", error);
       setErrors({ submit: "Failed to submit PFE. Please try again." });
@@ -87,6 +184,8 @@ export function PFESubmissionForm() {
 
   const fillTestData = () => {
     setFormData({
+      studentId: "",
+      partnerId: "",
       supervisorName: "Dr. John Smith",
       coSupervisorName: "Dr. Jane Doe",
       option: "IA",
@@ -99,6 +198,37 @@ export function PFESubmissionForm() {
     });
   };
 
+  const renderPartnershipSection = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Partnership Details</h3>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-8">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Select Partner (Optional)
+            </label>
+            <select
+              name="partnerId"
+              value={formData.partnerId}
+              onChange={handleChange}
+              className="w-full rounded-md border border-gray-300 px-4 py-3"
+            >
+              <option value="">Work Individually</option>
+              {students.map(student => (
+                <option key={student.id} value={student.id}>
+                  {student.firstName} {student.lastName} - {student.masterOption}
+                </option>
+              ))}
+            </select>
+            <p className="text-sm text-gray-500">
+              Your selected partner will receive a notification to accept or reject the partnership
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="h-full">
       <form
@@ -108,7 +238,7 @@ export function PFESubmissionForm() {
         <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold text-gray-900">
-              Submit New PFE Project
+              {hasExistingProposal ? 'Update PFE Proposal' : 'Submit New PFE Project'}
             </h2>
             <button
               type="button"
@@ -128,6 +258,9 @@ export function PFESubmissionForm() {
         </div>
 
         <div className="px-8 py-8 space-y-8">
+          {/* Student Partnership Section - Only show for students */}
+          {user?.role === 'student' && renderPartnershipSection()}
+
           {/* Supervisors Section */}
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900">
@@ -295,17 +428,30 @@ export function PFESubmissionForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/projects")}
+              onClick={() => navigate("/project")}
               className="px-6 py-3 text-lg"
             >
               Cancel
             </Button>
             <Button type="submit" className="px-6 py-3 text-lg">
-              Submit PFE
+              {hasExistingProposal ? 'Update Proposal' : 'Submit PFE'}
             </Button>
           </div>
         </div>
       </form>
     </div>
   );
+}
+
+async function sendPartnerNotification(partnerId: string, projectId: string) {
+  // TODO: Implement notification sending
+  await fetch('/api/notifications', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      recipientId: partnerId,
+      type: 'PARTNERSHIP_REQUEST',
+      projectId: projectId,
+    }),
+  });
 }

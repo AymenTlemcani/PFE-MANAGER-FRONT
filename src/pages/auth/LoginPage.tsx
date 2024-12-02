@@ -26,9 +26,11 @@ export function LoginPage() {
     try {
       const user = await login(email, password);
       setUser(user);
+      localStorage.setItem("authToken", "mock-token");
+      localStorage.setItem("user", JSON.stringify(user));
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError("Invalid email or password");
     } finally {
       setLoading(false);
     }

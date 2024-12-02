@@ -9,6 +9,7 @@ import {
   Clock,
   Briefcase,
   Search,
+  FileText,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -40,7 +41,7 @@ const getRoleNavigation = (t: Translation) => ({
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
     { name: t.navigation.myProject, icon: BookOpen, path: "/project" },
     { name: t.navigation.tasks, icon: Clock, path: "/tasks" },
-    { name: t.navigation.documents, icon: BookOpen, path: "/documents" },
+    { name: t.navigation.documents, icon: FileText, path: "/documents" },
   ],
   company: [
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },

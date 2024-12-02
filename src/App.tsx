@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
@@ -9,12 +9,34 @@ import { EmailConfigurationPage } from "./pages/admin/EmailConfigurationPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { ProjectsPage } from "./pages/projects/ProjectsPage";
 import { PFESubmissionForm } from "./pages/projects/PFESubmissionForm";
+import { StudentProjectPage } from "./pages/projects/StudentProjectPage";
+import { NotificationsProvider } from "./context/NotificationsContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore(state => state.user);
+  const navigate = useNavigate();
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  return user ? <>{children}</> : null;
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return <>{children}</>;
@@ -23,28 +45,28 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+      <NotificationsProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
           <Route
-            path="dashboard"
+            path="/"
             element={
               <ProtectedRoute>
-                <DashboardPage />
+                <Layout />
               </ProtectedRoute>
             }
-          />
-          <Route path="/dashboard/users" element={<UserManagementPage />} />
-          <Route
-            path="/dashboard/emails"
-            element={<EmailConfigurationPage />}
-          />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects/new" element={<PFESubmissionForm />} />
-        </Route>
-      </Routes>
+          >
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="dashboard/users" element={<UserManagementPage />} />
+            <Route path="dashboard/emails" element={<EmailConfigurationPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="projects" element={<ProjectsPage />} />
+            <Route path="projects/new" element={<PFESubmissionForm />} />
+            <Route path="project" element={<StudentProjectPage />} />
+          </Route>
+        </Routes>
+      </NotificationsProvider>
     </BrowserRouter>
   );
 }
