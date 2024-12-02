@@ -53,6 +53,11 @@ export const translations: Record<string, Translation> = {
       english: "English",
       french: "French",
     },
+    userManagement: {
+      userDeleted: "User {name} has been deleted",
+      userUpdated: "User {name} has been updated",
+      userAdded: "User {name} has been added",
+    },
   },
   fr: {
     navigation: {
@@ -106,6 +111,11 @@ export const translations: Record<string, Translation> = {
       language: "Langue",
       english: "Anglais",
       french: "Français",
+    },
+    userManagement: {
+      userDeleted: "L'utilisateur {name} a été supprimé",
+      userUpdated: "L'utilisateur {name} a été mis à jour",
+      userAdded: "L'utilisateur {name} a été ajouté",
     },
   },
 };

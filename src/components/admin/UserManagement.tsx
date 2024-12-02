@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { UserPlus, Upload, PenSquare, Trash2, Search } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Dialog } from "../ui/Dialog";
+import { SnackbarManager, SnackbarItem } from "../ui/SnackbarManager";
+import { useTranslation } from "../../hooks/useTranslation";
 
 type UserRole = "student" | "teacher" | "company" | "admin";
 
 export function UserManagement() {
+  const { t } = useTranslation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [userType, setUserType] = useState<UserRole>("student");
   const [users, setUsers] = useState<User[]>([
@@ -63,6 +66,45 @@ export function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [snackbars, setSnackbars] = useState<SnackbarItem[]>([]);
+
+  // Replace the deleted user state with a deletion history stack
+  const [deletionHistory, setDeletionHistory] = useState<
+    {
+      user: User;
+      index: number;
+    }[]
+  >([]);
+
+  // Add a ref to store the latest users state
+  const usersRef = useRef(users);
+  useEffect(() => {
+    usersRef.current = users;
+  }, [users]);
+
+  const showSnackbar = (
+    message: string,
+    type: "success" | "error" = "success",
+    onUndo?: () => void
+  ) => {
+    const id = Date.now().toString();
+    const newSnackbar: SnackbarItem = {
+      id,
+      message,
+      type,
+      onUndo,
+    };
+    setSnackbars((prev) => [...prev, newSnackbar]);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      removeSnackbar(id);
+    }, 5000);
+  };
+
+  const removeSnackbar = (id: string) => {
+    setSnackbars((prev) => prev.filter((snackbar) => snackbar.id !== id));
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -92,10 +134,41 @@ export function UserManagement() {
     setIsDeleteDialogOpen(true);
   };
 
+  const formatMessage = (template: string, name: string) => {
+    return template.replace("{name}", name);
+  };
+
+  // Update the confirmDelete function
   const confirmDelete = () => {
     if (selectedUser) {
-      setUsers(users.filter((u) => u.id !== selectedUser.id));
-      setIsDeleteDialogOpen(false);
+      const userIndex = users.findIndex((u) => u.id === selectedUser.id);
+      if (userIndex !== -1) {
+        const deletedUser = users[userIndex];
+        const deletedUserState = {
+          user: deletedUser,
+          index: userIndex,
+          users: [...users], // Store current users state
+        };
+
+        setUsers(users.filter((u) => u.id !== selectedUser.id));
+        setIsDeleteDialogOpen(false);
+
+        // Create undo function with closure over deleted user state
+        const undoDelete = () => {
+          const newUsers = [...usersRef.current];
+          newUsers.splice(deletedUserState.index, 0, deletedUserState.user);
+          setUsers(newUsers);
+        };
+
+        showSnackbar(
+          formatMessage(
+            t.userManagement.userDeleted,
+            `${selectedUser.firstName} ${selectedUser.lastName}`
+          ),
+          "success",
+          undoDelete
+        );
+      }
     }
   };
 
@@ -107,6 +180,12 @@ export function UserManagement() {
           u.id === selectedUser.id ? { ...userData, id: selectedUser.id } : u
         )
       );
+      showSnackbar(
+        formatMessage(
+          t.userManagement.userUpdated,
+          `${userData.firstName} ${userData.lastName}`
+        )
+      );
     } else {
       // Add new user
       const newUser = {
@@ -114,6 +193,12 @@ export function UserManagement() {
         id: Date.now().toString(), // Simple ID generation
       };
       setUsers([...users, newUser]);
+      showSnackbar(
+        formatMessage(
+          t.userManagement.userAdded,
+          `${userData.firstName} ${userData.lastName}`
+        )
+      );
     }
     setIsUserModalOpen(false);
   };
@@ -195,6 +280,8 @@ export function UserManagement() {
         confirmVariant="danger"
         onConfirm={confirmDelete}
       />
+
+      <SnackbarManager snackbars={snackbars} onClose={removeSnackbar} />
     </div>
   );
 }

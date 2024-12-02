@@ -50,4 +50,9 @@ export interface Translation {
     english: string;
     french: string;
   };
+  userManagement: {
+    userDeleted: string;
+    userUpdated: string;
+    userAdded: string;
+  };
 }
