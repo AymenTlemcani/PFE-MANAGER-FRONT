@@ -27,6 +27,7 @@ export interface Translation {
     demoPassword: string;
     adminDemo: string;
     teacherDemo: string;
+    responsibleTeacherDemo: string;
     studentDemo: string;
     companyDemo: string;
   };

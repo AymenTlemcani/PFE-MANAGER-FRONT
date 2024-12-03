@@ -303,6 +303,7 @@ function UserFormModal({ isOpen, onClose, onSave, user }: UserFormModalProps) {
     lastName: "",
     email: "",
     role: "student",
+    isResponsible: false,
   });
 
   useEffect(() => {
@@ -312,6 +313,7 @@ function UserFormModal({ isOpen, onClose, onSave, user }: UserFormModalProps) {
       lastName: user?.lastName || "",
       email: user?.email || "",
       role: user?.role || "student",
+      isResponsible: user?.isResponsible || false,
     });
   }, [user, isOpen]);
 
@@ -360,6 +362,22 @@ function UserFormModal({ isOpen, onClose, onSave, user }: UserFormModalProps) {
           <option value="company">Company</option>
           <option value="admin">Admin</option>
         </select>
+        {formData.role === 'teacher' && (
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isResponsible"
+              checked={formData.isResponsible}
+              onChange={(e) =>
+                setFormData({ ...formData, isResponsible: e.target.checked })
+              }
+              className="h-4 w-4 text-blue-600 rounded border-gray-300"
+            />
+            <label htmlFor="isResponsible" className="text-sm text-gray-700">
+              Is Master's Program Responsible
+            </label>
+          </div>
+        )}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel

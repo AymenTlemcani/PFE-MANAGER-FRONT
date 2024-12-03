@@ -17,6 +17,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const setUser = useAuthStore((state) => state.setUser);
+  const [isResponsibleTeacher, setIsResponsibleTeacher] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +40,11 @@ export function LoginPage() {
   const handleDemoLogin = (demoEmail: string) => {
     setEmail(demoEmail);
     setPassword("StrongP@ssw0rd2024!");
+  };
+
+  const handleTeacherClick = () => {
+    setIsResponsibleTeacher(!isResponsibleTeacher);
+    handleDemoLogin(isResponsibleTeacher ? "teacher@pfe.com" : "responsible@pfe.com");
   };
 
   return (
@@ -109,9 +115,9 @@ export function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleDemoLogin("teacher@pfe.com")}
+              onClick={() => handleDemoLogin("company@pfe.com")}
             >
-              {t.login.teacherDemo}
+              {t.login.companyDemo}
             </Button>
             <Button
               type="button"
@@ -123,11 +129,18 @@ export function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleDemoLogin("company@pfe.com")}
+              onClick={handleTeacherClick}
+              className={`relative hover:text-inherit ${
+                isResponsibleTeacher ? 'border-blue-500 text-blue-700 bg-blue-50' : ''
+              }`}
             >
-              {t.login.companyDemo}
+              {isResponsibleTeacher ? t.login.responsibleTeacherDemo : t.login.teacherDemo}
+              <span className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-blue-100 border border-blue-300 text-blue-700 text-xs flex items-center justify-center">
+                ↺
+              </span>
             </Button>
           </div>
+          
           <p className="text-xs text-center text-gray-500">
             {t.login.demoPassword}
           </p>

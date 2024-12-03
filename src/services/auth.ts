@@ -15,12 +15,25 @@ const mockUsers: Record<string, User> = {
   'teacher@pfe.com': {
     id: '2',
     email: 'teacher@pfe.com',
-    firstName: 'Teacher',
+    firstName: 'John',
     lastName: 'Smith',
     role: 'teacher',
-    recruitmentDate: '2018-09-01',
+    recruitmentDate: '2020-01-01',
     grade: 'Professor' as TeacherGrade,
-    department: 'Computer Science'
+    department: 'Computer Science',
+    isResponsible: false
+  } as Teacher,
+
+  'responsible@pfe.com': {
+    id: '5',
+    email: 'responsible@pfe.com', 
+    firstName: 'Jane',
+    lastName: 'Doe',
+    role: 'teacher',
+    recruitmentDate: '2015-01-01',
+    grade: 'Professor' as TeacherGrade,
+    department: 'Computer Science',
+    isResponsible: true
   } as Teacher,
   
   'student@pfe.com': {

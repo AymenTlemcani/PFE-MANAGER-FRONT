@@ -145,7 +145,6 @@ export function StudentPFEForm() {
       hardwareRequirements: "GPU Server, 32GB RAM, SSD Storage",
     });
   };
-
   return (
     <div className="h-full">
       <form
@@ -380,7 +379,7 @@ export function StudentPFEForm() {
 
                 {formData.paid && (
                   <Input
-                    label="Monthly Salary (TND)"
+                    label="Monthly Salary (DZD)"
                     name="salary"
                     type="number"
                     value={formData.salary}

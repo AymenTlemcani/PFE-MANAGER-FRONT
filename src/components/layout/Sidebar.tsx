@@ -10,6 +10,7 @@ import {
   Briefcase,
   Search,
   FileText,
+  CheckSquare,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -36,6 +37,7 @@ const getRoleNavigation = (t: Translation) => ({
     { name: t.navigation.myProjects, icon: BookOpen, path: "/projects" },
     { name: t.navigation.students, icon: Users, path: "/students" },
     { name: t.navigation.reviews, icon: Clock, path: "/reviews" },
+    // Add conditional item for responsible teachers
   ],
   student: [
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
@@ -59,7 +61,16 @@ export function Sidebar() {
   if (!user) return null;
 
   const roleNavigation = getRoleNavigation(t);
-  const navigation = roleNavigation[user.role] || [];
+  const navigation = [...(roleNavigation[user.role] || [])];
+  
+  // Add validation section for responsible teachers
+  if (user.role === 'teacher' && (user as Teacher).isResponsible) {
+    navigation.push({
+      name: 'Project Validation',
+      icon: CheckSquare,
+      path: '/projects/validation'
+    });
+  }
 
   const isActiveRoute = (path: string) => {
     if (path === "/dashboard") {

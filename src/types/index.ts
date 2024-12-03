@@ -17,6 +17,7 @@ export interface Teacher extends User {
   recruitmentDate: string;
   grade: TeacherGrade;
   department: string;
+  isResponsible?: boolean; // Add this field
 }
 
 export interface Student extends User {
