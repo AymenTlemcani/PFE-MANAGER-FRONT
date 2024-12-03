@@ -101,8 +101,9 @@ function App() {
                   }
                 />
                 <Route path="validation" element={<ProjectValidationPage />} />
-                <Route path="project" element={<StudentProjectPage />} />
               </Route>
+              {/* Move this route outside of projects and make it a direct child of the main layout */}
+              <Route path="project" element={<StudentProjectPage />} />
             </Route>
           </Routes>
         </NotificationsProvider>

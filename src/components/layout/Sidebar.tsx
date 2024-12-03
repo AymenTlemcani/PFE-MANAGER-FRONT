@@ -41,7 +41,7 @@ const getRoleNavigation = (t: Translation) => ({
   ],
   student: [
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
-    { name: t.navigation.myProject, icon: BookOpen, path: "/project" },
+    { name: t.navigation.myProject, icon: BookOpen, path: "/project" }, // Update this path
     { name: t.navigation.tasks, icon: Clock, path: "/tasks" },
     { name: t.navigation.documents, icon: FileText, path: "/documents" },
   ],

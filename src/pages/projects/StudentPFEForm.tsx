@@ -46,6 +46,7 @@ export function StudentPFEForm() {
     paid: false,
     salary: "",
     hardwareRequirements: "",
+    type: "", // Added type field
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -111,7 +112,10 @@ export function StudentPFEForm() {
           ? "Pending Partner Validation"
           : "Pending Review",
         submittedDate: new Date().toISOString().split("T")[0],
-        type: "student_proposal",
+        type: formData.type, // Added type field
+        submitterName: `${user.firstName} ${user.lastName}`,
+        submitterAvatar: user.avatar, // if available
+        submittedBy: "student",
       };
 
       // If there's a partner, send notification
@@ -297,6 +301,26 @@ export function StudentPFEForm() {
                     <option value="IA">IA</option>
                     <option value="RSD">RSD</option>
                     <option value="SIC">SIC</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Project Type
+                  </label>
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
+                    className="w-full rounded-md border border-gray-300 px-4 py-3"
+                    required
+                  >
+                    <option value="">Select Type</option>
+                    <option value="classic">Classic</option>
+                    <option value="innovative">Innovative</option>
+                    <option value="research">Research</option>
                   </select>
                 </div>
 

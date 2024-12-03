@@ -2,6 +2,9 @@ import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProjectContext } from "../../context/ProjectContext";
 import { useAuthStore } from "../../store/authStore";
+// Add these imports
+import { Avatar } from "../../components/ui/Avatar";
+import { Tooltip } from "../../components/ui/Tooltip";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -68,24 +71,69 @@ function ProjectsList({ projects }) {
     }
   };
 
+  const getProjectTypeLabel = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "classic":
+        return "Classic";
+      case "innovative":
+        return "Innovative";
+      case "research":
+        return "Research";
+      case "company_internship":
+        return "Company Internship";
+      default:
+        return type || "N/A";
+    }
+  };
+
   return (
     <div className="divide-y divide-gray-200">
       {userProjects.map((project) => (
         <div key={project.id} className="py-4">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <h3 className="text-lg font-medium text-gray-900">
-                {project.title}
-              </h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {project.title}
+                </h3>
+                <Tooltip
+                  content={
+                    <div className="p-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          src={project.submitterAvatar}
+                          fallback={project.submitterName[0]}
+                          size="sm"
+                        />
+                        <div>
+                          <p className="font-medium">{project.submitterName}</p>
+                          <p className="text-xs text-gray-500 capitalize">
+                            {project.submittedBy}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Proposed by</span>
+                    <Avatar
+                      src={project.submitterAvatar}
+                      fallback={project.submitterName[0]}
+                      size="xs"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </Tooltip>
+              </div>
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">
                   <span className="font-medium">Option:</span> {project.option}
                 </p>
-                {project.type && (
-                  <p className="text-sm text-gray-500">
-                    <span className="font-medium">Type:</span> {project.type}
-                  </p>
-                )}
+                <p className="text-sm text-gray-500">
+                  <span className="font-medium">Type:</span>{" "}
+                  {getProjectTypeLabel(project.type)}
+                </p>
                 {project.partnerName && (
                   <p className="text-sm text-gray-500">
                     <span className="font-medium">Partner:</span>{" "}

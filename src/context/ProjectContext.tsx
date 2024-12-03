@@ -4,7 +4,7 @@ interface Project {
   id: number;
   title: string;
   option: string;
-  type: "student_proposal" | "company_internship" | "teacher_proposal";
+  type: string; // Change this to be more flexible
   status: string;
   submittedDate: string;
   // Additional fields for student projects
@@ -21,7 +21,7 @@ interface Project {
   hardwareRequirements?: string;
   supervisorId?: string;
   coSupervisorId?: string;
-  submittedBy: 'teacher' | 'student' | 'company';
+  submittedBy: "teacher" | "student" | "company";
 }
 
 interface ProjectContextType {

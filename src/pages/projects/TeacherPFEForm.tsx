@@ -132,22 +132,13 @@ export function TeacherPFEForm() {
     try {
       const newProject = {
         id: Date.now(),
-        ...formData,
-        supervisorId: user?.id, // Add supervisor ID
-        status: formData.partnerId
-          ? "Pending Partner Validation"
-          : "Pending Review",
+        ...formData, // Include all form data first
+        supervisorId: user?.id,
+        status: "Pending Review",
         submittedDate: new Date().toISOString().split("T")[0],
-        type: "teacher_proposal", // Ensure type is set
         submittedBy: "teacher",
-        students: [
-          formData.partnerId
-            ? {
-                id: formData.partnerId,
-                status: "pending",
-              }
-            : null,
-        ].filter(Boolean),
+        submitterName: `${user?.firstName} ${user?.lastName}`,
+        submitterAvatar: user?.avatar,
       };
 
       addProject(newProject);
