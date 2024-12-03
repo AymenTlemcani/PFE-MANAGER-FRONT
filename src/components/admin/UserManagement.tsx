@@ -202,7 +202,7 @@ export function UserManagement() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
+        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
         <Button onClick={handleAddUser} className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
           Add User

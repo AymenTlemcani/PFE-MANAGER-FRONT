@@ -29,7 +29,7 @@ export function Header() {
   return (
     <div className="flex items-center justify-between flex-1">
       <div className="text-lg font-semibold text-gray-900">
-        {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard
+        {/* {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard */}
       </div>
       <div className="flex items-center gap-4">
         <NotificationDropdown />

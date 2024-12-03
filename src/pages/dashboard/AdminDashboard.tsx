@@ -32,7 +32,7 @@ export function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        {/* <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1> */}
         <div className="flex gap-4">
           {quickActions.map((action) => {
             const Icon = action.icon;
