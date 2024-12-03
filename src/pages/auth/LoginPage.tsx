@@ -38,7 +38,7 @@ export function LoginPage() {
 
   const handleDemoLogin = (demoEmail: string) => {
     setEmail(demoEmail);
-    setPassword("password");
+    setPassword("StrongP@ssw0rd2024!");
   };
 
   return (

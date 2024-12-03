@@ -27,7 +27,7 @@ export const translations: Record<string, Translation> = {
       signIn: "Sign in",
       signingIn: "Signing in...",
       demoAccounts: "Demo Accounts",
-      demoPassword: 'Use password: "password" for all demo accounts',
+      demoPassword: 'Use password: "StrongP@ssw0rd2024!" for all demo accounts',
       adminDemo: "Admin Demo",
       teacherDemo: "Teacher Demo",
       studentDemo: "Student Demo",
@@ -86,7 +86,7 @@ export const translations: Record<string, Translation> = {
       signingIn: "Connexion...",
       demoAccounts: "Comptes de démonstration",
       demoPassword:
-        'Utilisez le mot de passe: "password" pour tous les comptes',
+        'Utilisez le mot de passe: "StrongP@ssw0rd2024!" pour tous les comptes',
       adminDemo: "Démo Admin",
       teacherDemo: "Démo Enseignant",
       studentDemo: "Démo Étudiant",

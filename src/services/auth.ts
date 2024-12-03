@@ -52,7 +52,7 @@ export async function login(email: string, password: string): Promise<User> {
   await new Promise(resolve => setTimeout(resolve, 500));
 
   const user = mockUsers[email];
-  if (!user || password !== 'password') {
+  if (!user || password !== 'StrongP@ssw0rd2024!') {
     throw new Error('Invalid email or password');
   }
 
