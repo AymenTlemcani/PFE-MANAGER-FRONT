@@ -34,12 +34,12 @@ export function ProjectsPage() {
 
 function ProjectsList({ projects }) {
   const user = useAuthStore((state) => state.user);
-  
+
   // Modified to show projects based on user role
   const userProjects = projects.filter((p) => {
-    if (user?.role === 'student') {
+    if (user?.role === "student") {
       return p.studentId === user?.id;
-    } else if (user?.role === 'teacher') {
+    } else if (user?.role === "teacher") {
       return p.supervisorId === user?.id || p.coSupervisorId === user?.id;
     }
     return false;

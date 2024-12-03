@@ -62,13 +62,13 @@ export function Sidebar() {
 
   const roleNavigation = getRoleNavigation(t);
   const navigation = [...(roleNavigation[user.role] || [])];
-  
+
   // Add validation section for responsible teachers
-  if (user.role === 'teacher' && (user as Teacher).isResponsible) {
+  if (user.role === "teacher" && (user as Teacher).isResponsible) {
     navigation.push({
-      name: 'Project Validation',
+      name: t.navigation.projectValidation,
       icon: CheckSquare,
-      path: '/projects/validation'
+      path: "/projects/validation",
     });
   }
 
@@ -76,6 +76,13 @@ export function Sidebar() {
     if (path === "/dashboard") {
       return location.pathname === path;
     }
+    // Special case for /projects path to avoid matching with /projects/validation
+    if (path === "/projects") {
+      return (
+        location.pathname === path || location.pathname === "/projects/new"
+      );
+    }
+    // For other paths, use startsWith
     return location.pathname.startsWith(path);
   };
 

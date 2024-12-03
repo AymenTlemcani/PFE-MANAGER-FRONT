@@ -14,6 +14,7 @@ export interface Translation {
     projects: string;
     proposals: string;
     interns: string;
+    projectValidation: string;
   };
   login: {
     title: string;

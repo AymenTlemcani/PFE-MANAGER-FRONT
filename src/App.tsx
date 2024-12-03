@@ -21,6 +21,7 @@ import { StudentPFEForm } from "./pages/projects/StudentPFEForm";
 import { ProjectProvider } from "./context/ProjectProvider";
 import EmailPeriodConfigPage from "./pages/admin/EmailPeriodConfigPage";
 import { useAuth } from "./context/AuthContext"; // Add this import
+import { ProjectValidationPage } from "./pages/projects/ProjectValidationPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -85,20 +86,23 @@ function App() {
                 element={<EmailPeriodConfigPage />}
               />
               <Route path="profile" element={<ProfilePage />} />
-              <Route path="projects" element={<ProjectsPage />} />
-              <Route
-                path="projects/new"
-                element={
-                  <ProtectedRoute>
-                    {user?.role === "student" ? (
-                      <StudentPFEForm />
-                    ) : (
-                      <TeacherPFEForm />
-                    )}
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="project" element={<StudentProjectPage />} />
+              <Route path="projects">
+                <Route index element={<ProjectsPage />} />
+                <Route
+                  path="new"
+                  element={
+                    <ProtectedRoute>
+                      {user?.role === "student" ? (
+                        <StudentPFEForm />
+                      ) : (
+                        <TeacherPFEForm />
+                      )}
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="validation" element={<ProjectValidationPage />} />
+                <Route path="project" element={<StudentProjectPage />} />
+              </Route>
             </Route>
           </Routes>
         </NotificationsProvider>

@@ -1,38 +1,17 @@
-
-import { useState } from 'react';
-import { CheckCircle, XCircle, MessageCircle } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Dialog } from '../../components/ui/Dialog';
+import { useState } from "react";
+import { CheckCircle, XCircle } from "lucide-react";
+import { Button } from "../../components/ui/Button";
+import { Dialog } from "../../components/ui/Dialog";
 
 export function ProjectValidationPage() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-
-  const pendingProjects = [
-    {
-      id: 1,
-      title: "AI Healthcare System",
-      submittedBy: "Dr. John Smith",
-      option: "IA",
-      type: "Research",
-      submissionDate: "2024-03-15",
-      status: "Pending"
-    },
-    {
-      id: 2,
-      title: "Blockchain Supply Chain",
-      submittedBy: "Dr. Sarah Johnson",
-      option: "GL",
-      type: "Industry",
-      submissionDate: "2024-03-14",
-      status: "Pending"
-    }
-  ];
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [projects, setProjects] = useState([]);
 
   const handleApprove = (project) => {
     // TODO: Implement project approval
-    console.log('Approving project:', project.id);
+    console.log("Approving project:", project.id);
   };
 
   const handleReject = (project) => {
@@ -41,16 +20,43 @@ export function ProjectValidationPage() {
   };
 
   const confirmReject = () => {
-    // TODO: Implement project rejection with reason
-    console.log('Rejecting project:', selectedProject?.id, rejectionReason);
+    console.log("Rejecting project:", selectedProject?.id, rejectionReason);
     setIsRejectDialogOpen(false);
-    setRejectionReason('');
+    setRejectionReason("");
     setSelectedProject(null);
+  };
+
+  const loadTestData = () => {
+    setProjects([
+      {
+        id: 1,
+        title: "AI Healthcare System",
+        submittedBy: "Dr. John Smith",
+        option: "IA",
+        type: "Research",
+        submissionDate: "2024-03-15",
+        status: "Pending",
+      },
+      {
+        id: 2,
+        title: "Blockchain Supply Chain",
+        submittedBy: "Dr. Sarah Johnson",
+        option: "GL",
+        type: "Industry",
+        submissionDate: "2024-03-14",
+        status: "Pending",
+      },
+    ]);
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Project Validation</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Project Validation</h1>
+        <Button onClick={loadTestData} variant="outline">
+          Load Test Data
+        </Button>
+      </div>
 
       <div className="bg-white shadow-sm rounded-lg border border-gray-200">
         <div className="p-6">
@@ -59,7 +65,7 @@ export function ProjectValidationPage() {
           </h2>
 
           <div className="divide-y divide-gray-200">
-            {pendingProjects.map((project) => (
+            {projects.map((project) => (
               <div key={project.id} className="py-4">
                 <div className="flex justify-between items-start">
                   <div className="space-y-2">
