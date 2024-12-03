@@ -134,7 +134,9 @@ export function TeacherPFEForm() {
         id: Date.now(),
         ...formData,
         supervisorId: user?.id, // Add supervisor ID
-        status: formData.partnerId ? "Pending Partner Validation" : "Pending Review",
+        status: formData.partnerId
+          ? "Pending Partner Validation"
+          : "Pending Review",
         submittedDate: new Date().toISOString().split("T")[0],
         type: "teacher_proposal", // Ensure type is set
         submittedBy: "teacher",

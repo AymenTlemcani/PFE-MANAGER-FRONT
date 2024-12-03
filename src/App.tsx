@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
@@ -13,9 +19,11 @@ import { NotificationsProvider } from "./context/NotificationsContext";
 import { TeacherPFEForm } from "./pages/projects/TeacherPFEForm";
 import { StudentPFEForm } from "./pages/projects/StudentPFEForm";
 import { ProjectProvider } from "./context/ProjectProvider";
+import EmailPeriodConfigPage from "./pages/admin/EmailPeriodConfigPage";
+import { useAuth } from "./context/AuthContext"; // Add this import
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const user = useAuthStore(state => state.user);
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +41,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && user) {
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [user, isLoading, navigate]);
 
@@ -45,7 +53,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const user = useAuthStore(state => state.user);
+  const user = useAuthStore((state) => state.user);
 
   return (
     <BrowserRouter>
@@ -64,14 +72,32 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="dashboard/users" element={<UserManagementPage />} />
-              <Route path="dashboard/emails" element={<EmailConfigurationPage />} />
+              <Route
+                path="dashboard/emails"
+                element={<EmailConfigurationPage />}
+              />
+              <Route
+                path="dashboard/emails/new"
+                element={<EmailPeriodConfigPage />}
+              />
+              <Route
+                path="dashboard/emails/:id"
+                element={<EmailPeriodConfigPage />}
+              />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="projects" element={<ProjectsPage />} />
-              <Route path="projects/new" element={
-                <ProtectedRoute>
-                  {user?.role === 'student' ? <StudentPFEForm /> : <TeacherPFEForm />}
-                </ProtectedRoute>
-              } />
+              <Route
+                path="projects/new"
+                element={
+                  <ProtectedRoute>
+                    {user?.role === "student" ? (
+                      <StudentPFEForm />
+                    ) : (
+                      <TeacherPFEForm />
+                    )}
+                  </ProtectedRoute>
+                }
+              />
               <Route path="project" element={<StudentProjectPage />} />
             </Route>
           </Routes>

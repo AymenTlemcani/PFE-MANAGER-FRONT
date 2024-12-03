@@ -8,3 +8,6 @@ export function EmailConfigurationPage() {
     </div>
   );
 }
+
+// Add default export
+export default EmailConfigurationPage;
