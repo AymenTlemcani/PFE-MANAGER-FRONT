@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useLanguageStore } from "../../store/languageStore";
-import { ChevronDown, LogOut, User, Globe } from "lucide-react";
+import { ChevronDown, LogOut, User, Globe, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { NotificationDropdown } from "./NotificationDropdown";
+import { useThemeStore } from '../../store/themeStore';
 
 const languages = [
   { code: "en", label: "English", icon: "GB" },
@@ -15,6 +16,7 @@ export function Header() {
   const { user } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { isDark, toggleTheme } = useThemeStore();
 
   const handleLogout = () => {
     useAuthStore.getState().setUser(null);
@@ -27,34 +29,45 @@ export function Header() {
   if (!user) return null;
 
   return (
-    <div className="flex items-center justify-between flex-1">
-      <div className="text-lg font-semibold text-gray-900">
+    <div className="flex items-center justify-between flex-1 dark:bg-gray-900">
+      <div className="text-lg font-semibold text-gray-900 dark:text-white">
         {/* {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard */}
       </div>
       <div className="flex items-center gap-4">
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
+            <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          ) : (
+            <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          )}
+        </button>
         <NotificationDropdown />
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center space-x-3 group"
           >
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100">
               {user.firstName[0]}
               {user.lastName[0]}
             </div>
             <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-100 group-hover:text-gray-900 dark:group-hover:text-white">
                 {user.firstName} {user.lastName}
               </span>
-              <ChevronDown className="ml-2 h-4 w-4 text-gray-500" />
+              <ChevronDown className="ml-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
             </div>
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200">
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="py-1">
-                <div className="px-3 py-2 border-b border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
+                <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mb-2">
                     <Globe className="h-4 w-4" />
                     Language
                   </div>
@@ -65,8 +78,8 @@ export function Header() {
                         onClick={() => setLanguage(lang.code)}
                         className={`px-2 py-1 text-xs rounded-md transition-colors ${
                           language === lang.code
-                            ? "bg-blue-100 text-blue-700"
-                            : "hover:bg-gray-100"
+                            ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                         }`}
                       >
                         {lang.label}
@@ -79,14 +92,14 @@ export function Header() {
                     navigate("/profile");
                     setShowProfileMenu(false);
                   }}
-                  className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <User className="mr-3 h-4 w-4" />
                   Profile
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <LogOut className="mr-3 h-4 w-4" />
                   Logout

@@ -16,8 +16,8 @@ export function EmailPeriodModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg w-full max-w-4xl h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-medium text-gray-900 mb-6">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-4xl h-[90vh] overflow-y-auto">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">
           Configure Email Period
         </h3>
 
@@ -114,8 +114,8 @@ function TemplateEditor({
   onChange: (template: EmailTemplate) => void;
 }) {
   return (
-    <div className="border rounded-md p-4">
-      <h5 className="text-sm font-medium text-gray-900 mb-4 capitalize">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+      <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-4 capitalize">
         {type} Email
       </h5>
       <div className="space-y-4">
@@ -135,14 +135,14 @@ function TemplateEditor({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Available Variables
           </label>
           <div className="flex gap-2 flex-wrap">
             {template.variables.map((variable) => (
               <span
                 key={variable}
-                className="px-2 py-1 bg-gray-100 rounded text-sm text-gray-600"
+                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-600 dark:text-gray-300"
               >
                 {`{${variable}}`}
               </span>

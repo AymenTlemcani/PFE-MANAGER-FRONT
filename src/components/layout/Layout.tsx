@@ -4,15 +4,13 @@ import { Sidebar } from "./Sidebar";
 
 export function Layout() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="pl-64">
-        <div className="fixed top-0 right-0 left-64 h-16 bg-white border-b border-gray-200 z-10">
-          <div className="h-full px-6 flex items-center">
-            <Header />
-          </div>
+        <div className="h-16 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 flex items-center">
+          <Header />
         </div>
-        <main className="pt-20 px-6">
+        <main className="p-6 dark:text-gray-100">
           <Outlet />
         </main>
       </div>

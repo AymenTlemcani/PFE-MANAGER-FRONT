@@ -175,18 +175,18 @@ export function TeacherPFEForm() {
 
   const renderPartnershipSection = () => (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium text-gray-900">Partnership Details</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Partnership Details</h3>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-8">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Select Partner (Optional)
             </label>
             <select
               name="partnerId"
               value={formData.partnerId}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-4 py-3"
+              className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-4 py-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
               <option value="">Work Individually</option>
               {students.map((student) => (
@@ -196,7 +196,7 @@ export function TeacherPFEForm() {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Your selected partner will receive a notification to accept or
               reject the partnership
             </p>
@@ -210,11 +210,11 @@ export function TeacherPFEForm() {
     <div className="h-full">
       <form
         onSubmit={handleSubmit}
-        className="bg-white h-full border border-gray-200 shadow-sm"
+        className="bg-white dark:bg-gray-800 h-full border border-gray-200 dark:border-gray-700 shadow-sm"
       >
-        <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200">
+        <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-semibold text-gray-900">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
               {hasExistingProposal
                 ? "Update PFE Proposal"
                 : "Submit New PFE Project"}
@@ -222,7 +222,7 @@ export function TeacherPFEForm() {
             <button
               type="button"
               onClick={fillTestData}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
             >
               Fill Test Data
             </button>
@@ -230,7 +230,7 @@ export function TeacherPFEForm() {
           <button
             type="button"
             onClick={() => navigate("/projects")}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
@@ -242,7 +242,7 @@ export function TeacherPFEForm() {
 
           {/* Supervisors Section */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               Supervision Details
             </h3>
             <div className="grid grid-cols-2 gap-8">
@@ -271,12 +271,12 @@ export function TeacherPFEForm() {
 
           {/* Project Details Section */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               Project Details
             </h3>
             <div className="grid grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Option
                 </label>
                 <select
@@ -284,8 +284,8 @@ export function TeacherPFEForm() {
                   value={formData.option}
                   onChange={handleChange}
                   className={`w-full rounded-md border ${
-                    errors.option ? "border-red-500" : "border-gray-300"
-                  } px-4 py-3 bg-white text-gray-900 text-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                    errors.option ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                  } px-4 py-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
                   required
                 >
                   <option value="" disabled>
@@ -301,7 +301,7 @@ export function TeacherPFEForm() {
                 )}
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Type
                 </label>
                 <select
@@ -309,8 +309,8 @@ export function TeacherPFEForm() {
                   value={formData.type}
                   onChange={handleChange}
                   className={`w-full rounded-md border ${
-                    errors.type ? "border-red-500" : "border-gray-300"
-                  } px-4 py-3 bg-white text-gray-900 text-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                    errors.type ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                  } px-4 py-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
                   required
                 >
                   <option value="" disabled>
@@ -338,7 +338,7 @@ export function TeacherPFEForm() {
             />
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Summary
               </label>
               <textarea
@@ -349,8 +349,8 @@ export function TeacherPFEForm() {
                 }
                 rows={6}
                 className={`mt-1 block w-full rounded-md border ${
-                  errors.summary ? "border-red-500" : "border-gray-300"
-                } px-4 py-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+                  errors.summary ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                } px-4 py-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
                 required
               />
               {errors.summary && (
@@ -361,7 +361,7 @@ export function TeacherPFEForm() {
 
           {/* Technical Requirements Section */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               Technical Requirements
             </h3>
             <Input
@@ -378,7 +378,7 @@ export function TeacherPFEForm() {
             />
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Hardware Requirements
               </label>
               <textarea
@@ -391,7 +391,7 @@ export function TeacherPFEForm() {
                   })
                 }
                 rows={4}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-4 py-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-4 py-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 placeholder="List any specific hardware requirements"
               />
             </div>
@@ -402,7 +402,7 @@ export function TeacherPFEForm() {
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-white px-8 py-6 border-t border-gray-200">
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-8 py-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex justify-end gap-4">
             <Button
               type="button"

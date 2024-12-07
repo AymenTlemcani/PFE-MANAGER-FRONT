@@ -12,7 +12,9 @@ export function CompanyDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Company Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Company Dashboard
+        </h1>
         <Button>Submit New Project Proposal</Button>
       </div>
 
@@ -22,18 +24,18 @@ export function CompanyDashboard() {
           return (
             <div
               key={stat.label}
-              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     {stat.label}
                   </p>
-                  <p className="mt-2 text-3xl font-semibold text-gray-900">
+                  <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
                     {stat.value}
                   </p>
                 </div>
-                <Icon className="h-8 w-8 text-blue-600" />
+                <Icon className="h-8 w-8 text-blue-600 dark:text-blue-500" />
               </div>
             </div>
           );
@@ -41,15 +43,15 @@ export function CompanyDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Active Projects
           </h2>
           <ActiveProjectsList />
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Project Proposals
           </h2>
           <ProposalsList />
@@ -85,26 +87,26 @@ function ActiveProjectsList() {
   ];
 
   return (
-    <div className="divide-y divide-gray-200">
+    <div className="divide-y divide-gray-200 dark:divide-gray-700">
       {projects.map((project) => (
         <div key={project.id} className="py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-900">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                 {project.title}
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Student: {project.student}
               </p>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Supervisor: {project.supervisor}
               </p>
             </div>
             <span
               className={`px-2 py-1 text-xs font-medium rounded-full ${
                 project.status === "On Track"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
+                  ? "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
+                  : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200"
               }`}
             >
               {project.status}
@@ -135,20 +137,20 @@ function ProposalsList() {
   ];
 
   return (
-    <div className="divide-y divide-gray-200">
+    <div className="divide-y divide-gray-200 dark:divide-gray-700">
       {proposals.map((proposal) => (
         <div key={proposal.id} className="py-4">
-          <h3 className="text-sm font-medium text-gray-900">
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
             {proposal.title}
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Requirements: {proposal.requirements}
           </p>
           <div className="mt-2 flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Submitted: {proposal.submittedDate}
             </p>
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+            <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
               {proposal.status}
             </span>
           </div>

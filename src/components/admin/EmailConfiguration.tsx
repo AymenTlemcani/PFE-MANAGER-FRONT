@@ -58,6 +58,7 @@ export function EmailConfiguration() {
         closingDate: "2024-03-30",
         targetAudience: "teachers",
         status: "active",
+        // status: "pending",
         templates: {
           initial: {
             id: "t1",
@@ -92,7 +93,7 @@ export function EmailConfiguration() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Email Periods Configuration
           </h2>
           <Button variant="outline" size="sm" onClick={handleFillTestData}>
@@ -112,14 +113,14 @@ export function EmailConfiguration() {
         {periods.map((period) => (
           <div
             key={period.id}
-            className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+            className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                   {period.name}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Target: {period.targetAudience}
                 </p>
               </div>
@@ -157,8 +158,8 @@ export function EmailConfiguration() {
               />
             </div>
 
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Templates
               </h4>
               <div className="grid grid-cols-3 gap-4">
@@ -195,10 +196,12 @@ function DateDisplay({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Icon className="h-5 w-5 text-gray-400" />
+      <Icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
       <div>
-        <p className="text-sm font-medium text-gray-700">{label}</p>
-        <p className="text-sm text-gray-500">{date}</p>
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {label}
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{date}</p>
       </div>
     </div>
   );
@@ -212,9 +215,13 @@ function TemplatePreview({
   type: string;
 }) {
   return (
-    <div className="p-3 bg-gray-50 rounded-md">
-      <p className="text-sm font-medium text-gray-700">{type}</p>
-      <p className="text-xs text-gray-500 truncate">{template.subject}</p>
+    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        {type}
+      </p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+        {template.subject}
+      </p>
     </div>
   );
 }

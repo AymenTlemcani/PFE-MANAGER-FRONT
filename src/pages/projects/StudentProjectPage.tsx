@@ -37,7 +37,9 @@ export function StudentProjectPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">My PFE Project</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          My PFE Project
+        </h1>
         <div className="flex gap-4">
           <Button
             onClick={() => navigate("/projects/new")}
@@ -57,62 +59,70 @@ export function StudentProjectPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Project Details
             </h2>
             <div className="space-y-4">
               <div>
-                <h3 className="text-md font-medium text-gray-900">
+                <h3 className="text-md font-medium text-gray-900 dark:text-white">
                   {project.title}
                 </h3>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                   {project.description}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Supervisor
                   </p>
-                  <p className="text-sm text-gray-900">{project.supervisor}</p>
+                  <p className="text-sm text-gray-900 dark:text-white">
+                    {project.supervisor}
+                  </p>
                 </div>
                 {project.coSupervisor && (
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Co-Supervisor
                     </p>
-                    <p className="text-sm text-gray-900">
+                    <p className="text-sm text-gray-900 dark:text-white">
                       {project.coSupervisor}
                     </p>
                   </div>
                 )}
                 {project.partner && (
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Partner</p>
-                    <p className="text-sm text-gray-900">{project.partner}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Partner
+                    </p>
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      {project.partner}
+                    </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Technical Details
             </h2>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Technologies
                 </p>
-                <p className="text-sm text-gray-900">{project.technologies}</p>
+                <p className="text-sm text-gray-900 dark:text-white">
+                  {project.technologies}
+                </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Hardware Requirements
                 </p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm text-gray-900 dark:text-white">
                   {project.hardwareRequirements}
                 </p>
               </div>
@@ -121,8 +131,8 @@ export function StudentProjectPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Project Status
             </h2>
             <div className="space-y-4">
@@ -149,8 +159,8 @@ export function StudentProjectPage() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Progress Reports
             </h2>
             <div className="space-y-3">

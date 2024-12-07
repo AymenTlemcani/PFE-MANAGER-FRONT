@@ -18,7 +18,7 @@ export function Avatar({ src, fallback, size = "md", className }: AvatarProps) {
   return (
     <div
       className={cn(
-        "relative inline-flex items-center justify-center rounded-full bg-gray-100",
+        "relative inline-flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700",
         sizeClasses[size],
         className
       )}
@@ -30,7 +30,9 @@ export function Avatar({ src, fallback, size = "md", className }: AvatarProps) {
           className="h-full w-full rounded-full object-cover"
         />
       ) : (
-        <span className="font-medium text-gray-600">{fallback}</span>
+        <span className="font-semibold text-white uppercase tracking-wider">
+          {fallback}
+        </span>
       )}
     </div>
   );

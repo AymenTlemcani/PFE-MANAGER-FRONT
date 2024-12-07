@@ -30,26 +30,31 @@ export function Dialog({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/25" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/25 dark:bg-black/40"
+        onClick={onClose}
+      />
       <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg w-full max-w-md p-6 shadow-lg">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 shadow-lg">
           <div className="absolute right-4 top-4">
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {title && (
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">
               {title}
             </h3>
           )}
 
           {description && (
-            <p className="text-sm text-gray-500 mb-4">{description}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {description}
+            </p>
           )}
 
           {children}

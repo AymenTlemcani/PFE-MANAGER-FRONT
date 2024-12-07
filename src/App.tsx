@@ -22,6 +22,7 @@ import { ProjectProvider } from "./context/ProjectProvider";
 import EmailPeriodConfigPage from "./pages/admin/EmailPeriodConfigPage";
 import { useAuth } from "./context/AuthContext"; // Add this import
 import { ProjectValidationPage } from "./pages/projects/ProjectValidationPage";
+import { useThemeStore } from './store/themeStore';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -55,6 +56,15 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const user = useAuthStore((state) => state.user);
+  const isDark = useThemeStore((state) => state.isDark);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
 
   return (
     <BrowserRouter>

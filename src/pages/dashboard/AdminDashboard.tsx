@@ -57,18 +57,18 @@ export function AdminDashboard() {
           return (
             <div
               key={stat.label}
-              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     {stat.label}
                   </p>
-                  <p className="mt-2 text-3xl font-semibold text-gray-900">
+                  <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
                     {stat.value}
                   </p>
                 </div>
-                <Icon className="h-8 w-8 text-blue-600" />
+                <Icon className="h-8 w-8 text-blue-600 dark:text-blue-500" />
               </div>
             </div>
           );
@@ -76,51 +76,51 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold mb-4">Process Timeline</h2>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold mb-4 dark:text-white">Process Timeline</h2>
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Project Proposals</span>
-              <span className="text-green-600">Active</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Project Proposals</span>
+              <span className="text-green-600 dark:text-green-400">Active</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Teacher Assignments</span>
-              <span className="text-gray-600">Pending</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Teacher Assignments</span>
+              <span className="text-gray-600 dark:text-gray-400">Pending</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Student Selections</span>
-              <span className="text-gray-600">Pending</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Student Selections</span>
+              <span className="text-gray-600 dark:text-gray-400">Pending</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Defense Planning</span>
-              <span className="text-gray-600">Pending</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Defense Planning</span>
+              <span className="text-gray-600 dark:text-gray-400">Pending</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold mb-4">Email Campaigns</h2>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold mb-4 dark:text-white">Email Campaigns</h2>
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Project Proposal Reminder</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Project Proposal Reminder</span>
               <Button size="sm" variant="outline">
                 Schedule
               </Button>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Teacher Assignment Notice</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Teacher Assignment Notice</span>
               <Button size="sm" variant="outline">
                 Schedule
               </Button>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Defense Schedule Notice</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Defense Schedule Notice</span>
               <Button size="sm" variant="outline">
                 Schedule
               </Button>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-              <span>Deadline Reminders</span>
+            <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+              <span className="dark:text-gray-200">Deadline Reminders</span>
               <Button size="sm" variant="outline">
                 Schedule
               </Button>

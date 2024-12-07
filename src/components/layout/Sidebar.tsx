@@ -87,15 +87,14 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 overflow-y-auto">
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
+    <aside className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <Link
           to="/dashboard"
-          className="flex items-center gap-2 px-6 py-4 hover:bg-gray-50"
-          onClick={() => window.location.reload()}
+          className="flex items-center gap-2 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <GraduationCap className="h-8 w-8 text-blue-600" />
-          <span className="text-xl font-bold text-gray-900">PFE Platform</span>
+          <span className="text-xl font-bold text-gray-900 dark:text-white">PFE Platform</span>
         </Link>
       </div>
 
@@ -109,13 +108,13 @@ export function Sidebar() {
               to={item.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
                 active
-                  ? "bg-blue-50 text-blue-700 shadow-sm"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-100 shadow-sm"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               <Icon
                 className={`h-5 w-5 ${
-                  active ? "text-blue-600" : "text-gray-400"
+                  active ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"
                 }`}
               />
               {item.name}

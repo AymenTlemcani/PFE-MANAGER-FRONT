@@ -13,19 +13,19 @@ export function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">My Projects</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Projects</h1>
         <button
           onClick={() => navigate("/projects/new")}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
         >
           <Plus className="h-5 w-5 mr-2" />
           Submit New PFE
         </button>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Submitted PFE Projects
           </h2>
           <ProjectsList projects={projects} />
@@ -50,7 +50,7 @@ function ProjectsList({ projects }) {
 
   if (!userProjects || userProjects.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
         No projects submitted yet. Click "Submit New PFE" to get started.
       </div>
     );
@@ -59,15 +59,15 @@ function ProjectsList({ projects }) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Pending Partner Validation":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200";
       case "Pending Review":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200";
       case "Approved":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200";
       case "Rejected":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
     }
   };
 
@@ -87,13 +87,13 @@ function ProjectsList({ projects }) {
   };
 
   return (
-    <div className="divide-y divide-gray-200">
+    <div className="divide-y divide-gray-200 dark:divide-gray-700">
       {userProjects.map((project) => (
         <div key={project.id} className="py-4">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                   {project.title}
                 </h3>
                 <Tooltip
@@ -127,24 +127,24 @@ function ProjectsList({ projects }) {
                 </Tooltip>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-medium">Option:</span> {project.option}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-medium">Type:</span>{" "}
                   {getProjectTypeLabel(project.type)}
                 </p>
                 {project.partnerName && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     <span className="font-medium">Partner:</span>{" "}
                     {project.partnerName}
                   </p>
                 )}
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-medium">Technologies:</span>{" "}
                   {project.technologies}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-medium">Submitted:</span>{" "}
                   {new Date(project.submittedDate).toLocaleDateString()}
                 </p>

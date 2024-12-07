@@ -1,4 +1,3 @@
-
 import { Bell } from 'lucide-react';
 import { useState } from 'react';
 import { useNotifications } from '../../context/NotificationsContext';
@@ -32,16 +31,16 @@ export function NotificationDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-          <div className="p-4 divide-y divide-gray-100">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-80 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5">
+          <div className="p-4 divide-y divide-gray-100 dark:divide-gray-700">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Notifications</h3>
             {pendingNotifications.length === 0 ? (
-              <p className="text-sm text-gray-500 py-4">No new notifications</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 py-4">No new notifications</p>
             ) : (
               <div className="space-y-4">
                 {pendingNotifications.map(notification => (
                   <div key={notification.id} className="py-4">
-                    <p className="text-sm text-gray-900 mb-2">{notification.message}</p>
+                    <p className="text-sm text-gray-900 dark:text-white mb-2">{notification.message}</p>
                     {notification.type === 'PARTNERSHIP_REQUEST' && (
                       <div className="flex gap-2">
                         <button

@@ -85,15 +85,15 @@ export function Snackbar({
   if (!isOpen) return null;
 
   const colors = {
-    success: "bg-green-100 text-green-800 border-green-200",
-    error: "bg-red-100 text-red-800 border-red-200",
-    info: "bg-blue-100 text-blue-800 border-blue-200",
+    success: "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800",
+    error: "bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800",
+    info: "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800",
   };
 
   const progressColors = {
-    success: "bg-green-600",
-    error: "bg-red-600",
-    info: "bg-blue-600",
+    success: "bg-green-600 dark:bg-green-500",
+    error: "bg-red-600 dark:bg-red-500",
+    info: "bg-blue-600 dark:bg-blue-500",
   };
 
   return (

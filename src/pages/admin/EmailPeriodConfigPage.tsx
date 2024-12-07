@@ -116,7 +116,7 @@ function EmailPeriodConfigPage() {
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {id ? "Edit Email Period" : "New Email Period"}
           </h1>
           <Button variant="outline" size="sm" onClick={handleFillTestData}>
@@ -126,7 +126,7 @@ function EmailPeriodConfigPage() {
         <Button onClick={handleSave}>Save Changes</Button>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <Input
@@ -137,11 +137,11 @@ function EmailPeriodConfigPage() {
               }
             />
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Target Audience
               </label>
               <select
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
                 value={formData.targetAudience}
                 onChange={(e) =>
                   setFormData({
@@ -224,7 +224,7 @@ function EmailPeriodConfigPage() {
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               Email Templates
             </h3>
             <div className="grid gap-8">
@@ -262,8 +262,8 @@ function TemplateEditor({
   onChange: (template: EmailTemplate) => void;
 }) {
   return (
-    <div className="border rounded-lg p-6">
-      <h4 className="text-md font-medium text-gray-900 mb-4 capitalize">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800">
+      <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 capitalize">
         {type} Email
       </h4>
       <div className="space-y-4">
@@ -273,24 +273,24 @@ function TemplateEditor({
           onChange={(e) => onChange({ ...template, subject: e.target.value })}
         />
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Template Body
           </label>
           <textarea
-            className="w-full h-40 rounded-md border border-gray-300 px-4 py-3 text-sm"
+            className="w-full h-40 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-gray-100"
             value={template.body}
             onChange={(e) => onChange({ ...template, body: e.target.value })}
           />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Available Variables
           </label>
           <div className="flex gap-2 flex-wrap">
             {template.variables.map((variable) => (
               <span
                 key={variable}
-                className="px-2 py-1 bg-gray-100 rounded text-sm text-gray-600"
+                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-600 dark:text-gray-300"
               >
                 {`{${variable}}`}
               </span>
