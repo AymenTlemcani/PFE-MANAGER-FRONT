@@ -1,7 +1,9 @@
 import { Briefcase, Users, Clock, CheckCircle } from "lucide-react";
 import { Button } from "../../components/ui/Button";
+import { useNavigate } from "react-router-dom"; // Add this import
 
 export function CompanyDashboard() {
+  const navigate = useNavigate();
   const stats = [
     { label: "Active Projects", value: "3", icon: Briefcase },
     { label: "Student Interns", value: "5", icon: Users },
@@ -15,7 +17,9 @@ export function CompanyDashboard() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Company Dashboard
         </h1>
-        <Button>Submit New Project Proposal</Button>
+        <Button onClick={() => navigate("/projects/company/new")}>
+          Submit New Project Proposal
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

@@ -23,6 +23,7 @@ import EmailPeriodConfigPage from "./pages/admin/EmailPeriodConfigPage";
 import { useAuth } from "./context/AuthContext"; // Add this import
 import { ProjectValidationPage } from "./pages/projects/ProjectValidationPage";
 import { useThemeStore } from './store/themeStore';
+import { CompanyPFEForm } from "./pages/projects/CompanyPFEForm"; // Add this import
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -104,12 +105,18 @@ function App() {
                     <ProtectedRoute>
                       {user?.role === "student" ? (
                         <StudentPFEForm />
+                      ) : user?.role === "company" ? (
+                        <CompanyPFEForm />
                       ) : (
                         <TeacherPFEForm />
                       )}
                     </ProtectedRoute>
                   }
                 />
+                <Route path="company">
+                  <Route path="new" element={<ProtectedRoute><CompanyPFEForm /></ProtectedRoute>} />
+                  <Route path="edit/:id" element={<ProtectedRoute><CompanyPFEForm /></ProtectedRoute>} />
+                </Route>
                 <Route path="validation" element={<ProjectValidationPage />} />
               </Route>
               {/* Move this route outside of projects and make it a direct child of the main layout */}
