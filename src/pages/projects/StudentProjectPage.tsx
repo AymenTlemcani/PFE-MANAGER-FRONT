@@ -13,7 +13,6 @@ import {
   ArrowDown,
   Check,
   Trash2, // Add this import
-  Beaker, // Add this import
 } from "lucide-react";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -336,43 +335,6 @@ export function StudentProjectPage() {
     });
   };
 
-  // Add new function to load simulation data
-  const loadSimulationData = () => {
-    setHasUnsavedChanges(true);
-
-    // Simulate selecting first 3 projects
-    const simulatedSelections = availableProjects
-      .slice(0, 3)
-      .map((project, idx) => ({
-        id: project.id,
-        title: project.title,
-        type: project.type,
-        supervisor: project.supervisor,
-        status: "Pending",
-        priority: idx + 1,
-      }));
-
-    // Update wish list
-    setProjectWishList(simulatedSelections);
-
-    // Update available projects
-    setAvailableProjects((prev) =>
-      prev.map((project) => {
-        const selectedIndex = simulatedSelections.findIndex(
-          (s) => s.id === project.id
-        );
-        if (selectedIndex !== -1) {
-          return {
-            ...project,
-            selectedIndex,
-            status: "Selected",
-          };
-        }
-        return project;
-      })
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -555,15 +517,6 @@ export function StudentProjectPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {t.studentProject.pfeProjects}
           </h1>
-          <Button
-            onClick={loadSimulationData}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Beaker className="h-4 w-4" />
-            Simulate Selection
-          </Button>
         </div>
         <div className="flex gap-4">
           {projectProposals.length < 3 && (
