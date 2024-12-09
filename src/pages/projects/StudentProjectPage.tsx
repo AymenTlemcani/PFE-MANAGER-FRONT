@@ -656,31 +656,34 @@ export function StudentProjectPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={
-                    project.selectedIndex !== undefined ? "outline" : "default"
-                  }
-                  onClick={() => handleProjectSelection(project.id)}
-                  disabled={
-                    project.selectedIndex === undefined &&
-                    availableProjects.filter(
-                      (p) => p.selectedIndex !== undefined
-                    ).length >= maxSelections
-                  }
-                >
-                  {project.selectedIndex !== undefined
-                    ? `Remove from list (${project.selectedIndex + 1})`
-                    : "Add to list"}
-                </Button>
+              <div className="flex gap-2 items-center">
+                {project.selectedIndex !== undefined ? (
+                  <span className="px-3 py-1.5 text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
+                    Added ({project.selectedIndex + 1})
+                  </span>
+                ) : (
+                  <Button
+                    variant="primary"
+                    onClick={() => handleProjectSelection(project.id)}
+                    disabled={
+                      availableProjects.filter(
+                        (p) => p.selectedIndex !== undefined
+                      ).length >= maxSelections
+                    }
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add to Selection List</span>
+                  </Button>
+                )}
                 {/* Demo acceptance button - only for selected projects */}
                 {project.selectedIndex !== undefined && (
                   <Button
                     onClick={() => handleProjectAcceptance(project.id)}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                    size="sm"
+                    className="text-xs bg-green-600/80 hover:bg-green-700/80"
                   >
-                    <Check className="h-4 w-4" />
-                    Accept Project
+                    Accept (Dev)
                   </Button>
                 )}
               </div>
