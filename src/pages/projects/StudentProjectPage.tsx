@@ -9,6 +9,11 @@ import {
   BookOpen,
   ListChecks,
   ListFilter,
+  ArrowUp,
+  ArrowDown,
+  Check,
+  Trash2, // Add this import
+  Beaker, // Add this import
 } from "lucide-react";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -29,6 +34,7 @@ interface AvailableProject {
   description: string;
   technologies: string;
   status: "Available" | "Selected";
+  selectedIndex?: number; // Add this field to track selection order
 }
 
 export function StudentProjectPage() {
@@ -45,80 +51,101 @@ export function StudentProjectPage() {
   const [showSelectionList, setShowSelectionList] = useState(false);
   const [projectProposals, setProjectProposals] = useState<any[]>([]);
   const [showProposalsList, setShowProposalsList] = useState(false);
+  const [maxSelections] = useState(10); // Changed from 3 to 10
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchStudentProjectStatus = async () => {
-      try {
-        setIsLoading(true);
-
-        // Load proposals from localStorage
-        const storedProposals = JSON.parse(
-          localStorage.getItem("studentProposals") || "[]"
-        );
-
-        // Your existing mock data for other lists
-        const mockProjectWishList = [
-          {
-            id: "1",
-            title: "AI-based Image Recognition System",
-            type: "Research",
-            supervisor: "Dr. Sarah Wilson",
-            status: "Pending",
-            priority: 1,
-          },
-          {
-            id: "2",
-            title: "Blockchain Supply Chain",
-            type: "Innovative",
-            supervisor: "Dr. John Doe",
-            status: "Pending", // Changed to pending to demonstrate no active project
-            priority: 2,
-          },
-        ];
-
-        const mockAvailableProjects: AvailableProject[] = [
-          {
-            id: "3",
-            title: "Machine Learning for IoT",
-            type: "Research",
-            supervisor: "Dr. Alice Brown",
-            description: "Implementing ML algorithms for IoT devices",
-            technologies: "Python, TensorFlow, IoT",
-            status: "Available",
-          },
-          {
-            id: "4",
-            title: "Cloud-Native Architecture",
-            type: "Classic",
-            supervisor: "Dr. Bob White",
-            description: "Designing modern cloud applications",
-            technologies: "Kubernetes, Docker, Microservices",
-            status: "Available",
-          },
-        ];
-
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        const acceptedProject = mockProjectWishList.find(
-          (p) => p.status === "Accepted"
-        );
-
-        setProject(acceptedProject || null);
-        setProjectWishList(mockProjectWishList);
-        setAvailableProjects(mockAvailableProjects);
-        setProjectProposals(storedProposals);
-        setProposedProjects(storedProposals.length);
-      } catch (error) {
-        console.error("Error fetching project status:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchStudentProjectStatus();
   }, []);
+
+  const fetchStudentProjectStatus = async () => {
+    try {
+      setIsLoading(true);
+      // Check for existing accepted project first
+      const savedProject = localStorage.getItem('acceptedProject');
+      if (savedProject) {
+        setProject(JSON.parse(savedProject));
+        setProjectWishList([]);
+        setAvailableProjects([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Load proposals from localStorage
+      const storedProposals = JSON.parse(
+        localStorage.getItem("studentProposals") || "[]"
+      );
+
+      // Start with empty wish list
+      const mockProjectWishList = [];
+
+      const mockAvailableProjects: AvailableProject[] = [
+        {
+          id: "1",
+          title: "Machine Learning for IoT",
+          type: "Research",
+          supervisor: "Dr. Alice Brown",
+          description: "Implementing ML algorithms for IoT devices",
+          technologies: "Python, TensorFlow, IoT",
+          status: "Available",
+        },
+        {
+          id: "2",
+          title: "Cloud-Native Architecture",
+          type: "Classic",
+          supervisor: "Dr. Bob White",
+          description: "Designing modern cloud applications",
+          technologies: "Kubernetes, Docker, Microservices",
+          status: "Available",
+        },
+        {
+          id: "3",
+          title: "Blockchain Supply Chain",
+          type: "Innovative",
+          supervisor: "Dr. John Smith",
+          description: "Supply chain management using blockchain technology",
+          technologies: "Ethereum, Solidity, Web3.js",
+          status: "Available",
+        },
+        {
+          id: "4",
+          title: "AR Mobile App",
+          type: "Classic",
+          supervisor: "Dr. Emily Chen",
+          description: "Developing an augmented reality mobile application",
+          technologies: "Unity, ARKit, C#",
+          status: "Available",
+        },
+        {
+          id: "5",
+          title: "Smart City Platform",
+          type: "Research",
+          supervisor: "Dr. Mark Wilson",
+          description: "IoT platform for smart city management",
+          technologies: "Node.js, MQTT, MongoDB",
+          status: "Available",
+        },
+      ];
+
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const acceptedProject = mockProjectWishList.find(
+        (p) => p.status === "Accepted"
+      );
+
+      setProject(acceptedProject || null);
+      setProjectWishList(mockProjectWishList);
+      setAvailableProjects(mockAvailableProjects);
+      setProjectProposals(storedProposals);
+      setProposedProjects(storedProposals.length);
+    } catch (error) {
+      console.error("Error fetching project status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Add function to clear proposals (for testing)
   const clearProposals = () => {
@@ -128,16 +155,222 @@ export function StudentProjectPage() {
   };
 
   const handleProjectAcceptance = (projectId: string) => {
-    // Mock accepting a project
     const selectedProject = availableProjects.find((p) => p.id === projectId);
     if (selectedProject) {
-      setProject({
+      const acceptedProject = {
         ...selectedProject,
         status: "Accepted",
         progressReports: [],
         nextReview: "2024-04-01",
-      });
+        // Add these fields for the project details view
+        coSupervisor: null,
+        partner: null,
+        hardwareRequirements: "None specified",
+      };
+
+      // Save to localStorage for persistence
+      localStorage.setItem('acceptedProject', JSON.stringify(acceptedProject));
+      setProject(acceptedProject);
     }
+  };
+
+  const resetAcceptedProject = () => {
+    localStorage.removeItem('acceptedProject');
+    setProject(null);
+    // Restore available projects state
+    fetchStudentProjectStatus();
+  };
+
+  const handleProjectSelection = (projectId: string) => {
+    setHasUnsavedChanges(true);
+    setAvailableProjects((prevProjects) => {
+      const currentSelected = prevProjects.filter(
+        (p) => p.selectedIndex !== undefined
+      ).length;
+      const projectIndex = prevProjects.findIndex((p) => p.id === projectId);
+
+      if (projectIndex === -1) return prevProjects;
+
+      const updatedProjects = [...prevProjects];
+      const project = updatedProjects[projectIndex];
+
+      if (project.selectedIndex !== undefined) {
+        // Remove from selection and wish list
+        const removedIndex = project.selectedIndex;
+        updatedProjects[projectIndex] = {
+          ...project,
+          selectedIndex: undefined,
+        };
+
+        // Reorder remaining selections
+        updatedProjects.forEach((p) => {
+          if (p.selectedIndex !== undefined && p.selectedIndex > removedIndex) {
+            p.selectedIndex--;
+          }
+        });
+
+        // Update wish list
+        setProjectWishList((prev) => prev.filter((p) => p.id !== projectId));
+      } else if (currentSelected < maxSelections) {
+        // Add to selection and wish list
+        updatedProjects[projectIndex] = {
+          ...project,
+          selectedIndex: currentSelected,
+          status: "Selected",
+        };
+
+        // Add to wish list
+        setProjectWishList((prev) => [
+          ...prev,
+          {
+            id: project.id,
+            title: project.title,
+            type: project.type,
+            supervisor: project.supervisor,
+            status: "Pending",
+            priority: currentSelected + 1,
+          },
+        ]);
+      }
+
+      return updatedProjects;
+    });
+  };
+
+  // Fix reordering logic
+  const handleReorderWishList = (id: string, direction: "up" | "down") => {
+    setHasUnsavedChanges(true);
+    setProjectWishList((prev) => {
+      const index = prev.findIndex((p) => p.id === id);
+      if (
+        (direction === "up" && index === 0) ||
+        (direction === "down" && index === prev.length - 1)
+      ) {
+        return prev;
+      }
+
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      const newList = [...prev];
+      const [moved] = newList.splice(index, 1);
+      newList.splice(newIndex, 0, moved);
+
+      // Update priorities
+      const updatedList = newList.map((item, idx) => ({
+        ...item,
+        priority: idx + 1,
+      }));
+
+      // Update available projects to reflect new order
+      setAvailableProjects((prevProjects) => {
+        const newProjects = [...prevProjects];
+        updatedList.forEach((wish, idx) => {
+          const projectIndex = newProjects.findIndex((p) => p.id === wish.id);
+          if (projectIndex !== -1) {
+            newProjects[projectIndex] = {
+              ...newProjects[projectIndex],
+              selectedIndex: idx,
+            };
+          }
+        });
+        return newProjects;
+      });
+
+      return updatedList;
+    });
+  };
+
+  const handleSaveSelections = () => {
+    // Update available projects to reflect final order
+    setAvailableProjects((prevProjects) => {
+      const newProjects = [...prevProjects];
+      projectWishList.forEach((wish, idx) => {
+        const projectIndex = newProjects.findIndex((p) => p.id === wish.id);
+        if (projectIndex !== -1) {
+          newProjects[projectIndex] = {
+            ...newProjects[projectIndex],
+            selectedIndex: idx,
+          };
+        }
+      });
+      return newProjects;
+    });
+
+    setHasUnsavedChanges(false);
+    // You could also save to localStorage or API here
+  };
+
+  const handleDeleteFromList = (projectId: string) => {
+    setHasUnsavedChanges(true);
+
+    // Remove from wish list
+    setProjectWishList((prev) => {
+      const newList = prev.filter((p) => p.id !== projectId);
+      // Update priorities for remaining items
+      return newList.map((item, idx) => ({
+        ...item,
+        priority: idx + 1,
+      }));
+    });
+
+    // Update available projects
+    setAvailableProjects((prev) => {
+      const newProjects = [...prev];
+      const projectIndex = newProjects.findIndex((p) => p.id === projectId);
+      if (projectIndex !== -1) {
+        newProjects[projectIndex] = {
+          ...newProjects[projectIndex],
+          selectedIndex: undefined,
+          status: "Available",
+        };
+      }
+      // Update selectedIndex for remaining selected projects
+      newProjects.forEach((p) => {
+        if (p.selectedIndex !== undefined) {
+          const wishListItem = projectWishList.find((w) => w.id === p.id);
+          if (wishListItem) {
+            p.selectedIndex = wishListItem.priority - 1;
+          }
+        }
+      });
+      return newProjects;
+    });
+  };
+
+  // Add new function to load simulation data
+  const loadSimulationData = () => {
+    setHasUnsavedChanges(true);
+
+    // Simulate selecting first 3 projects
+    const simulatedSelections = availableProjects
+      .slice(0, 3)
+      .map((project, idx) => ({
+        id: project.id,
+        title: project.title,
+        type: project.type,
+        supervisor: project.supervisor,
+        status: "Pending",
+        priority: idx + 1,
+      }));
+
+    // Update wish list
+    setProjectWishList(simulatedSelections);
+
+    // Update available projects
+    setAvailableProjects((prev) =>
+      prev.map((project) => {
+        const selectedIndex = simulatedSelections.findIndex(
+          (s) => s.id === project.id
+        );
+        if (selectedIndex !== -1) {
+          return {
+            ...project,
+            selectedIndex,
+            status: "Selected",
+          };
+        }
+        return project;
+      })
+    );
   };
 
   if (isLoading) {
@@ -157,6 +390,13 @@ export function StudentProjectPage() {
             {t.studentProject.myPFEProject}
           </h1>
           <div className="flex gap-4">
+            <Button
+              onClick={resetAcceptedProject}
+              variant="outline"
+              className="text-red-600 hover:text-red-700"
+            >
+              Reset Project (Testing)
+            </Button>
             <Button
               onClick={() => navigate("/projects/new")}
               className="flex items-center gap-2"
@@ -311,9 +551,20 @@ export function StudentProjectPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {t.studentProject.pfeProjects}
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {t.studentProject.pfeProjects}
+          </h1>
+          <Button
+            onClick={loadSimulationData}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Beaker className="h-4 w-4" />
+            Simulate Selection
+          </Button>
+        </div>
         <div className="flex gap-4">
           {projectProposals.length < 3 && (
             <Button
@@ -387,7 +638,26 @@ export function StudentProjectPage() {
 
       {showSelectionList && projectWishList.length > 0 && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <ProjectWishList projects={projectWishList} />
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              {t.studentProject.myProjectSelectionList}
+            </h3>
+            {hasUnsavedChanges && (
+              <Button
+                onClick={handleSaveSelections}
+                className="flex items-center gap-2"
+                variant="default"
+              >
+                <Check className="h-4 w-4" />
+                Save Changes
+              </Button>
+            )}
+          </div>
+          <ProjectWishList
+            projects={projectWishList}
+            onReorder={handleReorderWishList}
+            onDelete={handleDeleteFromList}
+          />
         </div>
       )}
 
@@ -399,9 +669,16 @@ export function StudentProjectPage() {
           >
             <div className="flex justify-between items-start">
               <div className="space-y-2">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  {project.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  {project.selectedIndex !== undefined && (
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100 text-sm font-medium">
+                      {project.selectedIndex + 1}
+                    </span>
+                  )}
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    {project.title}
+                  </h3>
+                </div>
                 <div className="space-y-1">
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     <span className="font-medium">
@@ -429,22 +706,28 @@ export function StudentProjectPage() {
               <div className="flex gap-2">
                 <Button
                   variant={
-                    project.status === "Selected" ? "outline" : "default"
+                    project.selectedIndex !== undefined ? "outline" : "default"
                   }
-                  onClick={() => handleProjectAcceptance(project.id)}
+                  onClick={() => handleProjectSelection(project.id)}
+                  disabled={
+                    project.selectedIndex === undefined &&
+                    availableProjects.filter(
+                      (p) => p.selectedIndex !== undefined
+                    ).length >= maxSelections
+                  }
                 >
-                  {project.status === "Selected"
-                    ? t.studentProject.selected
-                    : t.studentProject.selectProject}
+                  {project.selectedIndex !== undefined
+                    ? `Remove from list (${project.selectedIndex + 1})`
+                    : "Add to list"}
                 </Button>
-                {/* Mock acceptance button - only for demo */}
-                {project.status === "Selected" && (
+                {/* Demo acceptance button - only for selected projects */}
+                {project.selectedIndex !== undefined && (
                   <Button
-                    variant="default"
-                    className="bg-green-600 hover:bg-green-700"
                     onClick={() => handleProjectAcceptance(project.id)}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                   >
-                    {t.studentProject.acceptProjectDemo}
+                    <Check className="h-4 w-4" />
+                    Accept Project
                   </Button>
                 )}
               </div>
@@ -529,36 +812,71 @@ function NoProjectState({
   );
 }
 
-function ProjectWishList({ projects }: { projects: ProjectWishListItem[] }) {
+function ProjectWishList({
+  projects,
+  onReorder,
+  onDelete,
+}: {
+  projects: ProjectWishListItem[];
+  onReorder: (id: string, direction: "up" | "down") => void;
+  onDelete: (id: string) => void;
+}) {
   const { t } = useTranslation();
   return (
     <div className="mt-6 space-y-4">
-      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-        {t.studentProject.myProjectSelectionList}
-      </h3>
       <div className="divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-md">
         {projects.map((project) => (
           <div
             key={project.id}
             className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50"
           >
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {project.priority}. {project.title}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {project.type} • {t.studentProject.supervisor}: {project.supervisor}
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={() => onReorder(project.id, "up")}
+                  disabled={project.priority === 1}
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-50"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => onReorder(project.id, "down")}
+                  disabled={project.priority === projects.length}
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-50"
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {project.priority}. {project.title}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {project.type} • {t.studentProject.supervisor}:{" "}
+                  {project.supervisor}
+                </p>
+              </div>
             </div>
-            <span
-              className={`px-2 py-1 text-xs font-medium rounded-full ${
-                project.status === "Accepted"
-                  ? "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
-                  : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200"
-              }`}
-            >
-              {project.status === "Pending" ? t.studentProject.pending : project.status}
-            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  project.status === "Accepted"
+                    ? "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
+                    : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200"
+                }`}
+              >
+                {project.status === "Pending"
+                  ? t.studentProject.pending
+                  : project.status}
+              </span>
+              <button
+                onClick={() => onDelete(project.id)}
+                className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50 rounded"
+                title="Remove from list"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
