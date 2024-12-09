@@ -48,6 +48,7 @@ export function StudentPFEForm() {
     hardwareRequirements: "",
     type: "", // Added type field
   });
+  const [proposalCount, setProposalCount] = useState(0);
 
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -84,6 +85,14 @@ export function StudentPFEForm() {
     fetchAvailablePartners();
   }, [user?.id]);
 
+  useEffect(() => {
+    const fetchProposalCount = async () => {
+      // Mock API call to get proposal count
+      setProposalCount(2); // Example: student has already proposed 2 projects
+    };
+    fetchProposalCount();
+  }, []);
+
   const validateForm = () => {
     const newErrors: FormErrors = {};
     if (!formData.title.trim()) newErrors.title = "Project title is required";
@@ -102,32 +111,37 @@ export function StudentPFEForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (proposalCount >= 3) {
+      setErrors({ submit: "Maximum number of proposals (3) reached." });
+      return;
+    }
     if (!validateForm()) return;
 
     try {
       const newProject = {
-        id: Date.now(),
+        id: Date.now().toString(),
         ...formData,
-        status: formData.partnerId
-          ? "Pending Partner Validation"
-          : "Pending Review",
+        status: "Under Review",
         submittedDate: new Date().toISOString().split("T")[0],
-        type: formData.type, // Added type field
+        type: formData.type,
         submitterName: `${user.firstName} ${user.lastName}`,
-        submitterAvatar: user.avatar, // if available
         submittedBy: "student",
       };
 
-      // If there's a partner, send notification
+      // Store in localStorage
+      const storedProposals = JSON.parse(
+        localStorage.getItem("studentProposals") || "[]"
+      );
+      localStorage.setItem(
+        "studentProposals",
+        JSON.stringify([...storedProposals, newProject])
+      );
+
       if (formData.partnerId) {
-        await sendPartnerNotification(
-          formData.partnerId,
-          newProject.id.toString()
-        );
+        await sendPartnerNotification(formData.partnerId, newProject.id);
       }
 
-      addProject(newProject);
-      navigate("/projects");
+      navigate("/project"); // Navigate to student project page instead of /projects
     } catch (error) {
       console.error("Error submitting PFE:", error);
       setErrors({ submit: "Failed to submit PFE. Please try again." });
@@ -149,6 +163,24 @@ export function StudentPFEForm() {
       hardwareRequirements: "GPU Server, 32GB RAM, SSD Storage",
     });
   };
+
+  if (proposalCount >= 3) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Maximum Proposals Reached
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            You have already submitted the maximum allowed number of project
+            proposals (3).
+          </p>
+          <Button onClick={() => navigate("/project")}>Back to Projects</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full">
       <form
@@ -172,7 +204,7 @@ export function StudentPFEForm() {
           </div>
           <button
             type="button"
-            onClick={() => navigate("/projects")}
+            onClick={() => navigate("/project")}
             className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           >
             <X className="h-6 w-6" />
@@ -449,7 +481,7 @@ export function StudentPFEForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/projects")}
+              onClick={() => navigate("/project")}
             >
               Cancel
             </Button>

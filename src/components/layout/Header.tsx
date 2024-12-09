@@ -4,7 +4,7 @@ import { useLanguageStore } from "../../store/languageStore";
 import { ChevronDown, LogOut, User, Globe, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { NotificationDropdown } from "./NotificationDropdown";
-import { useThemeStore } from '../../store/themeStore';
+import { useThemeStore } from "../../store/themeStore";
 
 const languages = [
   { code: "en", label: "English", icon: "GB" },
@@ -64,7 +64,7 @@ export function Header() {
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
               <div className="py-1">
                 <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mb-2">
