@@ -185,7 +185,7 @@ export function StudentPFEForm() {
     <div className="h-full">
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 h-full border border-gray-200 dark:border-gray-700 shadow-sm"
+        className="bg-white dark:bg-gray-800 h-full border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg"
       >
         <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
@@ -222,7 +222,7 @@ export function StudentPFEForm() {
                 label="Student Name"
                 value={formData.studentName}
                 disabled
-                className="text-lg p-3"
+                className="text-lg p-3 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               />
 
               <div className="space-y-2">
@@ -244,7 +244,7 @@ export function StudentPFEForm() {
                         : "",
                     });
                   }}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800 [&>option]:bg-white"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
                 >
                   <option value="">Work Individually</option>
                   {availablePartners.map((partner) => (
@@ -273,7 +273,7 @@ export function StudentPFEForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, companyId: e.target.value })
                   }
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800 [&>option]:bg-white"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
                 >
                   <option value="">Select a Company</option>
                   {companies.map((company) => (
@@ -291,7 +291,7 @@ export function StudentPFEForm() {
                 onChange={(e) =>
                   setFormData({ ...formData, supervisorName: e.target.value })
                 }
-                className="text-lg p-3"
+                className="text-lg p-3 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               />
             </div>
           </div>
@@ -312,6 +312,7 @@ export function StudentPFEForm() {
                 }
                 error={errors.title}
                 required
+                className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               />
 
               <div className="grid grid-cols-2 gap-8">
@@ -325,7 +326,7 @@ export function StudentPFEForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, option: e.target.value })
                     }
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800 [&>option]:bg-white"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
                     required
                   >
                     <option value="">Select Option</option>
@@ -346,7 +347,7 @@ export function StudentPFEForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, type: e.target.value })
                     }
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800 [&>option]:bg-white"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
                     required
                   >
                     <option value="">Select Type</option>
@@ -366,6 +367,7 @@ export function StudentPFEForm() {
                   }
                   error={errors.duration}
                   required
+                  className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                 />
               </div>
 
@@ -380,7 +382,7 @@ export function StudentPFEForm() {
                     setFormData({ ...formData, summary: e.target.value })
                   }
                   rows={6}
-                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[160px]"
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[160px]"
                   required
                 />
               </div>
@@ -404,6 +406,7 @@ export function StudentPFEForm() {
                 error={errors.technologies}
                 placeholder="e.g., React, Node.js, Python"
                 required
+                className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               />
 
               <Input
@@ -415,6 +418,7 @@ export function StudentPFEForm() {
                 }
                 error={errors.location}
                 required
+                className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               />
 
               <div className="space-y-2">
@@ -426,7 +430,7 @@ export function StudentPFEForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, paid: e.target.checked })
                     }
-                    className="h-4 w-4 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600"
+                    className="h-4 w-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded"
                   />
                   <label
                     htmlFor="paid"
@@ -446,6 +450,7 @@ export function StudentPFEForm() {
                       setFormData({ ...formData, salary: e.target.value })
                     }
                     error={errors.salary}
+                    className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                   />
                 )}
               </div>
@@ -470,7 +475,7 @@ export function StudentPFEForm() {
                   })
                 }
                 rows={4}
-                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[120px]"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[120px]"
               />
             </div>
           </div>

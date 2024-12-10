@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
 import type { EmailPeriod, EmailTemplate } from "../../types/email";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export function EmailConfiguration() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [periods, setPeriods] = useState<EmailPeriod[]>(() => {
     // Load periods from localStorage
@@ -94,10 +96,10 @@ export function EmailConfiguration() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Email Periods Configuration
+            {t.emailConfig.title}
           </h2>
           <Button variant="outline" size="sm" onClick={handleFillTestData}>
-            Fill Test Data
+            {t.emailConfig.fillTestData}
           </Button>
         </div>
         <Button
@@ -105,7 +107,7 @@ export function EmailConfiguration() {
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          New Email Period
+          {t.emailConfig.newPeriod}
         </Button>
       </div>
 
@@ -121,21 +123,23 @@ export function EmailConfiguration() {
                   {period.name}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Target: {period.targetAudience}
+                  {t.emailConfig.target}: {period.targetAudience}
                 </p>
               </div>
               <div className="flex gap-2">
                 <Badge
                   variant={period.status === "active" ? "success" : "secondary"}
                 >
-                  {period.status}
+                  {period.status === "active" 
+                    ? t.emailConfig.statusActive 
+                    : t.emailConfig.statusPending}
                 </Badge>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(`/dashboard/emails/${period.id}`)}
                 >
-                  Configure
+                  {t.emailConfig.configure}
                 </Button>
               </div>
             </div>
@@ -143,37 +147,37 @@ export function EmailConfiguration() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <DateDisplay
                 icon={Mail}
-                label="Start Date"
+                label={t.emailConfig.startDate}
                 date={period.startDate}
               />
               <DateDisplay
                 icon={Bell}
-                label="Reminders"
-                date={`${period.reminderDates.length} scheduled`}
+                label={t.emailConfig.reminders}
+                date={`${period.reminderDates.length} ${t.emailConfig.scheduled}`}
               />
               <DateDisplay
                 icon={Calendar}
-                label="Closing Date"
+                label={t.emailConfig.closingDate}
                 date={period.closingDate}
               />
             </div>
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Email Templates
+                {t.emailConfig.emailTemplates}
               </h4>
               <div className="grid grid-cols-3 gap-4">
                 <TemplatePreview
                   template={period.templates.initial}
-                  type="Initial"
+                  type={t.emailConfig.initialTemplate}
                 />
                 <TemplatePreview
                   template={period.templates.reminder}
-                  type="Reminder"
+                  type={t.emailConfig.reminderTemplate}
                 />
                 <TemplatePreview
                   template={period.templates.closing}
-                  type="Closing"
+                  type={t.emailConfig.closingTemplate}
                 />
               </div>
             </div>

@@ -95,4 +95,36 @@ export interface Translation {
     pending: string;
     underReview: string;
   };
+  emailConfig: {
+    title: string;
+    newPeriod: string;
+    fillTestData: string;
+    emailPeriods: string;
+    target: string;
+    configure: string;
+    startDate: string;
+    reminders: string;
+    closingDate: string;
+    emailTemplates: string;
+    scheduled: string;
+    initialTemplate: string;
+    reminderTemplate: string;
+    closingTemplate: string;
+    statusActive: string;
+    statusPending: string;
+    editPeriod: string;
+    periodName: string;
+    targetAudience: string;
+    teachers: string;
+    students: string;
+    companies: string;
+    allUsers: string;
+    availableVariables: string;
+    templateBody: string;
+    subject: string;
+    cancel: string;
+    saveChanges: string;
+    maxReminders: string;
+    addReminder: string;
+  };
 }
