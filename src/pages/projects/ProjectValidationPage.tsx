@@ -147,10 +147,10 @@ export function ProjectValidationPage() {
             className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer"
             onClick={() => toggleDescription(project.id)}
           >
-            <div className="p-6">
-              <div className="flex items-start justify-between gap-6">
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
                 <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {project.title}
                     </h3>
@@ -169,7 +169,7 @@ export function ProjectValidationPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Avatar
                         src={project.submitterAvatar}
@@ -185,7 +185,7 @@ export function ProjectValidationPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="ml-auto">
+                    <div className="sm:ml-auto">
                       <p className="text-xs font-medium uppercase text-gray-500">
                         Technologies
                       </p>
@@ -197,35 +197,37 @@ export function ProjectValidationPage() {
                 </div>
 
                 <div
-                  className="flex flex-col gap-2 min-w-[120px]"
+                  className="flex sm:flex-col gap-2 min-w-0 sm:min-w-[120px]"
                   onClick={(e) => e.stopPropagation()} // Prevent card expansion when clicking buttons
                 >
                   <Button
                     onClick={() => handleApprove(project)}
                     variant="outline"
-                    className="w-full flex items-center justify-center bg-green-50 hover:bg-green-100 text-green-600 border-green-200 hover:border-green-300 dark:bg-green-900/20 dark:hover:bg-green-900/30 dark:text-green-400 dark:border-green-900/50"
+                    className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-green-50 hover:bg-green-100 text-green-600 border-green-200 hover:border-green-300 dark:bg-green-900/20 dark:hover:bg-green-900/30 dark:text-green-400 dark:border-green-900/50"
                     size="sm"
                   >
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="ml-1.5 -mt-px">Approve</span>
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="hidden sm:inline ml-2 flex-1">
+                      Approve
+                    </span>
                   </Button>
                   <Button
                     onClick={() => handleEdit(project)}
                     variant="outline"
-                    className="w-full flex items-center justify-center"
+                    className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2"
                     size="sm"
                   >
-                    <PenSquare className="h-4 w-4" />
-                    <span className="ml-1.5 -mt-px">Edit</span>
+                    <PenSquare className="h-5 w-5" />
+                    <span className="hidden sm:inline ml-2 flex-1">Edit</span>
                   </Button>
                   <Button
                     onClick={() => handleReject(project)}
                     variant="outline"
-                    className="w-full flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:border-red-900/50"
+                    className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:border-red-900/50"
                     size="sm"
                   >
-                    <XCircle className="h-4 w-4" />
-                    <span className="ml-1.5 -mt-px">Reject</span>
+                    <XCircle className="h-5 w-5" />
+                    <span className="hidden sm:inline ml-2 flex-1">Reject</span>
                   </Button>
                 </div>
               </div>
