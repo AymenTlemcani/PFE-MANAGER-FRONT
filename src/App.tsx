@@ -22,8 +22,9 @@ import { ProjectProvider } from "./context/ProjectProvider";
 import EmailPeriodConfigPage from "./pages/admin/EmailPeriodConfigPage";
 import { useAuth } from "./context/AuthContext"; // Add this import
 import { ProjectValidationPage } from "./pages/projects/ProjectValidationPage";
-import { useThemeStore } from './store/themeStore';
+import { useThemeStore } from "./store/themeStore";
 import { CompanyPFEForm } from "./pages/projects/CompanyPFEForm"; // Add this import
+import { SettingsPage } from "./pages/admin/SettingsPage"; // Add this import at the top
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -61,9 +62,9 @@ function App() {
 
   useEffect(() => {
     if (isDark) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, [isDark]);
 
@@ -84,6 +85,8 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="dashboard/users" element={<UserManagementPage />} />
+              <Route path="settings" element={<SettingsPage />} />{" "}
+              {/* Add this line */}
               <Route
                 path="dashboard/emails"
                 element={<EmailConfigurationPage />}
@@ -114,8 +117,22 @@ function App() {
                   }
                 />
                 <Route path="company">
-                  <Route path="new" element={<ProtectedRoute><CompanyPFEForm /></ProtectedRoute>} />
-                  <Route path="edit/:id" element={<ProtectedRoute><CompanyPFEForm /></ProtectedRoute>} />
+                  <Route
+                    path="new"
+                    element={
+                      <ProtectedRoute>
+                        <CompanyPFEForm />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="edit/:id"
+                    element={
+                      <ProtectedRoute>
+                        <CompanyPFEForm />
+                      </ProtectedRoute>
+                    }
+                  />
                 </Route>
                 <Route path="validation" element={<ProjectValidationPage />} />
               </Route>

@@ -8,7 +8,6 @@ import {
   GraduationCap,
   Clock,
   Briefcase,
-  Search,
   FileText,
   CheckSquare,
 } from "lucide-react";
@@ -29,7 +28,6 @@ const getRoleNavigation = (t: Translation) => ({
       icon: Mail,
       path: "/dashboard/emails",
     },
-    { name: t.navigation.userSearch, icon: Search, path: "/dashboard/search" },
     { name: t.navigation.settings, icon: Settings, path: "/settings" },
   ],
   teacher: [
@@ -94,7 +92,9 @@ export function Sidebar() {
           className="flex items-center gap-2 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <GraduationCap className="h-8 w-8 text-blue-600" />
-          <span className="text-xl font-bold text-gray-900 dark:text-white">PFE Platform</span>
+          <span className="text-xl font-bold text-gray-900 dark:text-white">
+            PFE Platform
+          </span>
         </Link>
       </div>
 
@@ -114,7 +114,9 @@ export function Sidebar() {
             >
               <Icon
                 className={`h-5 w-5 ${
-                  active ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"
+                  active
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-400 dark:text-gray-500"
                 }`}
               />
               {item.name}
