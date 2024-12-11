@@ -29,11 +29,11 @@ export function Header() {
   if (!user) return null;
 
   return (
-    <div className="flex items-center justify-between flex-1 dark:bg-gray-900">
-      <div className="text-lg font-semibold text-gray-900 dark:text-white">
+    <div className="flex items-center justify-between flex-1">
+      <div className="text-lg font-semibold text-gray-900 dark:text-white truncate">
         {/* {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard */}
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         <button
           onClick={toggleTheme}
           className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"

@@ -62,7 +62,7 @@ export function StudentProjectPage() {
     try {
       setIsLoading(true);
       // Check for existing accepted project first
-      const savedProject = localStorage.getItem('acceptedProject');
+      const savedProject = localStorage.getItem("acceptedProject");
       if (savedProject) {
         setProject(JSON.parse(savedProject));
         setProjectWishList([]);
@@ -168,13 +168,13 @@ export function StudentProjectPage() {
       };
 
       // Save to localStorage for persistence
-      localStorage.setItem('acceptedProject', JSON.stringify(acceptedProject));
+      localStorage.setItem("acceptedProject", JSON.stringify(acceptedProject));
       setProject(acceptedProject);
     }
   };
 
   const resetAcceptedProject = () => {
-    localStorage.removeItem('acceptedProject');
+    localStorage.removeItem("acceptedProject");
     setProject(null);
     // Restore available projects state
     fetchStudentProjectStatus();
@@ -518,31 +518,42 @@ export function StudentProjectPage() {
             {t.studentProject.pfeProjects}
           </h1>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2 sm:gap-4">
           {projectProposals.length < 3 && (
             <Button
               onClick={() => navigate("/projects/new")}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
             >
-              <Plus className="h-4 w-4" />
-              {t.studentProject.proposeNewProject} ({projectProposals.length}/3)
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">
+                {t.studentProject.proposeNewProject}
+              </span>
+              <span className="sm:hidden">
+                Propose ({projectProposals.length}/3)
+              </span>
             </Button>
           )}
           <Button
             onClick={() => setShowSelectionList(!showSelectionList)}
             variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
           >
-            <ListFilter className="h-4 w-4" />
-            {t.studentProject.selectionList} ({projectWishList.length})
+            <ListFilter className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">
+              {t.studentProject.selectionList}
+            </span>
+            <span>({projectWishList.length})</span>
           </Button>
           <Button
             onClick={() => setShowProposalsList(!showProposalsList)}
             variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
           >
-            <FileText className="h-4 w-4" />
-            {t.studentProject.myProposals} ({projectProposals.length})
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">
+              {t.studentProject.myProposals}
+            </span>
+            <span>({projectProposals.length})</span>
           </Button>
         </div>
       </div>
@@ -656,10 +667,11 @@ export function StudentProjectPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-wrap gap-2 items-center">
                 {project.selectedIndex !== undefined ? (
-                  <span className="px-3 py-1.5 text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
-                    Added ({project.selectedIndex + 1})
+                  <span className="px-2 py-1 text-xs sm:text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
+                    <span className="hidden sm:inline">Added</span> (
+                    {project.selectedIndex + 1})
                   </span>
                 ) : (
                   <Button
@@ -670,10 +682,13 @@ export function StudentProjectPage() {
                         (p) => p.selectedIndex !== undefined
                       ).length >= maxSelections
                     }
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span>Add to Selection List</span>
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">
+                      Add to Selection List
+                    </span>
+                    <span className="sm:hidden">Add</span>
                   </Button>
                 )}
                 {/* Demo acceptance button - only for selected projects */}
@@ -681,9 +696,10 @@ export function StudentProjectPage() {
                   <Button
                     onClick={() => handleProjectAcceptance(project.id)}
                     size="sm"
-                    className="text-xs bg-green-600/80 hover:bg-green-700/80"
+                    className="text-xs bg-green-600/80 hover:bg-green-700/80 px-2 py-1"
                   >
-                    Accept (Dev)
+                    <span className="hidden sm:inline">Accept</span>
+                    <span className="sm:hidden">OK</span>
                   </Button>
                 )}
               </div>
