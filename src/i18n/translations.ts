@@ -18,6 +18,7 @@ export const translations: Record<string, Translation> = {
       proposals: "Proposals",
       interns: "Interns",
       projectValidation: "Project Validation",
+      myStudents: "My Students",
     },
     login: {
       title: "Sign in to PFE Platform",
@@ -149,6 +150,7 @@ export const translations: Record<string, Translation> = {
       proposals: "Propositions",
       interns: "Stagiaires",
       projectValidation: "Validation des Projets",
+      myStudents: "Mes Étudiants",
     },
     login: {
       title: "Connexion à PFE Platform",

@@ -33,8 +33,7 @@ const getRoleNavigation = (t: Translation) => ({
   teacher: [
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
     { name: t.navigation.myProjects, icon: BookOpen, path: "/projects" },
-    { name: t.navigation.students, icon: Users, path: "/students" },
-    // Removed reviews route since it's now in students section
+    { name: t.navigation.myStudents, icon: Users, path: "/students" },
   ],
   student: [
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
