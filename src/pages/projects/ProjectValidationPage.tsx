@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { CheckCircle, XCircle, PenSquare, Info } from "lucide-react"; // Add Info import
+import {
+  CheckCircle,
+  XCircle,
+  PenSquare,
+  Info,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react"; // Add Info import
 import { Button } from "../../components/ui/Button";
 import { Dialog } from "../../components/ui/Dialog";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +21,9 @@ export function ProjectValidationPage() {
   const navigate = useNavigate(); // Add navigate hook
   const [selectedProjectDetails, setSelectedProjectDetails] = useState(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<
+    Record<number, boolean>
+  >({});
 
   const handleApprove = (project) => {
     // TODO: Implement project approval
@@ -41,6 +51,29 @@ export function ProjectValidationPage() {
     setIsDetailsDialogOpen(true);
   };
 
+  const toggleDescription = (projectId: number) => {
+    setExpandedDescriptions((prev) => ({
+      ...prev,
+      [projectId]: !prev[projectId],
+    }));
+  };
+
+  const truncateDescription = (text: string, maxLength: number = 200) => {
+    if (!text) return "";
+    const words = text.split(" ");
+    if (text.length <= maxLength) return text;
+
+    let truncated = "";
+    for (const word of words) {
+      if ((truncated + word).length > maxLength - 10) {
+        // Leave room for "... more"
+        return truncated + "... more";
+      }
+      truncated += (truncated ? " " : "") + word;
+    }
+    return truncated + "... more";
+  };
+
   const loadTestData = () => {
     setProjects([
       {
@@ -51,6 +84,9 @@ export function ProjectValidationPage() {
         type: "Research",
         submissionDate: "2024-03-15",
         status: "Pending",
+        technologies: "Python, TensorFlow, Computer Vision, Deep Learning",
+        description:
+          "An innovative healthcare system using AI to detect early signs of diseases from medical imaging. The project aims to improve diagnostic accuracy and reduce detection time using state-of-the-art deep learning models. This comprehensive solution integrates multiple AI technologies including computer vision, natural language processing, and predictive analytics to create a robust diagnostic support system. The system will be trained on a large dataset of medical images, including X-rays, MRIs, and CT scans, to identify patterns and anomalies that might be missed by human observation. Key features include: automated image analysis for early disease detection, real-time diagnostic suggestions, integration with existing hospital management systems, and a user-friendly interface for healthcare professionals. The project also includes a research component focusing on improving model accuracy and reducing false positives through advanced machine learning techniques.",
       },
       {
         id: 2,
@@ -60,6 +96,21 @@ export function ProjectValidationPage() {
         type: "Industry",
         submissionDate: "2024-03-14",
         status: "Pending",
+        technologies: "Solidity, Ethereum, Web3.js, React",
+        description:
+          "A blockchain-based supply chain management system to ensure transparency and traceability of products. Features smart contracts for automated compliance and real-time tracking capabilities.",
+      },
+      {
+        id: 3,
+        title: "Smart City IoT Platform",
+        submittedBy: "Prof. Michael Chang",
+        option: "ESB",
+        type: "Research",
+        submissionDate: "2024-03-13",
+        status: "Pending",
+        technologies: "IoT, MQTT, Node.js, Time-series DB",
+        description:
+          "Development of an IoT platform for smart city management, including sensors for environmental monitoring, traffic management, and urban infrastructure maintenance.",
       },
     ]);
   };
@@ -67,91 +118,120 @@ export function ProjectValidationPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Project Validation
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Project Validation
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Review and validate submitted project proposals
+          </p>
+        </div>
         <Button onClick={loadTestData} variant="outline">
           Load Test Data
         </Button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Pending Projects
-          </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Pending Projects
+        </h2>
+        <span className="text-sm text-gray-500 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+          {projects.length} pending
+        </span>
+      </div>
 
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {projects.map((project) => (
-              <div key={project.id} className="py-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+      <div className="space-y-4">
+        {projects.map((project) => (
+          <div
+            key={project.id}
+            className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => toggleDescription(project.id)}
+          >
+            <div className="p-6">
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {project.title}
                     </h3>
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <span className="text-sm">Proposed by</span>
-                      <div className="flex items-center gap-2">
-                        <Avatar
-                          src={project.submitterAvatar}
-                          fallback={project.submittedBy[0]}
-                          size="xs"
-                        />
-                        <span className="text-sm font-medium">
-                          {project.submittedBy}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">Option:</span>{" "}
-                        {project.option}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">Type:</span>{" "}
-                        {project.type}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">Technologies:</span>{" "}
-                        {project.technologies}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">Submitted:</span>{" "}
-                        {project.submissionDate}
+                    <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 rounded-full">
+                      {project.type}
+                    </span>
+                  </div>
+
+                  <div className="group">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {expandedDescriptions[project.id]
+                          ? project.description
+                          : truncateDescription(project.description)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleApprove(project)}
-                      className="flex items-center gap-1"
-                      variant="success"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      Approve
-                    </Button>
-                    <Button
-                      onClick={() => handleEdit(project)}
-                      className="flex items-center gap-1"
-                    >
-                      <PenSquare className="h-4 w-4" />
-                      Edit
-                    </Button>
-                    <Button
-                      onClick={() => handleReject(project)}
-                      className="flex items-center gap-1"
-                      variant="danger"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      Reject
-                    </Button>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Avatar
+                        src={project.submitterAvatar}
+                        fallback={project.submittedBy[0]}
+                        size="sm"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {project.submittedBy}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {project.option} Department • {project.submissionDate}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="ml-auto">
+                      <p className="text-xs font-medium uppercase text-gray-500">
+                        Technologies
+                      </p>
+                      <p className="text-sm text-gray-900 dark:text-gray-100">
+                        {project.technologies || "Not specified"}
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                <div
+                  className="flex flex-col gap-2 min-w-[120px]"
+                  onClick={(e) => e.stopPropagation()} // Prevent card expansion when clicking buttons
+                >
+                  <Button
+                    onClick={() => handleApprove(project)}
+                    variant="outline"
+                    className="w-full flex items-center justify-center bg-green-50 hover:bg-green-100 text-green-600 border-green-200 hover:border-green-300 dark:bg-green-900/20 dark:hover:bg-green-900/30 dark:text-green-400 dark:border-green-900/50"
+                    size="sm"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="ml-1.5 -mt-px">Approve</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleEdit(project)}
+                    variant="outline"
+                    className="w-full flex items-center justify-center"
+                    size="sm"
+                  >
+                    <PenSquare className="h-4 w-4" />
+                    <span className="ml-1.5 -mt-px">Edit</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleReject(project)}
+                    variant="outline"
+                    className="w-full flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:border-red-900/50"
+                    size="sm"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    <span className="ml-1.5 -mt-px">Reject</span>
+                  </Button>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
 
       <Dialog
