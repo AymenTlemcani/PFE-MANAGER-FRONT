@@ -34,8 +34,7 @@ const getRoleNavigation = (t: Translation) => ({
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
     { name: t.navigation.myProjects, icon: BookOpen, path: "/projects" },
     { name: t.navigation.students, icon: Users, path: "/students" },
-    { name: t.navigation.reviews, icon: Clock, path: "/reviews" },
-    // Add conditional item for responsible teachers
+    // Removed reviews route since it's now in students section
   ],
   student: [
     { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },

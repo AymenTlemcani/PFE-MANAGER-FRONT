@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useLanguageStore } from "../../store/languageStore";
 import { ChevronDown, LogOut, User, Globe, Sun, Moon } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NotificationDropdown } from "./NotificationDropdown";
 import { useThemeStore } from "../../store/themeStore";
 
@@ -11,12 +11,36 @@ const languages = [
   { code: "fr", label: "Français", icon: "FR" },
 ] as const;
 
-export function Header() {
+interface HeaderProps {
+  onMenuChange?: (isOpen: boolean) => void;
+}
+
+export function Header({ onMenuChange }: HeaderProps) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { isDark, toggleTheme } = useThemeStore();
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowProfileMenu(false);
+        onMenuChange?.(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onMenuChange]);
+
+  useEffect(() => {
+    onMenuChange?.(showProfileMenu);
+  }, [showProfileMenu, onMenuChange]);
 
   const handleLogout = () => {
     useAuthStore.getState().setUser(null);
@@ -26,10 +50,19 @@ export function Header() {
     navigate("/login");
   };
 
+  const handleShowProfileMenu = (show: boolean) => {
+    setShowProfileMenu(show);
+    setIsAnyMenuOpen(show);
+  };
+
+  const handleNotificationMenuChange = (isOpen: boolean) => {
+    setIsAnyMenuOpen(isOpen);
+  };
+
   if (!user) return null;
 
   return (
-    <div className="flex items-center justify-between flex-1">
+    <div className="flex items-center justify-between flex-1 h-16 px-4 lg:px-8">
       <div className="text-lg font-semibold text-gray-900 dark:text-white truncate">
         {/* {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard */}
       </div>
@@ -45,10 +78,10 @@ export function Header() {
             <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           )}
         </button>
-        <NotificationDropdown />
-        <div className="relative">
+        <NotificationDropdown onMenuChange={onMenuChange} />
+        <div className="relative" ref={profileMenuRef}>
           <button
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            onClick={() => handleShowProfileMenu(!showProfileMenu)}
             className="flex items-center space-x-3 group"
           >
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100">
