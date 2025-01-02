@@ -1,42 +1,102 @@
-export type UserRole = 'admin' | 'teacher' | 'student' | 'company';
+export type UserRole = "Administrator" | "Teacher" | "Student" | "Company";
+export type MasterOption = "GL" | "IA" | "RSD" | "SIC";
+export type TeacherGrade = "MAA" | "MAB" | "MCA" | "MCB" | "PR";
 
-export type MasterOption = 'GL' | 'IA' | 'RSD' | 'SIC';
-
-export type TeacherGrade = 'Professor' | 'Associate Professor' | 'Assistant Professor';
-
-export interface User {
-  id: string;
+// Base User interface
+export interface BaseUser {
+  user_id: number;
   email: string;
-  firstName: string;
-  lastName: string;
   role: UserRole;
+  is_active: boolean;
+  must_change_password: boolean;
+  profile_picture_url: string | null;
+  language_preference: "French" | "English";
+  date_of_birth: string | null;
+  last_login: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Teacher extends User {
-  role: 'teacher';
-  recruitmentDate: string;
-  grade: TeacherGrade;
-  department: string;
-  isResponsible?: boolean; // Add this field
+// Role-specific interfaces
+export interface Administrator extends BaseUser {
+  role: "Administrator";
+  administrator: {
+    admin_id: number;
+    user_id: number;
+    name: string;
+    surname: string;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
-export interface Student extends User {
-  role: 'student';
-  universityEmail: string;
-  masterOption: MasterOption;
-  masterOneAverage: number;
-  currentSemester: number;
+export interface Teacher extends BaseUser {
+  role: "Teacher";
+  teacher: {
+    teacher_id: number;
+    user_id: number;
+    name: string;
+    surname: string;
+    recruitment_date: string;
+    grade: TeacherGrade;
+    is_responsible: boolean;
+    research_domain: string | null;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
-export interface Company extends User {
-  role: 'company';
-  companyName: string;
-  industry: string;
-  address: string;
+export interface Student extends BaseUser {
+  role: "Student";
+  student: {
+    student_id: number;
+    user_id: number;
+    name: string;
+    surname: string;
+    master_option: MasterOption;
+    overall_average: number;
+    admission_year: number;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
-export interface Admin extends User {
-  role: 'admin';
-  department: string;
-  position: string;
+export interface Company extends BaseUser {
+  role: "Company";
+  company: {
+    company_id: number;
+    user_id: number;
+    company_name: string;
+    contact_name: string;
+    contact_surname: string;
+    industry: string;
+    address: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+// Union type for all possible user types
+export type User = Administrator | Teacher | Student | Company;
+
+export interface ProfileUpdateData {
+  name?: string;
+  email?: string;
+  // Add other updatable profile fields
+}
+
+export interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+    status?: number;
+  };
+  message: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+  must_change_password: boolean;
 }

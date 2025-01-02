@@ -20,12 +20,13 @@ import { TeacherPFEForm } from "./pages/projects/TeacherPFEForm";
 import { StudentPFEForm } from "./pages/projects/StudentPFEForm";
 import { ProjectProvider } from "./context/ProjectProvider";
 import EmailPeriodConfigPage from "./pages/admin/EmailPeriodConfigPage";
-import { useAuth } from "./context/AuthContext"; // Add this import
 import { ProjectValidationPage } from "./pages/projects/ProjectValidationPage";
 import { useThemeStore } from "./store/themeStore";
-import { CompanyPFEForm } from "./pages/projects/CompanyPFEForm"; // Add this import
-import { SettingsPage } from "./pages/admin/SettingsPage"; // Add this import at the top
-import { StudentsPage } from "./pages/teachers/StudentsPage"; // Update this import path
+import { CompanyPFEForm } from "./pages/projects/CompanyPFEForm";
+import { SettingsPage } from "./pages/admin/SettingsPage";
+import { StudentsPage } from "./pages/teachers/StudentsPage";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -70,91 +71,105 @@ function App() {
   }, [isDark]);
 
   return (
-    <BrowserRouter>
-      <ProjectProvider>
-        <NotificationsProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="dashboard/users" element={<UserManagementPage />} />
-              <Route path="settings" element={<SettingsPage />} />{" "}
-              {/* Add this line */}
+    <AuthProvider>
+      <BrowserRouter>
+        <ProjectProvider>
+          <NotificationsProvider>
+            <Routes>
               <Route
-                path="dashboard/emails"
-                element={<EmailConfigurationPage />}
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                }
               />
               <Route
-                path="dashboard/emails/new"
-                element={<EmailPeriodConfigPage />}
-              />
-              <Route
-                path="dashboard/emails/:id"
-                element={<EmailPeriodConfigPage />}
-              />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="projects">
-                <Route index element={<ProjectsPage />} />
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardPage />} />
                 <Route
-                  path="new"
-                  element={
-                    <ProtectedRoute>
-                      {user?.role === "student" ? (
-                        <StudentPFEForm />
-                      ) : user?.role === "company" ? (
-                        <CompanyPFEForm />
-                      ) : (
-                        <TeacherPFEForm />
-                      )}
-                    </ProtectedRoute>
-                  }
+                  path="dashboard/users"
+                  element={<UserManagementPage />}
                 />
-                <Route path="company">
+                <Route path="settings" element={<SettingsPage />} />
+                <Route
+                  path="dashboard/emails"
+                  element={<EmailConfigurationPage />}
+                />
+                <Route
+                  path="dashboard/emails/new"
+                  element={<EmailPeriodConfigPage />}
+                />
+                <Route
+                  path="dashboard/emails/:id"
+                  element={<EmailPeriodConfigPage />}
+                />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="projects">
+                  <Route index element={<ProjectsPage />} />
                   <Route
                     path="new"
                     element={
                       <ProtectedRoute>
-                        <CompanyPFEForm />
+                        {user?.role === "student" ? (
+                          <StudentPFEForm />
+                        ) : user?.role === "company" ? (
+                          <CompanyPFEForm />
+                        ) : (
+                          <TeacherPFEForm />
+                        )}
                       </ProtectedRoute>
                     }
                   />
+                  <Route path="company">
+                    <Route
+                      path="new"
+                      element={
+                        <ProtectedRoute>
+                          <CompanyPFEForm />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="edit/:id"
+                      element={
+                        <ProtectedRoute>
+                          <CompanyPFEForm />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
                   <Route
-                    path="edit/:id"
-                    element={
-                      <ProtectedRoute>
-                        <CompanyPFEForm />
-                      </ProtectedRoute>
-                    }
+                    path="validation"
+                    element={<ProjectValidationPage />}
                   />
                 </Route>
-                <Route path="validation" element={<ProjectValidationPage />} />
+                <Route
+                  path="students"
+                  element={
+                    <ProtectedRoute>
+                      {user?.role === "teacher" ? (
+                        <StudentsPage />
+                      ) : (
+                        <Navigate to="/dashboard" replace />
+                      )}
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="project" element={<StudentProjectPage />} />
               </Route>
-              <Route
-                path="students"
-                element={
-                  <ProtectedRoute>
-                    {user?.role === "teacher" ? (
-                      <StudentsPage />
-                    ) : (
-                      <Navigate to="/dashboard" replace />
-                    )}
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="project" element={<StudentProjectPage />} />
-            </Route>
-          </Routes>
-        </NotificationsProvider>
-      </ProjectProvider>
-    </BrowserRouter>
+            </Routes>
+          </NotificationsProvider>
+        </ProjectProvider>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Globe, Sun, Moon } from "lucide-react"; // Add Moon import
+import { GraduationCap, Globe, Sun, Moon, Eye, EyeOff } from "lucide-react";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useAuthStore } from "../../store/authStore";
 import { useLanguageStore } from "../../store/languageStore";
-import { useThemeStore } from "../../store/themeStore"; // Add this import
+import { useThemeStore } from "../../store/themeStore";
 import { useTranslation } from "../../hooks/useTranslation";
-import { login } from "../../services/auth";
+import { login } from "../../api/services/auth";
+import { useAuth } from "../../hooks/useAuth"; // Keep only this import
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -20,6 +21,16 @@ export function LoginPage() {
   const setUser = useAuthStore((state) => state.setUser);
   const [isResponsibleTeacher, setIsResponsibleTeacher] = useState(false);
   const { isDark, toggleTheme } = useThemeStore();
+  const { isLoading: authLoading } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,11 +40,19 @@ export function LoginPage() {
     try {
       const user = await login(email, password);
       setUser(user);
-      localStorage.setItem("authToken", "mock-token");
-      localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard");
-    } catch (err) {
-      setError("Invalid email or password");
+
+      if (user.must_change_password) {
+        // You might want to redirect to a password change page
+        navigate("/change-password");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An error occurred during login. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -41,13 +60,21 @@ export function LoginPage() {
 
   const handleDemoLogin = (demoEmail: string) => {
     setEmail(demoEmail);
-    setPassword("StrongP@ssw0rd2024!");
+    // Set password based on role
+    const passwords = {
+      "admin@pfe.com": "admin123",
+      "student@pfe.com": "student123",
+      "company@pfe.com": "company123",
+      "teacher@pfe.com": "teacher123",
+      "responsible@pfe.com": "teacher123",
+    };
+    setPassword(passwords[demoEmail as keyof typeof passwords]);
   };
 
   const handleTeacherClick = () => {
     setIsResponsibleTeacher(!isResponsibleTeacher);
     handleDemoLogin(
-      isResponsibleTeacher ? "teacher@pfe.com" : "responsible@pfe.com"
+      isResponsibleTeacher ? "responsible@pfe.com" : "teacher@pfe.com"
     );
   };
 
@@ -62,11 +89,7 @@ export function LoginPage() {
           onClick={toggleTheme}
           className="flex items-center gap-2"
         >
-          {isDark ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
         <Button
           variant="outline"
@@ -98,20 +121,37 @@ export function LoginPage() {
               />
               <Input
                 label={t.login.passwordLabel}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t.login.passwordPlaceholder}
                 disabled={loading}
+                icon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                }
               />
             </div>
-            {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+            {error && (
+              <p className="text-red-600 text-sm text-center">{error}</p>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? t.login.signingIn : t.login.signIn}
             </Button>
           </form>
 
-          <div className="space-y-4 mt-8"> {/* Reduced from mt-12 to mt-8 */}
+          <div className="space-y-4 mt-8">
+            {" "}
+            {/* Reduced from mt-12 to mt-8 */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300 dark:border-gray-700" />
@@ -123,7 +163,6 @@ export function LoginPage() {
                 </span>
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <Button
                 type="button"
@@ -164,9 +203,9 @@ export function LoginPage() {
                 </span>
               </Button>
             </div>
-
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-              {t.login.demoPassword}
+              {/* Update demo password text */}
+              Demo passwords: admin123, student123, company123, teacher123
             </p>
           </div>
         </div>

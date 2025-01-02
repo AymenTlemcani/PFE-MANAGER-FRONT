@@ -6,6 +6,7 @@ import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Lock, Camera, X, Globe, Check } from "lucide-react";
 import { Translation } from "../../i18n/types";
+import { UserDetails } from "../../components/UserDetails";
 
 interface LanguageSelectProps {
   value: "en" | "fr";
@@ -166,210 +167,22 @@ export function ProfilePage() {
     }
   };
 
+  if (!user) return null;
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t.profile.profileSettings}
-          </h2>
+    <div className="container mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Profile</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        {/* Common user details */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">Account Details</h3>
+          <p>Email: {user.email}</p>
+          <p>Language: {user.language_preference}</p>
+          <p>Last Login: {user.last_login || "Never"}</p>
         </div>
-        <div className="p-6">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="relative group">
-              {profileImage ? (
-                <div className="relative">
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  <button
-                    onClick={removeImage}
-                    className="absolute -top-2 -right-2 p-1 bg-red-100 dark:bg-red-900 rounded-full text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xl font-semibold">
-                  {user?.firstName[0]}
-                  {user?.lastName[0]}
-                </div>
-              )}
-              <label
-                htmlFor="profile-image"
-                className="absolute bottom-0 right-0 p-1 bg-white dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
-              >
-                <Camera className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </label>
-              <input
-                id="profile-image"
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-            </div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                {user?.firstName} {user?.lastName}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {user?.role}
-              </p>
-              {imageError && (
-                <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                  {imageError}
-                </p>
-              )}
-            </div>
-          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  {t.profile.firstName}
-                </label>
-                <Input
-                  disabled={!isEditing}
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      firstName: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  {t.profile.lastName}
-                </label>
-                <Input
-                  disabled={!isEditing}
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      lastName: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {t.profile.email}
-              </label>
-              <Input
-                type="email"
-                disabled={!isEditing}
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    email: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {t.profile.language}
-              </label>
-              <LanguageSelect value={language} onChange={setLanguage} t={t} />
-            </div>
-            <div className="flex justify-end space-x-3">
-              {isEditing ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    {t.profile.cancel}
-                  </Button>
-                  <Button type="submit">{t.profile.saveChanges}</Button>
-                </>
-              ) : (
-                <Button type="button" onClick={() => setIsEditing(true)}>
-                  {t.profile.editProfile}
-                </Button>
-              )}
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {t.profile.changePassword}
-            </h2>
-          </div>
-        </div>
-        <div className="p-6">
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {t.profile.currentPassword}
-              </label>
-              <Input
-                type="password"
-                value={passwordForm.currentPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    currentPassword: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {t.profile.newPassword}
-              </label>
-              <Input
-                type="password"
-                value={passwordForm.newPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    newPassword: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {t.profile.confirmPassword}
-              </label>
-              <Input
-                type="password"
-                value={passwordForm.confirmPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    confirmPassword: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            {passwordError && (
-              <p className="text-sm text-red-600 dark:text-red-400">
-                {passwordError}
-              </p>
-            )}
-            <div className="flex justify-end">
-              <Button type="submit">{t.profile.updatePassword}</Button>
-            </div>
-          </form>
-        </div>
+        {/* Role-specific details */}
+        <UserDetails user={user} />
       </div>
     </div>
   );

@@ -59,6 +59,36 @@ export function Header({ onMenuChange }: HeaderProps) {
     setIsAnyMenuOpen(isOpen);
   };
 
+  const getUserInitials = (user: User) => {
+    switch (user.role) {
+      case "Administrator":
+        return `${user.administrator.name[0]}${user.administrator.surname[0]}`;
+      case "Teacher":
+        return `${user.teacher.name[0]}${user.teacher.surname[0]}`;
+      case "Student":
+        return `${user.student.name[0]}${user.student.surname[0]}`;
+      case "Company":
+        return `${user.company.contact_name[0]}${user.company.contact_surname[0]}`;
+      default:
+        return "U";
+    }
+  };
+
+  const getUserDisplayName = (user: User) => {
+    switch (user.role) {
+      case "Administrator":
+        return `${user.administrator.name} ${user.administrator.surname}`;
+      case "Teacher":
+        return `${user.teacher.name} ${user.teacher.surname}`;
+      case "Student":
+        return `${user.student.name} ${user.student.surname}`;
+      case "Company":
+        return user.company.company_name;
+      default:
+        return user.email;
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -85,12 +115,11 @@ export function Header({ onMenuChange }: HeaderProps) {
             className="flex items-center space-x-3 group"
           >
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100">
-              {user.firstName[0]}
-              {user.lastName[0]}
+              {getUserInitials(user)}
             </div>
             <div className="flex items-center">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-100 group-hover:text-gray-900 dark:group-hover:text-white">
-                {user.firstName} {user.lastName}
+                {getUserDisplayName(user)}
               </span>
               <ChevronDown className="ml-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
             </div>
