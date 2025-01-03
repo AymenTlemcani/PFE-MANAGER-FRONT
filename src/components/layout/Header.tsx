@@ -31,8 +31,9 @@ export function Header({ onMenuChange }: HeaderProps) {
   const { isDark, toggleTheme } = useThemeStore();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
+  // Single effect to handle all click-away behavior
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    function handleClickOutside(event: MouseEvent) {
       if (
         profileMenuRef.current &&
         !profileMenuRef.current.contains(event.target as Node)
@@ -40,14 +41,14 @@ export function Header({ onMenuChange }: HeaderProps) {
         setShowProfileMenu(false);
         onMenuChange?.(false);
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onMenuChange]);
-
-  useEffect(() => {
-    onMenuChange?.(showProfileMenu);
+    // Only add listener if menu is open
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
   }, [showProfileMenu, onMenuChange]);
 
   const handleLogout = () => {
@@ -58,13 +59,16 @@ export function Header({ onMenuChange }: HeaderProps) {
     navigate("/login");
   };
 
-  const handleShowProfileMenu = (show: boolean) => {
-    setShowProfileMenu(show);
-    setIsAnyMenuOpen(show);
+  // Keep parent component in sync with menu state
+  const toggleProfileMenu = () => {
+    const newState = !showProfileMenu;
+    setShowProfileMenu(newState);
+    onMenuChange?.(newState);
   };
 
+  // Handle notification menu changes
   const handleNotificationMenuChange = (isOpen: boolean) => {
-    setIsAnyMenuOpen(isOpen);
+    onMenuChange?.(isOpen);
   };
 
   const getUserDisplayInfo = (user: User) => {
@@ -115,10 +119,10 @@ export function Header({ onMenuChange }: HeaderProps) {
             <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           )}
         </button>
-        <NotificationDropdown onMenuChange={onMenuChange} />
+        <NotificationDropdown onMenuChange={handleNotificationMenuChange} />
         <div className="relative" ref={profileMenuRef}>
           <button
-            onClick={() => handleShowProfileMenu(!showProfileMenu)}
+            onClick={toggleProfileMenu}
             className="flex items-center space-x-3 group"
           >
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100">
