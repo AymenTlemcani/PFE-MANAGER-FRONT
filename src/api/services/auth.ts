@@ -1,6 +1,14 @@
 import api from "../axios";
 import { API_ENDPOINTS } from "../endpoints";
-import type { User, ProfileUpdateData, AuthResponse } from "../../types";
+import type {
+  User,
+  ProfileUpdateData,
+  AuthResponse,
+  Teacher,
+  Student,
+  Company,
+  Administrator,
+} from "../../types";
 
 export async function login(email: string, password: string): Promise<User> {
   try {
@@ -11,7 +19,6 @@ export async function login(email: string, password: string): Promise<User> {
 
     const { user, token, must_change_password } = response.data;
 
-    // Store token and user data
     localStorage.setItem("authToken", token);
     localStorage.setItem(
       "user",
@@ -19,14 +26,19 @@ export async function login(email: string, password: string): Promise<User> {
     );
 
     return user;
-  } catch (error: any) {
-    // Handle Laravel validation errors
-    if (error.response?.data?.errors?.credentials) {
-      throw new Error(error.response.data.errors.credentials[0]);
-    }
-    // Handle other specific error messages
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "response" in error) {
+      const errorResponse = error as {
+        response?: {
+          data?: { errors?: { credentials?: string[] }; message?: string };
+        };
+      };
+      if (errorResponse.response?.data?.errors?.credentials) {
+        throw new Error(errorResponse.response.data.errors.credentials[0]);
+      }
+      if (errorResponse.response?.data?.message) {
+        throw new Error(errorResponse.response.data.message);
+      }
     }
     throw new Error("Invalid email or password");
   }
@@ -93,5 +105,5 @@ export function isAdmin(user: User): user is Administrator {
 }
 
 export function isResponsibleTeacher(user: User): boolean {
-  return isTeacher(user) && user.teacher.is_responsible;
+  return user.role === "Teacher" && (user as Teacher).teacher.is_responsible;
 }

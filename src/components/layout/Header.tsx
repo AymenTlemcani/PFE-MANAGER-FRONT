@@ -1,10 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useLanguageStore } from "../../store/languageStore";
-import { ChevronDown, LogOut, User, Globe, Sun, Moon } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  User,
+  Globe,
+  Sun,
+  Moon,
+  GraduationCap,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { NotificationDropdown } from "./NotificationDropdown";
-import { useThemeStore } from "../../store/themeStore";
+import { useThemeStore } from "../../store/themeStore"; // Fixed incorrect path
 
 const languages = [
   { code: "en", label: "English", icon: "GB" },
@@ -59,42 +67,41 @@ export function Header({ onMenuChange }: HeaderProps) {
     setIsAnyMenuOpen(isOpen);
   };
 
-  const getUserInitials = (user: User) => {
+  const getUserDisplayInfo = (user: User) => {
     switch (user.role) {
       case "Administrator":
-        return `${user.administrator.name[0]}${user.administrator.surname[0]}`;
+        return {
+          initials: `${user.administrator.name[0]}${user.administrator.surname[0]}`,
+          name: `${user.administrator.name} ${user.administrator.surname}`,
+        };
       case "Teacher":
-        return `${user.teacher.name[0]}${user.teacher.surname[0]}`;
+        return {
+          initials: `${user.teacher.name[0]}${user.teacher.surname[0]}`,
+          name: `${user.teacher.name} ${user.teacher.surname}`,
+        };
       case "Student":
-        return `${user.student.name[0]}${user.student.surname[0]}`;
+        return {
+          initials: `${user.student.name[0]}${user.student.surname[0]}`,
+          name: `${user.student.name} ${user.student.surname}`,
+        };
       case "Company":
-        return `${user.company.contact_name[0]}${user.company.contact_surname[0]}`;
+        return {
+          initials: `${user.company.contact_name[0]}${user.company.contact_surname[0]}`,
+          name: user.company.company_name,
+        };
       default:
-        return "U";
-    }
-  };
-
-  const getUserDisplayName = (user: User) => {
-    switch (user.role) {
-      case "Administrator":
-        return `${user.administrator.name} ${user.administrator.surname}`;
-      case "Teacher":
-        return `${user.teacher.name} ${user.teacher.surname}`;
-      case "Student":
-        return `${user.student.name} ${user.student.surname}`;
-      case "Company":
-        return user.company.company_name;
-      default:
-        return user.email;
+        return { initials: "U", name: user.email };
     }
   };
 
   if (!user) return null;
 
+  const { initials, name } = getUserDisplayInfo(user);
+
   return (
     <div className="flex items-center justify-between flex-1 h-16 px-4 lg:px-8">
-      <div className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-        {/* {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard */}
+      <div className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+        PFE PLATFORM
       </div>
       <div className="flex items-center gap-2 md:gap-4">
         <button
@@ -115,11 +122,11 @@ export function Header({ onMenuChange }: HeaderProps) {
             className="flex items-center space-x-3 group"
           >
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100">
-              {getUserInitials(user)}
+              {initials}
             </div>
             <div className="flex items-center">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-100 group-hover:text-gray-900 dark:group-hover:text-white">
-                {getUserDisplayName(user)}
+                {name}
               </span>
               <ChevronDown className="ml-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
             </div>

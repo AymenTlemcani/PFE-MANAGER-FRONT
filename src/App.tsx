@@ -118,9 +118,9 @@ function App() {
                     path="new"
                     element={
                       <ProtectedRoute>
-                        {user?.role === "student" ? (
+                        {user?.role === "Student" ? (
                           <StudentPFEForm />
-                        ) : user?.role === "company" ? (
+                        ) : user?.role === "Company" ? (
                           <CompanyPFEForm />
                         ) : (
                           <TeacherPFEForm />
@@ -155,7 +155,7 @@ function App() {
                   path="students"
                   element={
                     <ProtectedRoute>
-                      {user?.role === "teacher" ? (
+                      {user?.role === "Teacher" ? (
                         <StudentsPage />
                       ) : (
                         <Navigate to="/dashboard" replace />
