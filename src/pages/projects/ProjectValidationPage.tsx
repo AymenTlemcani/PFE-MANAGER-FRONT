@@ -3,7 +3,6 @@ import {
   CheckCircle,
   XCircle,
   PenSquare,
-  Info,
   ChevronDown,
   ChevronUp,
 } from "lucide-react"; // Add Info import
@@ -11,7 +10,6 @@ import { Button } from "../../components/ui/Button";
 import { Dialog } from "../../components/ui/Dialog";
 import { useNavigate } from "react-router-dom";
 import { Avatar } from "../../components/ui/Avatar"; // Add this import
-import { Tooltip } from "../../components/ui/Tooltip"; // Add this import
 
 export function ProjectValidationPage() {
   const [selectedProject, setSelectedProject] = useState(null);
@@ -60,18 +58,22 @@ export function ProjectValidationPage() {
 
   const truncateDescription = (text: string, maxLength: number = 200) => {
     if (!text) return "";
-    const words = text.split(" ");
     if (text.length <= maxLength) return text;
 
+    const words = text.split(" ");
     let truncated = "";
     for (const word of words) {
       if ((truncated + word).length > maxLength - 10) {
-        // Leave room for "... more"
         return truncated + "... more";
       }
       truncated += (truncated ? " " : "") + word;
     }
     return truncated + "... more";
+  };
+
+  // Add this helper function
+  const isTextTruncated = (text: string, maxLength: number = 200) => {
+    return text && text.length > maxLength;
   };
 
   const loadTestData = () => {
@@ -144,7 +146,7 @@ export function ProjectValidationPage() {
         {projects.map((project) => (
           <div
             key={project.id}
-            className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer"
+            className="group bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer relative"
             onClick={() => toggleDescription(project.id)}
           >
             <div className="p-4 sm:p-6">
@@ -160,12 +162,21 @@ export function ProjectValidationPage() {
                   </div>
 
                   <div className="group">
-                    <div>
+                    <div className="relative">
                       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                         {expandedDescriptions[project.id]
                           ? project.description
                           : truncateDescription(project.description)}
                       </p>
+                      {isTextTruncated(project.description) && (
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {expandedDescriptions[project.id] ? (
+                            <ChevronUp className="h-5 w-5 text-gray-400" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5 text-gray-400" />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -232,6 +243,7 @@ export function ProjectValidationPage() {
                 </div>
               </div>
             </div>
+            <div className="absolute inset-0 rounded-lg ring-1 ring-black/5 group-hover:ring-black/10 dark:ring-white/5 dark:group-hover:ring-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           </div>
         ))}
       </div>
