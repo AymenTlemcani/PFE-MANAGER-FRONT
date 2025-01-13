@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     update: (id: number) => `/users/${id}`,
     delete: (id: number) => `/users/${id}`,
     import: "/users/import",
+    bulkDelete: "/users/bulk-delete",
   },
   projects: {
     list: "/projects",

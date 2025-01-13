@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  RefreshCw, // Add this import
 } from "lucide-react";
 import { Button, Dialog, Input } from "../ui";
 import { SnackbarManager, SnackbarItem } from "../ui/SnackbarManager";
@@ -16,6 +17,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../api/endpoints";
 import api from "../../api/axios"; // Change this import
+import { useNavigate } from "react-router-dom";
 
 type UserRole = "student" | "teacher" | "company" | "admin";
 
@@ -110,6 +112,7 @@ interface PaginatedResponse {
 }
 
 export function UserManagement() {
+  const navigate = useNavigate();
   // Add this debug log at the very start of component
   console.log("UserManagement rendering start");
 
@@ -120,7 +123,7 @@ export function UserManagement() {
   const [userType, setUserType] = useState<UserRole>("student");
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [setIsUserModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [snackbars, setSnackbars] = useState<SnackbarItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -168,24 +171,63 @@ export function UserManagement() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      // TODO: Handle CSV parsing and data import
+      // Check file extension
+      const fileExtension = file.name.split(".").pop()?.toLowerCase();
+      if (
+        fileExtension === "csv" ||
+        fileExtension === "xlsx" ||
+        fileExtension === "xls"
+      ) {
+        setSelectedFile(file);
+      } else {
+        showSnackbar(
+          "Please select a CSV or Excel file (.csv, .xlsx, .xls)",
+          "error"
+        );
+      }
     }
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     if (!selectedFile) return;
-    // TODO: Process the CSV file and import users
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("type", userType);
+
+    try {
+      setIsLoading(true);
+      const response = await api.post(API_ENDPOINTS.users.import, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      showSnackbar(
+        `Successfully imported ${response.data.statistics.successful_imports} users`,
+        "success"
+      );
+
+      // Refresh the user list
+      await refreshUsers(); // Replace the direct fetchUsers call
+    } catch (error) {
+      console.error("Import error:", error);
+      showSnackbar(
+        error.response?.data?.message || "Failed to import users",
+        "error"
+      );
+    } finally {
+      setIsLoading(false);
+      setSelectedFile(null);
+    }
   };
 
   const handleAddUser = () => {
-    setSelectedUser(null);
-    setIsUserModalOpen(true);
+    navigate("/dashboard/users/new");
   };
 
   const handleEditUser = (user: User) => {
-    setSelectedUser(user);
-    setIsUserModalOpen(true);
+    navigate(`/dashboard/users/edit/${user.id}`);
   };
 
   const handleDeleteUser = async (user: User) => {
@@ -198,47 +240,106 @@ export function UserManagement() {
   };
 
   const confirmDelete = async () => {
-    if (selectedUser) {
-      try {
-        await axios.delete(API_ENDPOINTS.users.delete(Number(selectedUser.id)));
-        setUsers(users.filter((u) => u.id !== selectedUser.id));
-        setIsDeleteDialogOpen(false);
-        showSnackbar(
-          formatMessage(
-            t.userManagement.userDeleted,
-            `${selectedUser.firstName} ${selectedUser.lastName}`
-          )
-        );
-      } catch (error) {
-        showSnackbar("Failed to delete user", "error");
-      }
+    if (!selectedUser) return;
+
+    try {
+      setIsLoading(true);
+      await api.delete(API_ENDPOINTS.users.delete(Number(selectedUser.id)));
+      showSnackbar(
+        `Successfully deleted ${selectedUser.firstName} ${selectedUser.lastName}`
+      );
+      await refreshUsers(); // Replace the direct fetchUsers call
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Delete user error:", error);
+      showSnackbar(
+        error.response?.data?.message || "Failed to delete user",
+        "error"
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const onSaveUser = async (userData: Omit<User, "id">) => {
     try {
+      setIsLoading(true);
+
+      // Format the data according to the backend expectations
+      const formattedData = {
+        email: userData.email,
+        is_active: true,
+        language_preference: userData.language || "French",
+        // Add role-specific data
+        ...(userData.role === "Student" && {
+          student: {
+            name: userData.firstName,
+            surname: userData.lastName,
+            master_option: userData.masterOption,
+            overall_average: userData.overallAverage,
+            admission_year: userData.admissionYear,
+            date_of_birth: userData.dateOfBirth,
+          },
+        }),
+        ...(userData.role === "Teacher" && {
+          teacher: {
+            name: userData.firstName,
+            surname: userData.lastName,
+            grade: userData.grade,
+            research_domain: userData.researchDomain,
+            is_responsible: userData.isResponsible,
+            date_of_birth: userData.dateOfBirth,
+          },
+        }),
+        ...(userData.role === "Administrator" && {
+          administrator: {
+            name: userData.firstName,
+            surname: userData.lastName,
+            date_of_birth: userData.dateOfBirth,
+          },
+        }),
+        ...(userData.role === "Company" && {
+          company: {
+            company_name: userData.companyName,
+            contact_name: userData.firstName,
+            contact_surname: userData.lastName,
+            industry: userData.industry,
+            address: userData.address,
+          },
+        }),
+      };
+
       if (selectedUser) {
         // Edit existing user
-        await axios.put(
+        await api.put(
           API_ENDPOINTS.users.update(Number(selectedUser.id)),
-          userData
+          formattedData
+        );
+        showSnackbar(
+          `Successfully updated ${userData.firstName} ${userData.lastName}`
         );
       } else {
         // Add new user
-        await axios.post(API_ENDPOINTS.users.create, userData);
+        await api.post(API_ENDPOINTS.users.create, {
+          ...formattedData,
+          password: userData.password, // Include password only for new users
+          role: userData.role,
+        });
+        showSnackbar(
+          `Successfully added ${userData.firstName} ${userData.lastName}`
+        );
       }
+
       fetchUsers(pagination.currentPage);
       setIsUserModalOpen(false);
-      showSnackbar(
-        formatMessage(
-          selectedUser
-            ? t.userManagement.userUpdated
-            : t.userManagement.userAdded,
-          `${userData.firstName} ${userData.lastName}`
-        )
-      );
     } catch (error) {
-      showSnackbar("Failed to save user", "error");
+      console.error("Save user error:", error);
+      showSnackbar(
+        error.response?.data?.message || "Failed to save user",
+        "error"
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -360,17 +461,60 @@ export function UserManagement() {
     fetchUsers(page, search, role);
   };
 
+  // Add a loading overlay component
+  const LoadingOverlay = () => (
+    <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 flex items-center justify-center z-50">
+      <div className="flex flex-col items-center gap-2">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="text-sm text-gray-600 dark:text-gray-300">
+          Loading...
+        </span>
+      </div>
+    </div>
+  );
+
+  // Modify the fetchUsers function to be reusable
+  const refreshUsers = async () => {
+    setSelectedFile(null);
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    await fetchUsers(1, undefined, undefined);
+  };
+
+  const handleRefresh = () => {
+    refreshUsers();
+  };
+
   return (
-    <div className="space-y-6">
-      {isLoading && <div className="text-center py-4">Loading users...</div>}
+    <div className="space-y-6 relative">
+      {isLoading && <LoadingOverlay />}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           User Management
         </h1>
-        <Button onClick={handleAddUser} className="flex items-center gap-2">
-          <UserPlus className="h-4 w-4" />
-          Add User
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            className="flex items-center gap-2"
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+          <Button
+            onClick={() => navigate("/dashboard/users/all")}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            See All Users
+          </Button>
+          <Button onClick={handleAddUser} className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            Add User
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
@@ -393,7 +537,7 @@ export function UserManagement() {
             <div className="flex-1">
               <Input
                 type="file"
-                accept=".csv"
+                accept=".csv,.xlsx,.xls"
                 onChange={handleFileUpload}
                 className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900"
               />
@@ -432,13 +576,6 @@ export function UserManagement() {
         />
       </div>
 
-      <UserFormModal
-        isOpen={isUserModalOpen}
-        onClose={() => setIsUserModalOpen(false)}
-        onSave={onSaveUser}
-        user={selectedUser}
-      />
-
       <Dialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
@@ -451,152 +588,6 @@ export function UserManagement() {
 
       <SnackbarManager snackbars={snackbars} onClose={removeSnackbar} />
     </div>
-  );
-}
-
-interface UserFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (user: Omit<User, "id">) => void;
-  user?: User | null;
-}
-
-function UserFormModal({ isOpen, onClose, onSave, user }: UserFormModalProps) {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "student",
-    isResponsible: false,
-  });
-
-  useEffect(() => {
-    // Reset form data when dialog opens with user data or empty for new user
-    setFormData({
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      email: user?.email || "",
-      role: user?.role || "student",
-      isResponsible: user?.isResponsible || false,
-    });
-  }, [user, isOpen]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  const getRoleSpecificFields = () => {
-    switch (formData.role) {
-      case "Student":
-        return (
-          <>
-            <select
-              value={formData.masterOption || "GL"}
-              onChange={(e) =>
-                setFormData({ ...formData, masterOption: e.target.value })
-              }
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
-            >
-              <option value="GL">GL</option>
-              <option value="IA">IA</option>
-              <option value="RSD">RSD</option>
-              <option value="SIC">SIC</option>
-            </select>
-            {/* Add other student-specific fields */}
-          </>
-        );
-      case "Teacher":
-        return (
-          <>
-            <select
-              value={formData.grade || "MAA"}
-              onChange={(e) =>
-                setFormData({ ...formData, grade: e.target.value })
-              }
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
-            >
-              <option value="MAA">MAA</option>
-              <option value="MAB">MAB</option>
-              <option value="MCA">MCA</option>
-              <option value="MCB">MCB</option>
-              <option value="PR">PR</option>
-            </select>
-            {/* Add other teacher-specific fields */}
-          </>
-        );
-      // Add other role cases...
-    }
-  };
-
-  return (
-    <Dialog
-      isOpen={isOpen}
-      onClose={onClose}
-      title={user ? "Edit User" : "Add User"}
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="First Name"
-          value={formData.firstName}
-          onChange={(e) =>
-            setFormData({ ...formData, firstName: e.target.value })
-          }
-          required
-        />
-        <Input
-          label="Last Name"
-          value={formData.lastName}
-          onChange={(e) =>
-            setFormData({ ...formData, lastName: e.target.value })
-          }
-          required
-        />
-        <Input
-          label="Email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-        />
-        <select
-          value={formData.role}
-          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-gray-100"
-        >
-          <option value="student">Student</option>
-          <option value="teacher">Teacher</option>
-          <option value="company">Company</option>
-          <option value="admin">Admin</option>
-        </select>
-        {formData.role === "teacher" && (
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isResponsible"
-              checked={formData.isResponsible}
-              onChange={(e) =>
-                setFormData({ ...formData, isResponsible: e.target.checked })
-              }
-              className="h-4 w-4 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600"
-            />
-            <label
-              htmlFor="isResponsible"
-              className="text-sm text-gray-700 dark:text-gray-300"
-            >
-              Is Master's Program Responsible
-            </label>
-          </div>
-        )}
-        {getRoleSpecificFields()}
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit">{user ? "Save Changes" : "Add User"}</Button>
-        </div>
-      </form>
-    </Dialog>
   );
 }
 
@@ -748,6 +739,12 @@ function UserList({
       </th>
     );
   };
+
+  useEffect(() => {
+    // Reset search and role when parent component triggers refresh
+    setSearchEmail("");
+    setSelectedRole("all");
+  }, [users]);
 
   return (
     <div className="space-y-4">

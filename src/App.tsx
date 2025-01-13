@@ -27,6 +27,8 @@ import { SettingsPage } from "./pages/admin/SettingsPage";
 import { StudentsPage } from "./pages/teachers/StudentsPage";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
+import { UserFormPage } from "./pages/admin/UserFormPage";
+import { AllUsersPage } from "./pages/admin/AllUsersPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -118,14 +120,40 @@ function App() {
               >
                 <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
-                <Route
-                  path="dashboard/users" // Changed from "users" to "dashboard/users"
-                  element={
-                    <AdminRoute>
-                      <UserManagementPage />
-                    </AdminRoute>
-                  }
-                />
+                <Route path="dashboard/users">
+                  <Route
+                    index
+                    element={
+                      <AdminRoute>
+                        <UserManagementPage />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="all"
+                    element={
+                      <AdminRoute>
+                        <AllUsersPage />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="new"
+                    element={
+                      <AdminRoute>
+                        <UserManagementPage showForm={true} />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="edit/:id"
+                    element={
+                      <AdminRoute>
+                        <UserManagementPage showForm={true} />
+                      </AdminRoute>
+                    }
+                  />
+                </Route>
                 <Route path="settings" element={<SettingsPage />} />
                 <Route
                   path="dashboard/emails"
@@ -192,6 +220,19 @@ function App() {
                   }
                 />
                 <Route path="project" element={<StudentProjectPage />} />
+                <Route path="/admin/users/new" element={<UserFormPage />} />
+                <Route
+                  path="/admin/users/edit/:id"
+                  element={<UserFormPage />}
+                />
+                <Route
+                  path="/admin/users/all"
+                  element={
+                    <AdminRoute>
+                      <AllUsersPage />
+                    </AdminRoute>
+                  }
+                />
               </Route>
             </Routes>
           </NotificationsProvider>
