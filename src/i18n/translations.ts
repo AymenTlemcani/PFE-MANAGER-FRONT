@@ -55,6 +55,13 @@ export const translations: Record<string, Translation> = {
       language: "Language",
       english: "English",
       french: "French",
+      passwordMinLength: "New password must be at least 8 characters long",
+      passwordMustDiffer:
+        "New password must be different from current password",
+      passwordValidationFailed: "Password validation failed",
+      passwordUpdateError: "An error occurred while updating the password",
+      currentPasswordIncorrect: "The current password is incorrect",
+      passwordUpdateSuccess: "Password updated successfully",
     },
     userManagement: {
       userDeleted: "User {name} has been deleted",
@@ -188,6 +195,15 @@ export const translations: Record<string, Translation> = {
       language: "Langue",
       english: "Anglais",
       french: "Français",
+      passwordMinLength:
+        "Le nouveau mot de passe doit contenir au moins 8 caractères",
+      passwordMustDiffer:
+        "Le nouveau mot de passe doit être différent de l'actuel",
+      passwordValidationFailed: "La validation du mot de passe a échoué",
+      passwordUpdateError:
+        "Une erreur s'est produite lors de la mise à jour du mot de passe",
+      currentPasswordIncorrect: "Le mot de passe actuel est incorrect",
+      passwordUpdateSuccess: "Mot de passe mis à jour avec succès",
     },
     userManagement: {
       userDeleted: "L'utilisateur {name} a été supprimé",

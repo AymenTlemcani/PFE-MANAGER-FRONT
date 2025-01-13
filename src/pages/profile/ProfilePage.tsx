@@ -7,6 +7,11 @@ import { Input } from "../../components/ui/Input";
 import { Lock, Camera, X, Globe, Check } from "lucide-react";
 import { Translation } from "../../i18n/types";
 import { UserDetails } from "../../components/UserDetails";
+import { changePassword } from "../../api/auth";
+import {
+  SnackbarManager,
+  SnackbarItem,
+} from "../../components/ui/SnackbarManager";
 
 interface LanguageSelectProps {
   value: "en" | "fr";
@@ -134,10 +139,30 @@ export function ProfilePage() {
     confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [imageError, setImageError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [snackbars, setSnackbars] = useState<SnackbarItem[]>([]);
+
+  const showSnackbar = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
+    const id = Date.now().toString();
+    setSnackbars((prev) => [...prev, { id, message, type }]);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      removeSnackbar(id);
+    }, 5000);
+  };
+
+  const removeSnackbar = (id: string) => {
+    setSnackbars((prev) => prev.filter((snackbar) => snackbar.id !== id));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,21 +170,65 @@ export function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError("");
+    setIsPasswordLoading(true);
 
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError(t.profile.passwordsNotMatch);
+    // Pre-validation
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError(t.profile.passwordMinLength);
+      setIsPasswordLoading(false);
       return;
     }
 
-    console.log("Password updated");
-    setPasswordForm({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+    if (passwordForm.newPassword === passwordForm.currentPassword) {
+      setPasswordError(t.profile.passwordMustDiffer);
+      setIsPasswordLoading(false);
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError(t.profile.passwordsNotMatch);
+      setIsPasswordLoading(false);
+      return;
+    }
+
+    try {
+      await changePassword(
+        passwordForm.currentPassword,
+        passwordForm.newPassword
+      );
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      showSnackbar(t.profile.passwordUpdateSuccess, "success");
+    } catch (error) {
+      console.error("Password change error:", error);
+
+      if (error.response?.status === 422) {
+        if (error.response.data.errors?.current_password) {
+          setPasswordError(t.profile.currentPasswordIncorrect);
+        } else if (error.response.data.errors?.new_password) {
+          setPasswordError(error.response.data.errors.new_password[0]);
+        } else {
+          setPasswordError(t.profile.passwordValidationFailed);
+        }
+      } else if (error.response?.status === 401) {
+        setPasswordError(t.profile.currentPasswordIncorrect);
+      } else {
+        setPasswordError(t.profile.passwordUpdateError);
+      }
+
+      showSnackbar(
+        error.response?.data?.message || t.profile.passwordUpdateError,
+        "error"
+      );
+    } finally {
+      setIsPasswordLoading(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -489,7 +558,24 @@ export function ProfilePage() {
                     </p>
                   )}
                   <div className="flex justify-end">
-                    <Button type="submit">{t.profile.updatePassword}</Button>
+                    <Button
+                      type="submit"
+                      disabled={isPasswordLoading}
+                      className="relative"
+                    >
+                      {isPasswordLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-inherit">
+                          <div className="w-4 h-4 border-2 border-b-transparent border-white rounded-full animate-spin" />
+                        </div>
+                      )}
+                      <span
+                        className={
+                          isPasswordLoading ? "opacity-0" : "opacity-100"
+                        }
+                      >
+                        {t.profile.updatePassword}
+                      </span>
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -497,6 +583,7 @@ export function ProfilePage() {
           </div>
         </div>
       </div>
+      <SnackbarManager snackbars={snackbars} onClose={removeSnackbar} />
     </div>
   );
 }

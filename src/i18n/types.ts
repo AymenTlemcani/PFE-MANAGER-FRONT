@@ -52,6 +52,12 @@ export interface Translation {
     language: string;
     english: string;
     french: string;
+    passwordMinLength: string;
+    passwordMustDiffer: string;
+    passwordValidationFailed: string;
+    passwordUpdateError: string;
+    currentPasswordIncorrect: string;
+    passwordUpdateSuccess: string;
   };
   userManagement: {
     userDeleted: string;
