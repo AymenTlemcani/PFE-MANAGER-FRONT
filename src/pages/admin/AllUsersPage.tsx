@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Dialog } from "../../components/ui";
 import api from "../../api/axios";
@@ -10,6 +10,18 @@ import {
   CheckSquare,
   Square,
   Loader,
+  Search,
+  SortAsc,
+  SortDesc,
+  Filter,
+  LayoutGrid,
+  List,
+  BadgeCheck,
+  Mail,
+  Calendar,
+  GraduationCap,
+  Briefcase,
+  Building2,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import {
@@ -30,13 +42,33 @@ export function AllUsersPage() {
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = currentUser?.id;
   const [snackbars, setSnackbars] = useState<SnackbarItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<string>("role");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(
+    new Set(["Student", "Teacher", "Administrator", "Company"])
+  );
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showOnlyResponsibles, setShowOnlyResponsibles] = useState(false);
+
+  const showResponsibleFilter = useMemo(() => {
+    return selectedRoles.has("Teacher") && selectedRoles.size === 1;
+  }, [selectedRoles]);
 
   const loadUsers = async (pageNum: number, append = false) => {
     try {
       setIsLoading(true);
-      const response = await api.get(
-        `/users?page=${pageNum}&per_page=50&with=administrator,teacher,student,company`
-      );
+      const params = new URLSearchParams({
+        page: pageNum.toString(),
+        per_page: "50",
+        with: "administrator,teacher,student,company",
+        ...(searchQuery && { search: searchQuery }),
+        ...(sortField && { sort_by: sortField }),
+        ...(sortDirection && { sort_direction: sortDirection }),
+      });
+
+      const response = await api.get(`/users?${params}`);
+      console.log("API Response:", response.data); // Debug log
       const newUsers = response.data.data;
 
       if (append) {
@@ -51,6 +83,7 @@ export function AllUsersPage() {
       );
     } catch (error) {
       console.error("Error loading users:", error);
+      showSnackbar("Failed to load users", "error");
     } finally {
       setIsLoading(false);
     }
@@ -120,17 +153,6 @@ export function AllUsersPage() {
     });
   };
 
-  const handleSelectAll = () => {
-    if (selectedUsers.size === users.length) {
-      setSelectedUsers(new Set());
-    } else {
-      const selectableUsers = users
-        .filter((user) => user.user_id !== currentUserId)
-        .map((user) => String(user.user_id));
-      setSelectedUsers(new Set(selectableUsers));
-    }
-  };
-
   const handleBulkDelete = async () => {
     // Check if current user is in selection
     if (Array.from(selectedUsers).includes(String(currentUserId))) {
@@ -174,6 +196,137 @@ export function AllUsersPage() {
     setTimeout(() => {
       setSnackbars((prev) => prev.filter((snackbar) => snackbar.id !== id));
     }, 5000);
+  };
+
+  const filteredAndSortedUsers = useMemo(() => {
+    let filtered = users.filter(
+      (user) =>
+        selectedRoles.has(user.role) &&
+        (searchQuery === "" ||
+          getUserFullName(user)
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase())) &&
+        (!showOnlyResponsibles ||
+          (user.role === "Teacher" && user.teacher?.is_responsible))
+    );
+
+    return filtered;
+  }, [users, selectedRoles, searchQuery, showOnlyResponsibles]);
+
+  const groupedUsers = useMemo(() => {
+    return filteredAndSortedUsers.reduce((acc, user) => {
+      const role = user.role;
+      if (!acc[role]) {
+        acc[role] = [];
+      }
+      acc[role].push(user);
+      return acc;
+    }, {} as Record<string, typeof users>);
+  }, [filteredAndSortedUsers]);
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const toggleRole = (role: string) => {
+    setSelectedRoles((prev) => {
+      const newRoles = new Set(prev);
+      if (newRoles.has(role)) {
+        newRoles.delete(role);
+      } else {
+        newRoles.add(role);
+      }
+      return newRoles;
+    });
+  };
+
+  const selectableUsers = useMemo(() => {
+    return filteredAndSortedUsers.filter(
+      (user) => user.user_id !== currentUserId
+    );
+  }, [filteredAndSortedUsers, currentUserId]);
+
+  const isAllSelected = useMemo(() => {
+    return (
+      selectableUsers.length > 0 &&
+      selectedUsers.size === selectableUsers.length
+    );
+  }, [selectableUsers, selectedUsers]);
+
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(
+        new Set(selectableUsers.map((user) => String(user.user_id)))
+      );
+    }
+  };
+
+  const getRoleSpecificInfo = (user: any) => {
+    try {
+      switch (user.role) {
+        case "Student":
+          return {
+            icon: <GraduationCap className="h-4 w-4" />,
+            details: [
+              {
+                label: "Master Option",
+                value: user.student?.master_option || "N/A",
+              },
+              {
+                label: "Average",
+                value: user.student?.overall_average
+                  ? Number(user.student.overall_average).toFixed(2)
+                  : "N/A",
+              },
+              {
+                label: "Year",
+                value: user.student?.admission_year || "N/A",
+              },
+            ],
+          };
+        case "Teacher":
+          return {
+            icon: <GraduationCap className="h-4 w-4" />,
+            details: [
+              { label: "Grade", value: user.teacher?.grade || "N/A" },
+              {
+                label: "Domain",
+                value: user.teacher?.research_domain || "N/A",
+              },
+              {
+                label: "Recruited",
+                value:
+                  new Date(user.teacher?.recruitment_date).getFullYear() ||
+                  "N/A",
+              },
+            ],
+          };
+        case "Company":
+          return {
+            icon: <Building2 className="h-4 w-4" />,
+            details: [
+              { label: "Company", value: user.company?.company_name || "N/A" },
+              { label: "Industry", value: user.company?.industry || "N/A" },
+              { label: "Location", value: user.company?.address || "N/A" },
+            ],
+          };
+        default:
+          return {
+            icon: <Briefcase className="h-4 w-4" />,
+            details: [],
+          };
+      }
+    } catch (error) {
+      console.error("Error getting role specific info:", error);
+      return {
+        icon: <Briefcase className="h-4 w-4" />,
+        details: [{ label: "Error", value: "Failed to load details" }],
+      };
+    }
   };
 
   return (
@@ -221,65 +374,292 @@ export function AllUsersPage() {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
+        {/* Search and Filter Bar */}
+        <div className="px-8 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex gap-4 items-center justify-between">
+            <div className="flex gap-4 items-center flex-1">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                />
+                <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              </div>
+              <div className="flex gap-2">
+                {["Student", "Teacher", "Administrator", "Company"].map(
+                  (role) => (
+                    <button
+                      key={role}
+                      onClick={() => toggleRole(role)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
+                      ${
+                        selectedRoles.has(role)
+                          ? "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                      }`}
+                    >
+                      {role}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded ${
+                    viewMode === "grid"
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded ${
+                    viewMode === "list"
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Responsible Teachers Filter - Only show when Teacher role is selected */}
+              {showResponsibleFilter && (
+                <button
+                  onClick={() => setShowOnlyResponsibles((prev) => !prev)}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    showOnlyResponsibles
+                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                  }`}
+                >
+                  <BadgeCheck className="h-4 w-4" />
+                  Show Only Responsibles
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Select All Button Bar - Only show when users are selected or filtered users exist */}
+        {(selectedUsers.size > 0 || selectableUsers.length > 0) && (
+          <div className="px-8 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-between">
               <button
                 onClick={handleSelectAll}
                 className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
-                {selectedUsers.size === users.length ? (
+                {isAllSelected ? (
                   <CheckSquare className="h-4 w-4" />
                 ) : (
                   <Square className="h-4 w-4" />
                 )}
-                Select All
+                Select All ({selectableUsers.length})
               </button>
+              {selectedUsers.size > 0 && (
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {selectedUsers.size} selected
+                </span>
+              )}
             </div>
-
-            {users.map((user, index) => (
-              <div
-                key={user.user_id}
-                ref={index === users.length - 1 ? lastUserElementRef : null}
-                className={`p-4 border rounded-lg transition-colors ${
-                  selectedUsers.has(String(user.user_id))
-                    ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                    : "border-gray-200 dark:border-gray-700"
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => handleSelectUser(user.user_id)}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    disabled={user.user_id === currentUserId}
-                  >
-                    {selectedUsers.has(String(user.user_id)) ? (
-                      <CheckSquare className="h-5 w-5" />
-                    ) : (
-                      <Square className="h-5 w-5" />
-                    )}
-                  </button>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium">
-                      {getUserFullName(user)}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {user.email}
-                    </p>
-                  </div>
-                  <span className="px-3 py-1 text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
-                    {user.role}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-center p-4">
-                <Loader className="h-6 w-6 animate-spin text-gray-500" />
-              </div>
-            )}
           </div>
+        )}
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-8">
+          {viewMode === "grid" ? (
+            // Grid View
+            <div className="space-y-8">
+              {Object.entries(groupedUsers).map(([role, roleUsers]) => (
+                <div key={role} className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    {role}
+                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                      ({roleUsers.length})
+                    </span>
+                  </h3>
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {roleUsers.map((user, index) => {
+                      const roleInfo = getRoleSpecificInfo(user);
+                      return (
+                        <div
+                          key={user.user_id}
+                          ref={
+                            index === roleUsers.length - 1
+                              ? lastUserElementRef
+                              : null
+                          }
+                          className={`p-4 border rounded-lg transition-colors hover:border-blue-500 ${
+                            selectedUsers.has(String(user.user_id))
+                              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                              : "border-gray-200 dark:border-gray-700"
+                          }`}
+                        >
+                          <div className="space-y-4">
+                            <div className="flex items-start gap-3">
+                              <button
+                                onClick={() => handleSelectUser(user.user_id)}
+                                disabled={user.user_id === currentUserId}
+                                className="flex-none mt-1"
+                              >
+                                {selectedUsers.has(String(user.user_id)) ? (
+                                  <CheckSquare className="h-5 w-5" />
+                                ) : (
+                                  <Square className="h-5 w-5" />
+                                )}
+                              </button>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-sm font-medium truncate">
+                                    {getUserFullName(user)}
+                                  </h4>
+                                  {user.role === "Teacher" &&
+                                    user.teacher?.is_responsible && (
+                                      <BadgeCheck
+                                        className="h-4 w-4 text-blue-500 flex-shrink-0"
+                                        title="Program Responsible"
+                                      />
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-1 text-sm text-gray-500">
+                                  <Mail className="h-3 w-3" />
+                                  <span className="truncate">{user.email}</span>
+                                </div>
+                              </div>
+                              <span className="flex-none px-2.5 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800">
+                                {user.role}
+                              </span>
+                            </div>
+
+                            <div className="pl-8">
+                              <div className="text-sm space-y-1">
+                                {roleInfo.details.map((detail, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <span className="text-gray-500">
+                                      {detail.label}:
+                                    </span>
+                                    <span className="font-medium">
+                                      {detail.value}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-center p-4">
+                  <Loader className="h-6 w-6 animate-spin text-gray-500" />
+                </div>
+              )}
+            </div>
+          ) : (
+            // List View
+            <div className="space-y-4">
+              {Object.entries(groupedUsers).map(([role, roleUsers]) => (
+                <div key={role} className="space-y-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    {role}
+                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                      ({roleUsers.length})
+                    </span>
+                  </h3>
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {roleUsers.map((user, index) => {
+                      const roleInfo = getRoleSpecificInfo(user);
+                      return (
+                        <div
+                          key={user.user_id}
+                          ref={
+                            index === roleUsers.length - 1
+                              ? lastUserElementRef
+                              : null
+                          }
+                          className={`py-4 transition-colors ${
+                            selectedUsers.has(String(user.user_id))
+                              ? "bg-blue-50 dark:bg-blue-900/20"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <button
+                              onClick={() => handleSelectUser(user.user_id)}
+                              disabled={user.user_id === currentUserId}
+                              className="flex-none mt-1"
+                            >
+                              {selectedUsers.has(String(user.user_id)) ? (
+                                <CheckSquare className="h-5 w-5" />
+                              ) : (
+                                <Square className="h-5 w-5" />
+                              )}
+                            </button>
+                            <div className="flex-1 min-w-0 grid grid-cols-3 gap-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">
+                                    {getUserFullName(user)}
+                                  </span>
+                                  {user.role === "Teacher" &&
+                                    user.teacher?.is_responsible && (
+                                      <BadgeCheck
+                                        className="h-4 w-4 text-blue-500"
+                                        title="Program Responsible"
+                                      />
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-1 text-sm text-gray-500">
+                                  <Mail className="h-3 w-3" />
+                                  <span className="truncate">{user.email}</span>
+                                </div>
+                              </div>
+                              <div className="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
+                                {roleInfo.details.map((detail, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <span className="text-gray-500">
+                                      {detail.label}:
+                                    </span>
+                                    <span className="font-medium">
+                                      {detail.value}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="flex items-start justify-end">
+                                <span className="px-2.5 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800">
+                                  {user.role}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
