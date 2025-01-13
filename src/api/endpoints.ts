@@ -11,7 +11,7 @@ export const API_ENDPOINTS = {
     me: "/profile", // Add this line
   },
   users: {
-    list: "/users",
+    list: "/users", // Remove /api prefix
     create: "/users",
     update: (id: number) => `/users/${id}`,
     delete: (id: number) => `/users/${id}`,

@@ -29,7 +29,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const getRoleNavigation = () => {
     switch (user.role) {
-      case "Administrator":
+      case "Administrator": // Changed back to "Administrator"
         return [
           {
             name: t.navigation.dashboard,
@@ -39,7 +39,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {
             name: t.navigation.userManagement,
             icon: Users,
-            path: "/dashboard/users",
+            path: "/dashboard/users", // Make sure this matches App.tsx route
           },
           {
             name: t.navigation.emailConfiguration,

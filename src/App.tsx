@@ -58,6 +58,30 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Add this new component for admin route protection
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("AdminRoute - User role:", user?.role);
+    if (!user) {
+      console.log("AdminRoute - No user found");
+      navigate("/login");
+      return;
+    }
+    if (user.role !== "Administrator") {
+      // Changed back to "Administrator"
+      console.log("AdminRoute - Access denied, redirecting:", user.role);
+      navigate("/dashboard");
+      return;
+    }
+    console.log("AdminRoute - Access granted for Administrator");
+  }, [user, navigate]);
+
+  return user?.role === "Administrator" ? <>{children}</> : null; // Changed here too
+}
+
 function App() {
   const user = useAuthStore((state) => state.user);
   const isDark = useThemeStore((state) => state.isDark);
@@ -95,8 +119,12 @@ function App() {
                 <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
                 <Route
-                  path="dashboard/users"
-                  element={<UserManagementPage />}
+                  path="dashboard/users" // Changed from "users" to "dashboard/users"
+                  element={
+                    <AdminRoute>
+                      <UserManagementPage />
+                    </AdminRoute>
+                  }
                 />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route

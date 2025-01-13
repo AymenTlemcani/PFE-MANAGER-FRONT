@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import type { User } from '../types';
-import { isTeacher, isStudent, isCompany, isAdmin } from '../services/auth';
+import { create } from "zustand";
+import type { User } from "../types";
+import { isTeacher, isStudent, isCompany, isAdmin } from "../services/auth";
 
 interface AuthState {
   user: User | null;
@@ -14,8 +14,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   setUser: (user) => set({ user }),
-  isTeacher: () => get().user ? isTeacher(get().user!) : false,
-  isStudent: () => get().user ? isStudent(get().user!) : false,
-  isCompany: () => get().user ? isCompany(get().user!) : false,
-  isAdmin: () => get().user ? isAdmin(get().user!) : false,
+  isTeacher: () => (get().user ? isTeacher(get().user!) : false),
+  isStudent: () => (get().user ? isStudent(get().user!) : false),
+  isCompany: () => (get().user ? isCompany(get().user!) : false),
+  isAdmin: () => (get().user ? isAdmin(get().user!) : false),
 }));
