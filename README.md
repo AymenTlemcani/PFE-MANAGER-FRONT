@@ -46,6 +46,7 @@ A web-based platform for managing Final Year Projects (PFE - Projet de Fin d'Ét
 ## Usage
 
 Provide instructions and examples on how to use your project. Include screenshots or code snippets if necessary.
+mazal ma kmlt
 
 ## Contributing
 

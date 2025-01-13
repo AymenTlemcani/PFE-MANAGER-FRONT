@@ -150,17 +150,21 @@ export function StudentPFEForm() {
 
   const fillTestData = () => {
     setFormData({
-      ...formData,
+      ...formData, // keep existing student data
       title: "AI-Powered Healthcare Analytics Platform",
       option: "IA",
+      type: "research", // Added type field
       summary:
-        "An innovative healthcare analytics platform using machine learning to predict patient outcomes and optimize treatment plans.",
+        "An innovative healthcare analytics platform using machine learning to predict patient outcomes and optimize treatment plans. The system utilizes deep learning models for medical image analysis and predictive analytics.",
       duration: "6",
       technologies: "Python, TensorFlow, React, Node.js, PostgreSQL",
       location: "Tunis, Tunisia",
       paid: true,
       salary: "1000",
-      hardwareRequirements: "GPU Server, 32GB RAM, SSD Storage",
+      hardwareRequirements:
+        "GPU Server for model training, 32GB RAM minimum, SSD Storage",
+      supervisorName: "Dr. Sarah Johnson",
+      companyId: "1", // assuming this matches one of your mock companies
     });
   };
 

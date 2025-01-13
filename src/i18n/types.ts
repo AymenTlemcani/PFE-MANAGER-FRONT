@@ -7,6 +7,7 @@ export interface Translation {
     settings: string;
     myProjects: string;
     students: string;
+    myStudents: string;
     reviews: string;
     myProject: string;
     tasks: string;

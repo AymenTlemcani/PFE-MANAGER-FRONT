@@ -10,91 +10,81 @@ import {
   Briefcase,
   FileText,
   CheckSquare,
+  LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useTranslation } from "../../hooks/useTranslation";
-import type { User } from "../../types";
+import { Translation } from "../../i18n/types";
 
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface NavigationItem {
+  name: string;
+  icon: LucideIcon;
+  path: string;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const location = useLocation();
+type UserRole = "Administrator" | "Teacher" | "Student" | "Company";
+
+// Update getRoleNavigation to use Record type with UserRole
+const getRoleNavigation = (
+  t: Translation
+): Record<UserRole, NavigationItem[]> => ({
+  Administrator: [
+    { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
+    {
+      name: t.navigation.userManagement,
+      icon: Users,
+      path: "/dashboard/users",
+    },
+    {
+      name: t.navigation.emailConfiguration,
+      icon: Mail,
+      path: "/dashboard/emails",
+    },
+    { name: t.navigation.settings, icon: Settings, path: "/settings" },
+  ],
+  Teacher: [
+    { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
+    { name: t.navigation.myProjects, icon: BookOpen, path: "/projects" },
+    { name: t.navigation.students, icon: Users, path: "/students" },
+  ],
+  Student: [
+    { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
+    { name: t.navigation.myProject, icon: BookOpen, path: "/project" }, // Update this path
+    { name: t.navigation.tasks, icon: Clock, path: "/tasks" },
+    { name: t.navigation.documents, icon: FileText, path: "/documents" },
+  ],
+  Company: [
+    { name: t.navigation.dashboard, icon: LayoutDashboard, path: "/dashboard" },
+    { name: t.navigation.projects, icon: Briefcase, path: "/projects" },
+    { name: t.navigation.proposals, icon: BookOpen, path: "/proposals" },
+    { name: t.navigation.interns, icon: Users, path: "/interns" },
+  ],
+});
+
+export function Sidebar({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   const user = useAuthStore((state) => state.user);
+  const location = useLocation();
   const { t } = useTranslation();
 
   if (!user) return null;
 
-  const getRoleNavigation = () => {
-    switch (user.role) {
-      case "Administrator": // Changed back to "Administrator"
-        return [
-          {
-            name: t.navigation.dashboard,
-            icon: LayoutDashboard,
-            path: "/dashboard",
-          },
-          {
-            name: t.navigation.userManagement,
-            icon: Users,
-            path: "/dashboard/users", // Make sure this matches App.tsx route
-          },
-          {
-            name: t.navigation.emailConfiguration,
-            icon: Mail,
-            path: "/dashboard/emails",
-          },
-          { name: t.navigation.settings, icon: Settings, path: "/settings" },
-        ];
-      case "Teacher":
-        return [
-          {
-            name: t.navigation.dashboard,
-            icon: LayoutDashboard,
-            path: "/dashboard",
-          },
-          { name: t.navigation.myProjects, icon: BookOpen, path: "/projects" },
-          { name: t.navigation.students, icon: Users, path: "/students" },
-          ...(user.teacher.is_responsible
-            ? [
-                {
-                  name: t.navigation.projectValidation,
-                  icon: CheckSquare,
-                  path: "/projects/validation",
-                },
-              ]
-            : []),
-        ];
-      case "Student":
-        return [
-          {
-            name: t.navigation.dashboard,
-            icon: LayoutDashboard,
-            path: "/dashboard",
-          },
-          { name: t.navigation.myProject, icon: BookOpen, path: "/project" },
-          { name: t.navigation.tasks, icon: Clock, path: "/tasks" },
-          { name: t.navigation.documents, icon: FileText, path: "/documents" },
-        ];
-      case "Company":
-        return [
-          {
-            name: t.navigation.dashboard,
-            icon: LayoutDashboard,
-            path: "/dashboard",
-          },
-          { name: t.navigation.projects, icon: Briefcase, path: "/projects" },
-          { name: t.navigation.proposals, icon: BookOpen, path: "/proposals" },
-          { name: t.navigation.interns, icon: Users, path: "/interns" },
-        ];
-      default:
-        return [];
-    }
-  };
+  const roleNavigation = getRoleNavigation(t);
+  const navigation: NavigationItem[] = [...(roleNavigation[user.role] || [])];
 
-  const menuItems = getRoleNavigation();
+  // Fix: Check isResponsible from the nested teacher object
+  if (user.role === "Teacher" && user.teacher?.is_responsible) {
+    navigation.push({
+      name: t.navigation.projectValidation,
+      icon: CheckSquare,
+      path: "/projects/validation",
+    });
+  }
 
   const isActiveRoute = (path: string) => {
     if (path === "/dashboard") {
@@ -137,7 +127,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         <div className="h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
           <nav className="p-4 space-y-1">
-            {menuItems.map((item) => {
+            {navigation.map((item) => {
               const Icon = item.icon;
               const active = isActiveRoute(item.path);
               return (

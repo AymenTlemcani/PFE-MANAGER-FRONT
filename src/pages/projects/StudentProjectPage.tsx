@@ -609,8 +609,8 @@ export function StudentProjectPage() {
             {hasUnsavedChanges && (
               <Button
                 onClick={handleSaveSelections}
-                className="flex items-center gap-2"
-                variant="default"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
+                variant="outline"
               >
                 <Check className="h-4 w-4" />
                 Save Changes
@@ -800,21 +800,21 @@ function ProjectWishList({
         {projects.map((project) => (
           <div
             key={project.id}
-            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50"
+            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/80"
           >
             <div className="flex items-center gap-4">
               <div className="flex flex-col gap-1">
                 <button
                   onClick={() => onReorder(project.id, "up")}
                   disabled={project.priority === 1}
-                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-50"
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-50 text-gray-700 dark:text-gray-300"
                 >
                   <ArrowUp className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => onReorder(project.id, "down")}
                   disabled={project.priority === projects.length}
-                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-50"
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-50 text-gray-700 dark:text-gray-300"
                 >
                   <ArrowDown className="h-4 w-4" />
                 </button>
@@ -823,7 +823,7 @@ function ProjectWishList({
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {project.priority}. {project.title}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-600 dark:text-gray-300">
                   {project.type} • {t.studentProject.supervisor}:{" "}
                   {project.supervisor}
                 </p>
@@ -833,8 +833,8 @@ function ProjectWishList({
               <span
                 className={`px-2 py-1 text-xs font-medium rounded-full ${
                   project.status === "Accepted"
-                    ? "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
-                    : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200"
+                    ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
+                    : "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
                 }`}
               >
                 {project.status === "Pending"
@@ -843,7 +843,7 @@ function ProjectWishList({
               </span>
               <button
                 onClick={() => onDelete(project.id)}
-                className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50 rounded"
+                className="p-1 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/50 rounded"
                 title="Remove from list"
               >
                 <Trash2 className="h-4 w-4" />
