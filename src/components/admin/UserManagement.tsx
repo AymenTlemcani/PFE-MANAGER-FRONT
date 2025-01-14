@@ -118,7 +118,7 @@ export function UserManagement() {
 
   console.log("UserManagement - Component mounting");
 
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // Make sure this is at the top of component
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [userType, setUserType] = useState<UserRole>("student");
   const [users, setUsers] = useState<User[]>([]);
@@ -489,7 +489,7 @@ export function UserManagement() {
       {isLoading && <LoadingOverlay />}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          User Management
+          {t.userManagement.title}
         </h1>
         <div className="flex gap-2">
           <Button
@@ -501,25 +501,25 @@ export function UserManagement() {
             <RefreshCw
               className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t.userManagement.refresh}
           </Button>
           <Button
             onClick={() => navigate("/dashboard/users/all")}
             variant="outline"
             className="flex items-center gap-2"
           >
-            See All Users
+            {t.userManagement.seeAllUsers}
           </Button>
           <Button onClick={handleAddUser} className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
-            Add User
+            {t.userManagement.addUser}
           </Button>
         </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Import Users
+          {t.userManagement.importSection}
         </h3>
 
         <div className="space-y-4">
@@ -529,17 +529,30 @@ export function UserManagement() {
               onChange={(e) => setUserType(e.target.value as UserRole)}
               className="w-48 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
             >
-              <option value="student">Students</option>
-              <option value="teacher">Teachers</option>
-              <option value="company">Companies</option>
+              <option value="student">{t.userManagement.students}</option>
+              <option value="teacher">{t.userManagement.teachers}</option>
+              <option value="company">{t.userManagement.companies}</option>
             </select>
 
             <div className="flex-1">
+              <style>
+                {`
+                  input[type="file"]::file-selector-button {
+                    content: "${t.userManagement.chooseFile}";
+                  }
+                `}
+              </style>
               <Input
                 type="file"
                 accept=".csv,.xlsx,.xls"
                 onChange={handleFileUpload}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900"
+                className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900"
+                placeholder={t.userManagement.noFileChosen}
+                data-text={
+                  selectedFile
+                    ? selectedFile.name
+                    : t.userManagement.noFileChosen
+                }
               />
             </div>
 
@@ -549,13 +562,13 @@ export function UserManagement() {
               className="flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              Import
+              {t.userManagement.import}
             </Button>
           </div>
 
           {selectedFile && (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Selected file: {selectedFile.name}
+              {t.userManagement.selectedFile}: {selectedFile.name}
             </p>
           )}
         </div>
@@ -563,7 +576,7 @@ export function UserManagement() {
 
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          User List
+          {t.userManagement.userList}
         </h3>
         <UserList
           users={users}
@@ -579,9 +592,9 @@ export function UserManagement() {
       <Dialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
-        title="Delete User"
-        description={`Are you sure you want to delete ${selectedUser?.firstName} ${selectedUser?.lastName}?`}
-        confirmText="Delete"
+        title={t.userManagement.deleteUser}
+        description={`${t.userManagement.deleteConfirm} ${selectedUser?.firstName} ${selectedUser?.lastName}?`}
+        confirmText={t.userManagement.deleteUser}
         confirmVariant="danger"
         onConfirm={confirmDelete}
       />
@@ -600,6 +613,7 @@ function UserList({
   onSort,
   sortConfig,
 }: UserListProps) {
+  const { t } = useTranslation(); // Add this line to get translations in UserList component
   const [searchEmail, setSearchEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | "all">("all");
   const debouncedSearch = useRef<NodeJS.Timeout>();
@@ -751,7 +765,7 @@ function UserList({
       <div className="flex gap-4 mb-4">
         <div className="relative flex-1 max-w-md">
           <Input
-            placeholder="Search by email..."
+            placeholder={t.userManagement.searchEmail}
             value={searchEmail}
             onChange={(e) => handleSearch(e.target.value)}
             className="pr-10"
@@ -764,11 +778,13 @@ function UserList({
           onChange={(e) => handleRoleChange(e.target.value as UserRole | "all")}
           className="w-48 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
         >
-          <option value="all">All Users</option>
-          <option value="Administrator">Administrators</option>
-          <option value="Teacher">Teachers</option>
-          <option value="Student">Students</option>
-          <option value="Company">Companies</option>
+          <option value="all">{t.userManagement.allUsers}</option>
+          <option value="Administrator">
+            {t.userManagement.administrators}
+          </option>
+          <option value="Teacher">{t.userManagement.teachers}</option>
+          <option value="Student">{t.userManagement.students}</option>
+          <option value="Company">{t.userManagement.companies}</option>
         </select>
       </div>
 
@@ -776,11 +792,17 @@ function UserList({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <SortableHeader field="firstName">Name</SortableHeader>
-              <SortableHeader field="email">Email</SortableHeader>
-              <SortableHeader field="role">Role</SortableHeader>
+              <SortableHeader field="firstName">
+                {t.userManagement.name}
+              </SortableHeader>
+              <SortableHeader field="email">
+                {t.userManagement.email}
+              </SortableHeader>
+              <SortableHeader field="role">
+                {t.userManagement.role}
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Actions
+                {t.userManagement.actions}
               </th>
             </tr>
           </thead>
@@ -828,10 +850,10 @@ function UserList({
       <div className="flex items-center justify-between mt-4 px-2">
         <div className="text-sm text-gray-500 dark:text-gray-400">
           {pagination.totalItems === 0 ? (
-            "No results"
+            t.userManagement.noResults
           ) : (
             <>
-              Showing{" "}
+              {t.userManagement.showing}{" "}
               <span className="font-medium">
                 {(pagination.currentPage - 1) * pagination.pageSize + 1}
               </span>{" "}
@@ -842,8 +864,9 @@ function UserList({
                   pagination.totalItems
                 )}
               </span>{" "}
-              of <span className="font-medium">{pagination.totalItems}</span>{" "}
-              results
+              {t.userManagement.of}{" "}
+              <span className="font-medium">{pagination.totalItems}</span>{" "}
+              {t.userManagement.results}
             </>
           )}
         </div>
