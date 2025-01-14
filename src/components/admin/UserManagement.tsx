@@ -111,6 +111,19 @@ interface PaginatedResponse {
   total: number;
 }
 
+interface ImportStats {
+  total_records: number;
+  successful_imports: number;
+  failed_imports: number;
+}
+
+interface ImportError {
+  row: number;
+  email: string;
+  error: string;
+  data: any;
+}
+
 export function UserManagement() {
   const navigate = useNavigate();
   // Add this debug log at the very start of component
@@ -137,6 +150,9 @@ export function UserManagement() {
     field: SortField;
     direction: SortDirection;
   } | null>(null);
+  const [importStats, setImportStats] = useState<ImportStats | null>(null);
+  const [importErrors, setImportErrors] = useState<ImportError[]>([]);
+  const [showErrors, setShowErrors] = useState(false);
 
   // Add a ref to store the latest users state
   const usersRef = useRef(users);
@@ -203,19 +219,18 @@ export function UserManagement() {
         },
       });
 
+      setImportStats(response.data.statistics);
+      setImportErrors(response.data.errors || []);
+
       showSnackbar(
-        `Successfully imported ${response.data.statistics.successful_imports} users`,
+        `${t.userManagement.importSuccessful}: ${response.data.statistics.successful_imports}`,
         "success"
       );
 
-      // Refresh the user list
-      await refreshUsers(); // Replace the direct fetchUsers call
+      await refreshUsers();
     } catch (error) {
       console.error("Import error:", error);
-      showSnackbar(
-        error.response?.data?.message || "Failed to import users",
-        "error"
-      );
+      showSnackbar(t.userManagement.importError, "error");
     } finally {
       setIsLoading(false);
       setSelectedFile(null);
@@ -484,6 +499,97 @@ export function UserManagement() {
     refreshUsers();
   };
 
+  const ImportSummary = () => {
+    if (!importStats) return null;
+
+    return (
+      <div className="mt-6 space-y-4">
+        <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+          {t.userManagement.importSummary}
+        </h4>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+              {importStats.total_records}
+            </div>
+            <div className="text-sm text-blue-600 dark:text-blue-400">
+              {t.userManagement.totalRecords}
+            </div>
+          </div>
+          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+              {importStats.successful_imports}
+            </div>
+            <div className="text-sm text-green-600 dark:text-green-400">
+              {t.userManagement.importSuccessful}
+            </div>
+          </div>
+          <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-red-700 dark:text-red-300">
+              {importStats.failed_imports}
+            </div>
+            <div className="text-sm text-red-600 dark:text-red-400">
+              {t.userManagement.importFailed}
+            </div>
+          </div>
+        </div>
+
+        {importErrors.length > 0 && (
+          <div className="mt-4">
+            <button
+              onClick={() => setShowErrors(!showErrors)}
+              className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-2"
+            >
+              {showErrors
+                ? t.userManagement.hideErrors
+                : t.userManagement.viewErrors}
+              <ChevronDown
+                className={`h-4 w-4 transform ${
+                  showErrors ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {showErrors && (
+              <div className="mt-4 border border-red-200 dark:border-red-800 rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-red-200 dark:divide-red-800">
+                  <thead className="bg-red-50 dark:bg-red-900/20">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-red-700 dark:text-red-300">
+                        {t.userManagement.rowNumber}
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-red-700 dark:text-red-300">
+                        Email
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-red-700 dark:text-red-300">
+                        {t.userManagement.errorMessage}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-red-200 dark:divide-red-800">
+                    {importErrors.map((error, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
+                          {error.row}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
+                          {error.email}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
+                          {error.error}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 relative">
       {isLoading && <LoadingOverlay />}
@@ -571,6 +677,8 @@ export function UserManagement() {
               {t.userManagement.selectedFile}: {selectedFile.name}
             </p>
           )}
+
+          {importStats && <ImportSummary />}
         </div>
       </div>
 

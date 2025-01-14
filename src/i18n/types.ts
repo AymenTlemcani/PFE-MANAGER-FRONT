@@ -100,6 +100,15 @@ export interface Translation {
     selectRole: string;
     chooseFile: string;
     noFileChosen: string;
+    importSummary: string;
+    importSuccessful: string;
+    importFailed: string;
+    totalRecords: string;
+    errorDetails: string;
+    viewErrors: string;
+    hideErrors: string;
+    rowNumber: string;
+    errorMessage: string;
   };
   studentProject: {
     myPFEProject: string;
