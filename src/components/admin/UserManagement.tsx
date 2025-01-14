@@ -729,7 +729,11 @@ const getRoleTranslation = (role: string, t: Translation) => {
   }
 };
 
-const getRoleBadgeStyle = (role: string, isResponsible: boolean = false) => {
+// Export the function so it can be imported by other components
+export const getRoleBadgeStyle = (
+  role: string,
+  isResponsible: boolean = false
+) => {
   switch (role.toLowerCase()) {
     case "student":
       return "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800/50";

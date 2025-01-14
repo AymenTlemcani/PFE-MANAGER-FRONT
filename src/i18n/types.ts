@@ -186,4 +186,34 @@ export interface Translation {
     maxReminders: string;
     addReminder: string;
   };
+  allUsers: {
+    title: string;
+    deleteSelected: string;
+    refresh: string;
+    searchUsers: string;
+    students: string;
+    teachers: string;
+    administrators: string;
+    companies: string;
+    onlyResponsibles: string;
+    selectAll: string;
+    selected: string;
+    deleteUsers: string;
+    deleteConfirm: string;
+    deleteSuccess: string;
+    deleteFailed: string;
+    cantDeleteOwn: string;
+    memberSince: string;
+    grade: string;
+    masterOption: string;
+    average: string;
+    year: string;
+    domain: string;
+    recruited: string;
+    company: string;
+    industry: string;
+    location: string;
+    error: string;
+    loadFailed: string;
+  };
 }

@@ -28,9 +28,12 @@ import {
   SnackbarManager,
   SnackbarItem,
 } from "../../components/ui/SnackbarManager";
+import { useTranslation } from "../../hooks/useTranslation";
+import { getRoleBadgeStyle } from "../../components/admin/UserManagement";
 
 export function AllUsersPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -336,11 +339,11 @@ export function AllUsersPage() {
         <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              All Users
+              {t.allUsers.title}
             </h2>
             {selectedUsers.size > 0 && (
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {selectedUsers.size} selected
+                {selectedUsers.size} {t.allUsers.selected}
               </span>
             )}
           </div>
@@ -352,7 +355,7 @@ export function AllUsersPage() {
                 className="flex items-center gap-2"
               >
                 <Trash2 className="h-4 w-4" />
-                Delete Selected
+                {t.allUsers.deleteSelected}
               </Button>
             )}
             <Button
@@ -363,7 +366,7 @@ export function AllUsersPage() {
               <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               />
-              Refresh
+              {t.allUsers.refresh}
             </Button>
             <button
               onClick={() => navigate("/dashboard/users")}
@@ -381,29 +384,47 @@ export function AllUsersPage() {
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Search users..."
+                  placeholder={t.allUsers.searchUsers}
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
                 />
                 <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               </div>
-              <div className="flex gap-2">
-                {["Student", "Teacher", "Administrator", "Company"].map(
-                  (role) => (
-                    <button
-                      key={role}
-                      onClick={() => toggleRole(role)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-                      ${
-                        selectedRoles.has(role)
-                          ? "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                      }`}
-                    >
-                      {role}
-                    </button>
-                  )
+              <div className="flex gap-2 items-center">
+                {[
+                  { key: "Student", label: t.allUsers.students },
+                  { key: "Teacher", label: t.allUsers.teachers },
+                  { key: "Administrator", label: t.allUsers.administrators },
+                  { key: "Company", label: t.allUsers.companies },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleRole(key)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      selectedRoles.has(key)
+                        ? getRoleBadgeStyle(
+                            key,
+                            key === "Teacher" && showOnlyResponsibles
+                          )
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+                {showResponsibleFilter && (
+                  <button
+                    onClick={() => setShowOnlyResponsibles((prev) => !prev)}
+                    className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      showOnlyResponsibles
+                        ? getRoleBadgeStyle("Teacher", true)
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    <BadgeCheck className="h-4 w-4" />
+                    {t.allUsers.onlyResponsibles}
+                  </button>
                 )}
               </div>
             </div>
@@ -432,21 +453,6 @@ export function AllUsersPage() {
                   <List className="h-4 w-4" />
                 </button>
               </div>
-
-              {/* Responsible Teachers Filter - Only show when Teacher role is selected */}
-              {showResponsibleFilter && (
-                <button
-                  onClick={() => setShowOnlyResponsibles((prev) => !prev)}
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                    showOnlyResponsibles
-                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                  }`}
-                >
-                  <BadgeCheck className="h-4 w-4" />
-                  Show Only Responsibles
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -464,11 +470,11 @@ export function AllUsersPage() {
                 ) : (
                   <Square className="h-4 w-4" />
                 )}
-                Select All ({selectableUsers.length})
+                {t.allUsers.selectAll} ({selectableUsers.length})
               </button>
               {selectedUsers.size > 0 && (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {selectedUsers.size} selected
+                  {selectedUsers.size} {t.allUsers.selected}
                 </span>
               )}
             </div>
@@ -483,7 +489,7 @@ export function AllUsersPage() {
               {Object.entries(groupedUsers).map(([role, roleUsers]) => (
                 <div key={role} className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    {role}
+                    {t.userManagement.roles[role.toLowerCase()]}
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                       ({roleUsers.length})
                     </span>
@@ -536,26 +542,64 @@ export function AllUsersPage() {
                                   <span className="truncate">{user.email}</span>
                                 </div>
                               </div>
-                              <span className="flex-none px-2.5 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800">
-                                {user.role}
+                              <span
+                                className={`px-2.5 py-0.5 text-xs rounded-full ${getRoleBadgeStyle(
+                                  user.role,
+                                  user.role === "Teacher" &&
+                                    user.teacher?.is_responsible
+                                )}`}
+                              >
+                                {
+                                  t.userManagement.roles[
+                                    user.role.toLowerCase()
+                                  ]
+                                }
                               </span>
                             </div>
 
                             <div className="pl-8">
                               <div className="text-sm space-y-1">
-                                {roleInfo.details.map((detail, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex items-center justify-between"
-                                  >
-                                    <span className="text-gray-500">
-                                      {detail.label}:
-                                    </span>
-                                    <span className="font-medium">
-                                      {detail.value}
-                                    </span>
-                                  </div>
-                                ))}
+                                {roleInfo.details.map((detail, i) => {
+                                  // Translate the labels
+                                  const label = (() => {
+                                    switch (detail.label) {
+                                      case "Master Option":
+                                        return t.allUsers.masterOption;
+                                      case "Average":
+                                        return t.allUsers.average;
+                                      case "Year":
+                                        return t.allUsers.year;
+                                      case "Grade":
+                                        return t.allUsers.grade;
+                                      case "Domain":
+                                        return t.allUsers.domain;
+                                      case "Recruited":
+                                        return t.allUsers.recruited;
+                                      case "Company":
+                                        return t.allUsers.company;
+                                      case "Industry":
+                                        return t.allUsers.industry;
+                                      case "Location":
+                                        return t.allUsers.location;
+                                      default:
+                                        return detail.label;
+                                    }
+                                  })();
+
+                                  return (
+                                    <div
+                                      key={i}
+                                      className="flex items-center justify-between"
+                                    >
+                                      <span className="text-gray-500">
+                                        {label}:
+                                      </span>
+                                      <span className="font-medium">
+                                        {detail.value}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
                           </div>
@@ -577,7 +621,7 @@ export function AllUsersPage() {
               {Object.entries(groupedUsers).map(([role, roleUsers]) => (
                 <div key={role} className="space-y-2">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
-                    {role}
+                    {t.userManagement.roles[role.toLowerCase()]}
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                       ({roleUsers.length})
                     </span>
@@ -631,23 +675,61 @@ export function AllUsersPage() {
                                 </div>
                               </div>
                               <div className="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
-                                {roleInfo.details.map((detail, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex items-center justify-between"
-                                  >
-                                    <span className="text-gray-500">
-                                      {detail.label}:
-                                    </span>
-                                    <span className="font-medium">
-                                      {detail.value}
-                                    </span>
-                                  </div>
-                                ))}
+                                {roleInfo.details.map((detail, i) => {
+                                  // Translate the labels
+                                  const label = (() => {
+                                    switch (detail.label) {
+                                      case "Master Option":
+                                        return t.allUsers.masterOption;
+                                      case "Average":
+                                        return t.allUsers.average;
+                                      case "Year":
+                                        return t.allUsers.year;
+                                      case "Grade":
+                                        return t.allUsers.grade;
+                                      case "Domain":
+                                        return t.allUsers.domain;
+                                      case "Recruited":
+                                        return t.allUsers.recruited;
+                                      case "Company":
+                                        return t.allUsers.company;
+                                      case "Industry":
+                                        return t.allUsers.industry;
+                                      case "Location":
+                                        return t.allUsers.location;
+                                      default:
+                                        return detail.label;
+                                    }
+                                  })();
+
+                                  return (
+                                    <div
+                                      key={i}
+                                      className="flex items-center justify-between"
+                                    >
+                                      <span className="text-gray-500">
+                                        {label}:
+                                      </span>
+                                      <span className="font-medium">
+                                        {detail.value}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                               <div className="flex items-start justify-end">
-                                <span className="px-2.5 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800">
-                                  {user.role}
+                                <span
+                                  className={`px-2.5 py-0.5 text-xs rounded-full ${getRoleBadgeStyle(
+                                    user.role,
+                                    user.role === "Teacher" &&
+                                      user.teacher?.is_responsible
+                                  )}`}
+                                >
+                                  {
+                                    t.userManagement.roles[
+                                      user.role.toLowerCase()
+                                    ]
+                                  }
                                 </span>
                               </div>
                             </div>
@@ -666,13 +748,9 @@ export function AllUsersPage() {
       <Dialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
-        title="Delete Users"
-        description={
-          selectedUsers.size === 1
-            ? "Are you sure you want to delete this user? This action cannot be undone."
-            : `Are you sure you want to delete ${selectedUsers.size} users? This action cannot be undone.`
-        }
-        confirmText={isLoading ? "Deleting..." : "Delete"}
+        title={t.allUsers.deleteUsers}
+        description={t.allUsers.deleteConfirm}
+        confirmText={isLoading ? "Deleting..." : t.allUsers.deleteSelected}
         confirmVariant="danger"
         onConfirm={handleBulkDelete}
         disabled={isLoading}
