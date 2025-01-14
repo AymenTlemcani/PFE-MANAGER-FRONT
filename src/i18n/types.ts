@@ -109,6 +109,12 @@ export interface Translation {
     hideErrors: string;
     rowNumber: string;
     errorMessage: string;
+    roles: {
+      student: string;
+      teacher: string;
+      administrator: string;
+      company: string;
+    };
   };
   studentProject: {
     myPFEProject: string;

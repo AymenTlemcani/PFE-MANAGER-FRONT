@@ -113,6 +113,12 @@ export const translations: Record<string, Translation> = {
       hideErrors: "Hide Errors",
       rowNumber: "Row",
       errorMessage: "Error Message",
+      roles: {
+        student: "Student",
+        teacher: "Teacher",
+        administrator: "Administrator",
+        company: "Company",
+      },
     },
     studentProject: {
       myPFEProject: "My PFE Project",
@@ -301,6 +307,12 @@ export const translations: Record<string, Translation> = {
       hideErrors: "Masquer les erreurs",
       rowNumber: "Ligne",
       errorMessage: "Message d'erreur",
+      roles: {
+        student: "Étudiant",
+        teacher: "Enseignant",
+        administrator: "Administrateur",
+        company: "Entreprise",
+      },
     },
     studentProject: {
       myPFEProject: "Mon Projet PFE",

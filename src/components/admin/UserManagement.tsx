@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   RefreshCw, // Add this import
+  Star, // Add Star to imports
 } from "lucide-react";
 import { Button, Dialog, Input } from "../ui";
 import { SnackbarManager, SnackbarItem } from "../ui/SnackbarManager";
@@ -18,6 +19,7 @@ import axios from "axios";
 import { API_ENDPOINTS } from "../../api/endpoints";
 import api from "../../api/axios"; // Change this import
 import { useNavigate } from "react-router-dom";
+import { Translation } from "../../i18n/types";
 
 type UserRole = "student" | "teacher" | "company" | "admin";
 
@@ -712,6 +714,38 @@ export function UserManagement() {
   );
 }
 
+const getRoleTranslation = (role: string, t: Translation) => {
+  switch (role.toLowerCase()) {
+    case "student":
+      return t.userManagement.roles.student;
+    case "teacher":
+      return t.userManagement.roles.teacher;
+    case "administrator":
+      return t.userManagement.roles.administrator;
+    case "company":
+      return t.userManagement.roles.company;
+    default:
+      return role;
+  }
+};
+
+const getRoleBadgeStyle = (role: string, isResponsible: boolean = false) => {
+  switch (role.toLowerCase()) {
+    case "student":
+      return "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800/50";
+    case "teacher":
+      return isResponsible
+        ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800/50"
+        : "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800/50";
+    case "administrator":
+      return "bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-800/50";
+    case "company":
+      return "bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-800/50";
+    default:
+      return "bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-800/50";
+  }
+};
+
 function UserList({
   users,
   onEditUser,
@@ -928,8 +962,16 @@ function UserList({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800/50">
-                    {user.role}
+                  <span
+                    className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border ${getRoleBadgeStyle(
+                      user.role,
+                      user.role === "Teacher" && user.isResponsible
+                    )}`}
+                  >
+                    {getRoleTranslation(user.role, t)}
+                    {user.isResponsible && user.role === "Teacher" && (
+                      <Star className="h-3 w-3 fill-current" />
+                    )}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
