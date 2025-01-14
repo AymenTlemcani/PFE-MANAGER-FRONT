@@ -58,6 +58,9 @@ export interface Translation {
     passwordUpdateError: string;
     currentPasswordIncorrect: string;
     passwordUpdateSuccess: string;
+    additionalInformation: string;
+    memberSince: string;
+    dateOfBirth: string;
   };
   userManagement: {
     userDeleted: string;

@@ -62,6 +62,9 @@ export const translations: Record<string, Translation> = {
       passwordUpdateError: "An error occurred while updating the password",
       currentPasswordIncorrect: "The current password is incorrect",
       passwordUpdateSuccess: "Password updated successfully",
+      additionalInformation: "Additional Information",
+      memberSince: "Member Since",
+      dateOfBirth: "Date of Birth",
     },
     userManagement: {
       userDeleted: "User {name} has been deleted",
@@ -204,6 +207,9 @@ export const translations: Record<string, Translation> = {
         "Une erreur s'est produite lors de la mise à jour du mot de passe",
       currentPasswordIncorrect: "Le mot de passe actuel est incorrect",
       passwordUpdateSuccess: "Mot de passe mis à jour avec succès",
+      additionalInformation: "Informations Supplémentaires",
+      memberSince: "Membre Depuis",
+      dateOfBirth: "Date de Naissance",
     },
     userManagement: {
       userDeleted: "L'utilisateur {name} a été supprimé",

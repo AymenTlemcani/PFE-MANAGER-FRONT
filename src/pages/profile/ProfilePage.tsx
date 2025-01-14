@@ -12,6 +12,8 @@ import {
   SnackbarManager,
   SnackbarItem,
 } from "../../components/ui/SnackbarManager";
+import gbFlag from "../../assets/gb.png";
+import frFlag from "../../assets/fr.png";
 
 interface LanguageSelectProps {
   value: "en" | "fr";
@@ -25,8 +27,8 @@ const LanguageSelect: React.FC<LanguageSelectProps> = ({
   t,
 }) => {
   const options = [
-    { value: "en", label: t.profile.english, icon: "🇬🇧" },
-    { value: "fr", label: t.profile.french, icon: "🇫🇷" },
+    { value: "en", label: t.profile.english, icon: gbFlag },
+    { value: "fr", label: t.profile.french, icon: frFlag },
   ];
 
   return (
@@ -43,7 +45,11 @@ const LanguageSelect: React.FC<LanguageSelectProps> = ({
           }`}
           aria-pressed={value === option.value}
         >
-          <span className="text-lg">{option.icon}</span>
+          <img
+            src={option.icon}
+            alt={`${option.label} flag`}
+            className="w-5 h-5 rounded-sm object-cover"
+          />
           <span className="font-medium">{option.label}</span>
         </button>
       ))}
@@ -439,14 +445,14 @@ export function ProfilePage() {
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Additional Information
+                  {t.profile.additionalInformation}
                 </h2>
               </div>
               <div className="p-4">
                 <dl className="grid gap-4">
                   <div className="col-span-2">
                     <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Member Since
+                      {t.profile.memberSince}
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
                       {new Date(user.created_at).toLocaleDateString(undefined, {
@@ -459,7 +465,7 @@ export function ProfilePage() {
                   {user.date_of_birth && (
                     <div className="col-span-2">
                       <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                        Date of Birth
+                        {t.profile.dateOfBirth}
                       </dt>
                       <dd className="text-base font-medium text-gray-900 dark:text-white">
                         {new Date(user.date_of_birth).toLocaleDateString(
