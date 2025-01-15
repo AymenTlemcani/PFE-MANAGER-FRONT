@@ -36,6 +36,7 @@ interface UserListProps {
   onPageChange: (page: number, search?: string, role?: string) => void;
   onSort: (field: SortField) => void;
   sortConfig: { field: SortField; direction: SortDirection } | null;
+  currentRole?: string; // Add this line
 }
 
 type SortField = "firstName" | "lastName" | "email" | "role";
@@ -155,6 +156,7 @@ export function UserManagement() {
   const [importStats, setImportStats] = useState<ImportStats | null>(null);
   const [importErrors, setImportErrors] = useState<ImportError[]>([]);
   const [showErrors, setShowErrors] = useState(false);
+  const [currentRole, setCurrentRole] = useState<string>("all"); // Add this state
 
   // Add a ref to store the latest users state
   const usersRef = useRef(users);
@@ -412,6 +414,7 @@ export function UserManagement() {
     };
   };
 
+  // Update the fetchUsers function to properly handle the "all" role
   const fetchUsers = async (
     page: number,
     search?: string,
@@ -421,11 +424,16 @@ export function UserManagement() {
   ) => {
     console.log("fetchUsers - Starting fetch:", { page, search, role });
     setIsLoading(true);
+
+    // Update currentRole state, using "all" when role is undefined or "all"
+    setCurrentRole(role || "all");
+
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         per_page: "10",
         ...(search && { search }),
+        // Only add role parameter if it's not "all"
         ...(role && role !== "all" && { role }),
         ...(sortField && { sort_by: sortField }),
         ...(sortDirection && { sort_direction: sortDirection }),
@@ -696,6 +704,7 @@ export function UserManagement() {
           onPageChange={handlePageChange}
           onSort={handleSort}
           sortConfig={sortConfig}
+          currentRole={currentRole} // Add this prop
         />
       </div>
 
@@ -758,10 +767,22 @@ function UserList({
   onPageChange,
   onSort,
   sortConfig,
+  currentRole = "all", // Add this prop with default value
 }: UserListProps) {
   const { t } = useTranslation(); // Add this line to get translations in UserList component
   const [searchEmail, setSearchEmail] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole | "all">("all");
+  // Update the type to include "all" explicitly and match backend role names
+  const [selectedRole, setSelectedRole] = useState<
+    "all" | "Administrator" | "Teacher" | "Student" | "Company"
+  >(currentRole as "all" | "Administrator" | "Teacher" | "Student" | "Company");
+
+  // Add an effect to sync the selectedRole with currentRole
+  useEffect(() => {
+    setSelectedRole(
+      currentRole as "all" | "Administrator" | "Teacher" | "Student" | "Company"
+    );
+  }, [currentRole]);
+
   const debouncedSearch = useRef<NodeJS.Timeout>();
 
   // Handle search with debounce
@@ -776,9 +797,12 @@ function UserList({
   };
 
   // Handle role filter
-  const handleRoleChange = (role: UserRole | "all") => {
+  const handleRoleChange = (
+    role: "all" | "Administrator" | "Teacher" | "Student" | "Company"
+  ) => {
+    const normalizedRole = role === "all" ? undefined : role;
     setSelectedRole(role);
-    onPageChange(1, searchEmail, role); // Reset to first page when changing role
+    onPageChange(1, searchEmail, normalizedRole); // Pass undefined instead of "all"
   };
 
   // Remove client-side filtering since we're using server-side filtering
@@ -920,8 +944,17 @@ function UserList({
         </div>
 
         <select
-          value={selectedRole}
-          onChange={(e) => handleRoleChange(e.target.value as UserRole | "all")}
+          value={currentRole} // Changed from selectedRole to currentRole
+          onChange={(e) =>
+            handleRoleChange(
+              e.target.value as
+                | "all"
+                | "Administrator"
+                | "Teacher"
+                | "Student"
+                | "Company"
+            )
+          }
           className="w-48 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
         >
           <option value="all">{t.userManagement.allUsers}</option>
