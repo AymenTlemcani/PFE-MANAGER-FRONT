@@ -4,7 +4,7 @@ export interface Project {
   summary: string;
   technologies: string;
   option: "GL" | "IA" | "RSD" | "SIC";
-  type: "Classical" | "Innovative";
+  type: "Classical" | "Innovative" | "StartUp" | "Patent" | "Internship";
   submitted_by: number;
   status: "Proposed" | "Validated" | "Assigned" | "InProgress" | "Completed";
   submission_date: string;

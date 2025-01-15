@@ -34,9 +34,15 @@ export const projectApi = {
   async submitProject(data: Partial<Project>) {
     const { userId } = verifyAuth();
 
-    // Ensure required fields are present with proper types
+    console.log("🏁 Starting project submission process");
+    console.log("📝 Raw input data:", {
+      data,
+      userId,
+      timestamp: new Date().toISOString(),
+    });
+
     const requestData = {
-      // Project fields
+      // Common project fields
       title: data.title,
       summary: data.summary,
       technologies: data.technologies,
@@ -48,25 +54,58 @@ export const projectApi = {
       submission_date: new Date().toISOString().split("T")[0],
       last_updated_date: new Date().toISOString().split("T")[0],
 
-      // Project proposal fields - in a separate object
+      // Handle both student and teacher project proposals
       project_proposal: {
-        co_supervisor_name: data.proposal?.co_supervisor_name || "",
-        co_supervisor_surname: data.proposal?.co_supervisor_surname || "",
         proposal_status: "Pending",
         is_final_version: true,
         proposal_order: 1,
-        proposer_type: "Teacher",
         submitted_by: userId,
         review_comments: "Initial submission",
+        proposer_type: data.proposal?.proposer_type || "Student",
+        // Optional fields based on proposer type
+        co_supervisor_name: data.proposal?.co_supervisor_name,
+        co_supervisor_surname: data.proposal?.co_supervisor_surname,
+        partner_id: data.proposal?.partner_id,
+        internship_details: data.proposal?.internship_details,
       },
     };
 
+    console.log("🔍 Formatted request data:", {
+      title: requestData.title,
+      type: requestData.type,
+      option: requestData.option,
+      proposalDetails: requestData.project_proposal,
+      submittedBy: requestData.submitted_by,
+    });
+
     try {
-      console.log("📤 Submitting final project data:", requestData);
+      console.log("📤 Sending project creation request...");
       const response = await axios.post(
         API_ENDPOINTS.projects.create,
         requestData
       );
+
+      console.log("✅ Project creation successful!", {
+        projectId: response.data.project_id,
+        status: response.status,
+        responseData: response.data,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log("📊 Database record created:", {
+        project: {
+          id: response.data.project_id,
+          title: response.data.title,
+          type: response.data.type,
+          status: response.data.status,
+        },
+        proposal: {
+          id: response.data.project_proposal?.proposal_id,
+          status: response.data.project_proposal?.proposal_status,
+          proposerType: response.data.project_proposal?.proposer_type,
+        },
+      });
+
       return response.data;
     } catch (error: any) {
       console.error("❌ Project Submission Error:", {
@@ -74,7 +113,17 @@ export const projectApi = {
         sqlError: error.response?.data?.sqlError,
         requestData,
         validationErrors: error.response?.data?.errors,
+        timestamp: new Date().toISOString(),
       });
+
+      // Log specific validation failures if any
+      if (error.response?.data?.errors) {
+        console.error("🚫 Validation Failures:", {
+          fields: Object.keys(error.response.data.errors),
+          details: error.response.data.errors,
+        });
+      }
+
       throw error;
     }
   },

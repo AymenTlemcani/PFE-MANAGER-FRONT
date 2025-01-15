@@ -24,8 +24,19 @@ interface Student {
   masterOption: string;
 }
 
+interface StudentUser extends User {
+  student?: {
+    student_id: number;
+    name: string;
+    surname: string;
+    master_option: string;
+    overall_average: number;
+    admission_year: number;
+  };
+}
+
 export function StudentPFEForm() {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user) as StudentUser;
   const navigate = useNavigate();
   const { addProject } = useProjectContext();
   const { submitProject, submitProposal } = useProjectStore();
@@ -33,13 +44,15 @@ export function StudentPFEForm() {
   const [availablePartners, setAvailablePartners] = useState<Student[]>([]);
   const [hasExistingProposal, setHasExistingProposal] = useState(false);
   const [formData, setFormData] = useState({
-    studentId: user?.id || "",
-    studentName: `${user?.firstName} ${user?.lastName}` || "",
+    studentId: user?.id || user?.user_id || "",
+    studentName: user?.student
+      ? `${user.student.name} ${user.student.surname}`.trim()
+      : "Loading...",
     partnerId: "",
     partnerName: "",
     companyId: "",
     supervisorName: "",
-    option: "",
+    option: user?.student?.master_option || "",
     title: "",
     summary: "",
     duration: "",
@@ -53,6 +66,17 @@ export function StudentPFEForm() {
   const [proposalCount, setProposalCount] = useState(0);
 
   const [errors, setErrors] = useState<FormErrors>({});
+
+  useEffect(() => {
+    if (user?.student) {
+      setFormData((current) => ({
+        ...current,
+        studentId: user.id || user.user_id || "",
+        studentName: `${user.student.name} ${user.student.surname}`.trim(),
+        option: user.student.master_option || current.option,
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -113,46 +137,67 @@ export function StudentPFEForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (proposalCount >= 3) {
-      setErrors({ submit: "Maximum number of proposals (3) reached." });
-      return;
-    }
     if (!validateForm()) return;
 
     try {
-      // First submit the project
-      const project = await submitProject({
+      console.log("🔒 User auth check:", { user });
+      const userId = user?.id || user?.user_id;
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      const userIdNum = parseInt(userId.toString());
+      localStorage.setItem("user_id", userIdNum.toString());
+
+      const projectData = {
         title: formData.title,
-        summary: formData.description,
+        summary: formData.summary,
         technologies: formData.technologies,
-        material_needs: formData.hardwareRequirements,
+        material_needs: formData.hardwareRequirements || null,
         option: formData.option,
         type: formData.type,
-      });
-
-      // Then submit the proposal
-      await submitProposal({
-        project_id: project.project_id,
-        partner_id: formData.partnerId || undefined,
-        additional_details: {
-          duration: formData.duration,
-          paid: formData.paid,
-          salary: formData.salary,
+        submitted_by: userIdNum,
+        status: "Proposed",
+        proposal: {
+          proposer_type: "Student",
+          submitted_by: userIdNum,
+          proposal_status: "Pending",
+          is_final_version: true,
+          proposal_order: 1,
+          partner_id: formData.partnerId || undefined,
+          internship_details: {
+            duration: parseInt(formData.duration),
+            location: formData.location,
+            salary: formData.paid ? parseInt(formData.salary) : undefined,
+          },
         },
-      });
+      };
 
-      navigate("/project");
-    } catch (error) {
-      setErrors({ submit: "Failed to submit PFE proposal. Please try again." });
+      console.log("📦 Student project data prepared:", projectData);
+      const response = await submitProject(projectData);
+      console.log("✅ Student project created:", response);
+
+      // If there's a partner, send notification
+      if (formData.partnerId) {
+        await sendPartnerNotification(formData.partnerId, response.project_id);
+      }
+
+      navigate("/projects");
+    } catch (error: any) {
+      console.error("❌ Submit failed:", error);
+      setErrors({
+        submit: error.response?.data?.message || "Failed to submit project",
+        ...(error.response?.data?.errors || {}),
+      });
     }
   };
 
   const fillTestData = () => {
     setFormData({
-      ...formData, // keep existing student data
+      ...formData,
       title: "AI-Powered Healthcare Analytics Platform",
       option: "IA",
-      type: "research", // Added type field
+      type: "Innovative", // Changed from "research" to "Innovative"
       summary:
         "An innovative healthcare analytics platform using machine learning to predict patient outcomes and optimize treatment plans. The system utilizes deep learning models for medical image analysis and predictive analytics.",
       duration: "6",
@@ -163,7 +208,7 @@ export function StudentPFEForm() {
       hardwareRequirements:
         "GPU Server for model training, 32GB RAM minimum, SSD Storage",
       supervisorName: "Dr. Sarah Johnson",
-      companyId: "1", // assuming this matches one of your mock companies
+      companyId: "1",
     });
   };
 
@@ -354,9 +399,11 @@ export function StudentPFEForm() {
                     required
                   >
                     <option value="">Select Type</option>
-                    <option value="classic">Classic</option>
-                    <option value="innovative">Innovative</option>
-                    <option value="research">Research</option>
+                    <option value="Classical">Classical</option>
+                    <option value="Innovative">Innovative</option>
+                    <option value="StartUp">StartUp</option>
+                    <option value="Patent">Patent</option>
+                    <option value="Internship">Internship</option>
                   </select>
                 </div>
 

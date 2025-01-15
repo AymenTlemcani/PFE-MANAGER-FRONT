@@ -46,19 +46,15 @@ export interface Teacher extends BaseUser {
   };
 }
 
-export interface Student extends BaseUser {
-  role: "Student";
-  student: {
-    student_id: number;
-    user_id: number;
-    name: string;
-    surname: string;
-    master_option: MasterOption;
-    overall_average: number;
-    admission_year: number;
-    created_at: string;
-    updated_at: string;
-  };
+export interface Student {
+  student_id: number;
+  user_id: number;
+  name: string;
+  surname: string;
+  master_option: "GL" | "IA" | "RSD" | "SIC";
+  overall_average: number;
+  admission_year: number;
+  // ...other existing fields...
 }
 
 export interface Company extends BaseUser {
