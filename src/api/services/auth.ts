@@ -12,6 +12,9 @@ import type {
 
 export async function login(email: string, password: string): Promise<User> {
   try {
+    console.group("🔐 Login Process");
+    console.log("📡 Sending login request...");
+
     const response = await api.post<AuthResponse>(API_ENDPOINTS.auth.login, {
       email,
       password,
@@ -19,14 +22,31 @@ export async function login(email: string, password: string): Promise<User> {
 
     const { user, token, must_change_password } = response.data;
 
+    console.log("✅ Login successful, storing auth data:", {
+      tokenPreview: token ? `${token.substring(0, 10)}...` : null,
+      user: user.email,
+      must_change_password,
+    });
+
     localStorage.setItem("authToken", token);
     localStorage.setItem(
       "user",
       JSON.stringify({ ...user, must_change_password })
     );
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
+    // Verify token was stored correctly
+    const storedToken = localStorage.getItem("authToken");
+    console.log("🔍 Token storage verification:", {
+      tokenStored: !!storedToken,
+      headerSet: !!api.defaults.headers.common["Authorization"],
+    });
+
+    console.groupEnd();
     return user;
-  } catch (error: unknown) {
+  } catch (error) {
+    console.error("❌ Login failed:", error);
+    console.groupEnd();
     if (error && typeof error === "object" && "response" in error) {
       const errorResponse = error as {
         response?: {
@@ -45,9 +65,18 @@ export async function login(email: string, password: string): Promise<User> {
 }
 
 export async function logout(): Promise<void> {
-  await api.post(API_ENDPOINTS.auth.logout);
-  localStorage.removeItem("authToken");
-  localStorage.removeItem("user");
+  console.log("🔄 Logging out...");
+  try {
+    await api.post(API_ENDPOINTS.auth.logout);
+  } catch (error) {
+    console.warn("⚠️ Logout request failed:", error);
+  } finally {
+    // Clear auth data regardless of logout request success
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    delete api.defaults.headers.common["Authorization"];
+    console.log("✅ Logout completed, auth data cleared");
+  }
 }
 
 export async function getCurrentUser(): Promise<User> {
