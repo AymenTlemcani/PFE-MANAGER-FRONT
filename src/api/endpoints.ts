@@ -20,13 +20,13 @@ export const API_ENDPOINTS = {
   },
   projects: {
     list: "/projects",
-    create: "/projects",
+    create: "/projects", // Make sure this matches your Laravel route
     update: (id: number) => `/projects/${id}`,
     delete: (id: number) => `/projects/${id}`,
     validate: (id: number) => `/projects/validate/${id}`,
     supervise: "/projects/supervise",
-    propose: "/projects/propose",
-    proposed: "/projects/proposed",
+    propose: "/project-proposals", // Update this to match your Laravel route
+    proposed: "/project-proposals",
   },
   students: {
     list: "/students",

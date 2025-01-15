@@ -5,6 +5,7 @@ import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useProjectContext } from "../../context/ProjectContext";
 import { useAuthStore } from "../../store/authStore";
+import { useProjectStore } from "../../store/projectStore";
 
 interface FormErrors {
   [key: string]: string;
@@ -27,6 +28,7 @@ export function StudentPFEForm() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const { addProject } = useProjectContext();
+  const { submitProject, submitProposal } = useProjectStore();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [availablePartners, setAvailablePartners] = useState<Student[]>([]);
   const [hasExistingProposal, setHasExistingProposal] = useState(false);
@@ -118,33 +120,30 @@ export function StudentPFEForm() {
     if (!validateForm()) return;
 
     try {
-      const newProject = {
-        id: Date.now().toString(),
-        ...formData,
-        status: "Under Review",
-        submittedDate: new Date().toISOString().split("T")[0],
+      // First submit the project
+      const project = await submitProject({
+        title: formData.title,
+        summary: formData.description,
+        technologies: formData.technologies,
+        material_needs: formData.hardwareRequirements,
+        option: formData.option,
         type: formData.type,
-        submitterName: `${user.firstName} ${user.lastName}`,
-        submittedBy: "student",
-      };
+      });
 
-      // Store in localStorage
-      const storedProposals = JSON.parse(
-        localStorage.getItem("studentProposals") || "[]"
-      );
-      localStorage.setItem(
-        "studentProposals",
-        JSON.stringify([...storedProposals, newProject])
-      );
+      // Then submit the proposal
+      await submitProposal({
+        project_id: project.project_id,
+        partner_id: formData.partnerId || undefined,
+        additional_details: {
+          duration: formData.duration,
+          paid: formData.paid,
+          salary: formData.salary,
+        },
+      });
 
-      if (formData.partnerId) {
-        await sendPartnerNotification(formData.partnerId, newProject.id);
-      }
-
-      navigate("/project"); // Navigate to student project page instead of /projects
+      navigate("/project");
     } catch (error) {
-      console.error("Error submitting PFE:", error);
-      setErrors({ submit: "Failed to submit PFE. Please try again." });
+      setErrors({ submit: "Failed to submit PFE proposal. Please try again." });
     }
   };
 
