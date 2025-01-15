@@ -430,11 +430,11 @@ export function AllUsersPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* View Mode Toggle */}
+              {/* View Mode Toggle - Update the classes */}
               <div className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${
+                  className={`p-2 rounded text-gray-700 dark:text-gray-200 ${
                     viewMode === "grid"
                       ? "bg-gray-100 dark:bg-gray-700"
                       : "hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -444,7 +444,7 @@ export function AllUsersPage() {
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 rounded ${
+                  className={`p-2 rounded text-gray-700 dark:text-gray-200 ${
                     viewMode === "list"
                       ? "bg-gray-100 dark:bg-gray-700"
                       : "hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -508,7 +508,7 @@ export function AllUsersPage() {
                           className={`p-4 border rounded-lg transition-colors hover:border-blue-500 ${
                             selectedUsers.has(String(user.user_id))
                               ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                              : "border-gray-200 dark:border-gray-700"
+                              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                           }`}
                         >
                           <div className="space-y-4">
@@ -516,7 +516,7 @@ export function AllUsersPage() {
                               <button
                                 onClick={() => handleSelectUser(user.user_id)}
                                 disabled={user.user_id === currentUserId}
-                                className="flex-none mt-1"
+                                className="flex-none mt-1 text-gray-700 dark:text-gray-200"
                               >
                                 {selectedUsers.has(String(user.user_id)) ? (
                                   <CheckSquare className="h-5 w-5" />
@@ -526,7 +526,7 @@ export function AllUsersPage() {
                               </button>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="text-sm font-medium truncate">
+                                  <h4 className="text-sm font-medium truncate text-gray-900 dark:text-gray-100">
                                     {getUserFullName(user)}
                                   </h4>
                                   {user.role === "Teacher" &&
@@ -537,7 +537,7 @@ export function AllUsersPage() {
                                       />
                                     )}
                                 </div>
-                                <div className="flex items-center gap-1 text-sm text-gray-500">
+                                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                                   <Mail className="h-3 w-3" />
                                   <span className="truncate">{user.email}</span>
                                 </div>
@@ -591,10 +591,10 @@ export function AllUsersPage() {
                                       key={i}
                                       className="flex items-center justify-between"
                                     >
-                                      <span className="text-gray-500">
+                                      <span className="text-gray-500 dark:text-gray-400">
                                         {label}:
                                       </span>
-                                      <span className="font-medium">
+                                      <span className="font-medium text-gray-900 dark:text-gray-100">
                                         {detail.value}
                                       </span>
                                     </div>
@@ -616,17 +616,17 @@ export function AllUsersPage() {
               )}
             </div>
           ) : (
-            // List View
-            <div className="space-y-4">
+            // List View - Update the styling
+            <div className="space-y-6">
               {Object.entries(groupedUsers).map(([role, roleUsers]) => (
-                <div key={role} className="space-y-2">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                <div key={role} className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     {t.userManagement.roles[role.toLowerCase()]}
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                       ({roleUsers.length})
                     </span>
                   </h3>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     {roleUsers.map((user, index) => {
                       const roleInfo = getRoleSpecificInfo(user);
                       return (
@@ -637,17 +637,17 @@ export function AllUsersPage() {
                               ? lastUserElementRef
                               : null
                           }
-                          className={`py-4 transition-colors ${
+                          className={`p-4 transition-colors ${
                             selectedUsers.has(String(user.user_id))
                               ? "bg-blue-50 dark:bg-blue-900/20"
-                              : ""
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
                           }`}
                         >
                           <div className="flex items-start gap-4">
                             <button
                               onClick={() => handleSelectUser(user.user_id)}
                               disabled={user.user_id === currentUserId}
-                              className="flex-none mt-1"
+                              className="flex-none mt-1 text-gray-700 dark:text-gray-200"
                             >
                               {selectedUsers.has(String(user.user_id)) ? (
                                 <CheckSquare className="h-5 w-5" />
@@ -655,71 +655,45 @@ export function AllUsersPage() {
                                 <Square className="h-5 w-5" />
                               )}
                             </button>
-                            <div className="flex-1 min-w-0 grid grid-cols-3 gap-4">
+                            <div className="flex-1 min-w-0 grid grid-cols-[2fr,3fr,auto] gap-6">
+                              {/* First column - Name and email */}
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-medium">
+                                  <span className="font-medium text-gray-900 dark:text-gray-100">
                                     {getUserFullName(user)}
                                   </span>
                                   {user.role === "Teacher" &&
                                     user.teacher?.is_responsible && (
-                                      <BadgeCheck
-                                        className="h-4 w-4 text-blue-500"
-                                        title="Program Responsible"
-                                      />
+                                      <BadgeCheck className="h-4 w-4 text-blue-500" />
                                     )}
                                 </div>
-                                <div className="flex items-center gap-1 text-sm text-gray-500">
-                                  <Mail className="h-3 w-3" />
+                                <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                                  <Mail className="h-3.5 w-3.5" />
                                   <span className="truncate">{user.email}</span>
                                 </div>
                               </div>
-                              <div className="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
-                                {roleInfo.details.map((detail, i) => {
-                                  // Translate the labels
-                                  const label = (() => {
-                                    switch (detail.label) {
-                                      case "Master Option":
-                                        return t.allUsers.masterOption;
-                                      case "Average":
-                                        return t.allUsers.average;
-                                      case "Year":
-                                        return t.allUsers.year;
-                                      case "Grade":
-                                        return t.allUsers.grade;
-                                      case "Domain":
-                                        return t.allUsers.domain;
-                                      case "Recruited":
-                                        return t.allUsers.recruited;
-                                      case "Company":
-                                        return t.allUsers.company;
-                                      case "Industry":
-                                        return t.allUsers.industry;
-                                      case "Location":
-                                        return t.allUsers.location;
-                                      default:
-                                        return detail.label;
-                                    }
-                                  })();
 
-                                  return (
-                                    <div
-                                      key={i}
-                                      className="flex items-center justify-between"
-                                    >
-                                      <span className="text-gray-500">
-                                        {label}:
-                                      </span>
-                                      <span className="font-medium">
-                                        {detail.value}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
+                              {/* Middle column - Details with improved layout */}
+                              <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+                                {roleInfo.details.map((detail, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-2 text-sm"
+                                  >
+                                    <span className="text-gray-500 dark:text-gray-400 min-w-[80px]">
+                                      {getTranslatedLabel(detail.label, t)}:
+                                    </span>
+                                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                                      {detail.value}
+                                    </span>
+                                  </div>
+                                ))}
                               </div>
-                              <div className="flex items-start justify-end">
+
+                              {/* Right column - Role badge */}
+                              <div className="flex justify-end">
                                 <span
-                                  className={`px-2.5 py-0.5 text-xs rounded-full ${getRoleBadgeStyle(
+                                  className={`inline-flex items-center h-6 px-2 text-xs font-medium rounded-full ${getRoleBadgeStyle(
                                     user.role,
                                     user.role === "Teacher" &&
                                       user.teacher?.is_responsible
@@ -740,6 +714,11 @@ export function AllUsersPage() {
                   </div>
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex justify-center p-4">
+                  <Loader className="h-6 w-6 animate-spin text-gray-500 dark:text-gray-400" />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -765,3 +744,29 @@ export function AllUsersPage() {
     </div>
   );
 }
+
+// Add this helper function near your other utility functions
+const getTranslatedLabel = (label: string, t: any) => {
+  switch (label) {
+    case "Master Option":
+      return t.allUsers.masterOption;
+    case "Average":
+      return t.allUsers.average;
+    case "Year":
+      return t.allUsers.year;
+    case "Grade":
+      return t.allUsers.grade;
+    case "Domain":
+      return t.allUsers.domain;
+    case "Recruited":
+      return t.allUsers.recruited;
+    case "Company":
+      return t.allUsers.company;
+    case "Industry":
+      return t.allUsers.industry;
+    case "Location":
+      return t.allUsers.location;
+    default:
+      return label;
+  }
+};
