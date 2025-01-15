@@ -655,7 +655,7 @@ export function AllUsersPage() {
                                 <Square className="h-5 w-5" />
                               )}
                             </button>
-                            <div className="flex-1 min-w-0 grid grid-cols-[2fr,3fr,auto] gap-6">
+                            <div className="flex-1 min-w-0 grid grid-cols-1 lg:grid-cols-[2fr,3fr,auto] gap-4 lg:gap-6">
                               {/* First column - Name and email */}
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -673,17 +673,17 @@ export function AllUsersPage() {
                                 </div>
                               </div>
 
-                              {/* Middle column - Details with improved layout */}
-                              <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+                              {/* Middle column - Details with responsive layout */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-8">
                                 {roleInfo.details.map((detail, i) => (
                                   <div
                                     key={i}
-                                    className="flex items-center gap-2 text-sm"
+                                    className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm"
                                   >
-                                    <span className="text-gray-500 dark:text-gray-400 min-w-[80px]">
+                                    <span className="text-gray-500 dark:text-gray-400 sm:min-w-[80px] font-medium">
                                       {getTranslatedLabel(detail.label, t)}:
                                     </span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                                    <span className="text-gray-900 dark:text-gray-100">
                                       {detail.value}
                                     </span>
                                   </div>
@@ -691,7 +691,7 @@ export function AllUsersPage() {
                               </div>
 
                               {/* Right column - Role badge */}
-                              <div className="flex justify-end">
+                              <div className="flex justify-start lg:justify-end items-start">
                                 <span
                                   className={`inline-flex items-center h-6 px-2 text-xs font-medium rounded-full ${getRoleBadgeStyle(
                                     user.role,
