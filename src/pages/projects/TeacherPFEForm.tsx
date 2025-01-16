@@ -97,21 +97,36 @@ export function TeacherPFEForm() {
         type: formData.type,
         submitted_by: userIdNum,
         status: "Proposed",
-        proposal: {
-          co_supervisor_name: hasCoSupervisor
-            ? formData.co_supervisor_name
-            : null,
-          co_supervisor_surname: hasCoSupervisor
-            ? formData.co_supervisor_surname
-            : null,
-          submitted_by: userIdNum,
-          proposer_type: "Teacher",
-          proposal_status: "Pending",
-          is_final_version: true,
-          proposal_order: 1,
-          review_comments: "Initial submission",
-        },
+        // Include co-supervisor fields at the root level
+        co_supervisor_name: hasCoSupervisor
+          ? formData.co_supervisor_name
+          : null,
+        co_supervisor_surname: hasCoSupervisor
+          ? formData.co_supervisor_surname
+          : null,
       };
+
+      // Add validation for co-supervisor fields if enabled
+      if (hasCoSupervisor) {
+        if (!formData.co_supervisor_name?.trim()) {
+          throw new Error(t.projectForm.validation.enterCoSupervisorName);
+        }
+        if (!formData.co_supervisor_surname?.trim()) {
+          throw new Error(t.projectForm.validation.enterCoSupervisorSurname);
+        }
+      }
+
+      // Log the data being sent for debugging
+      console.log("📤 Submitting project data:", {
+        ...projectData,
+        hasCoSupervisor,
+        coSupervisorDetails: hasCoSupervisor
+          ? {
+              name: formData.co_supervisor_name,
+              surname: formData.co_supervisor_surname,
+            }
+          : null,
+      });
 
       const response = await submitProject(projectData);
 
@@ -147,19 +162,129 @@ export function TeacherPFEForm() {
     }
   };
 
-  const fillTestData = () => {
-    setFormData({
+  const testProjects = [
+    {
       title: "Machine Learning for Network Security",
+      title_fr: "Apprentissage automatique pour la sécurité des réseaux",
       summary:
         "Development of an advanced network security system using machine learning algorithms to detect and prevent cyber attacks in real-time.",
+      summary_fr:
+        "Développement d'un système avancé de sécurité réseau utilisant des algorithmes d'apprentissage automatique pour détecter et prévenir les cyberattaques en temps réel.",
       type: "Innovative",
       option: "IA",
       technologies: "Python, TensorFlow, Scikit-learn, Network Security Tools",
       material_needs:
         "High-performance computing server, Network monitoring equipment",
+      material_needs_fr:
+        "Serveur de calcul haute performance, Équipement de surveillance réseau",
       co_supervisor_name: "Sarah",
       co_supervisor_surname: "Johnson",
+    },
+    {
+      title: "Smart City IoT Platform",
+      title_fr: "Plateforme IoT pour Ville Intelligente",
+      summary:
+        "Creating a comprehensive IoT platform for smart city management, including traffic monitoring, waste management, and energy optimization.",
+      summary_fr:
+        "Création d'une plateforme IoT complète pour la gestion des villes intelligentes, comprenant la surveillance du trafic, la gestion des déchets et l'optimisation énergétique.",
+      type: "Innovative",
+      option: "RSD",
+      technologies: "Arduino, Raspberry Pi, MQTT, Node.js, MongoDB",
+      material_needs:
+        "IoT sensors, Development boards, Cloud server subscription",
+      material_needs_fr:
+        "Capteurs IoT, Cartes de développement, Abonnement serveur cloud",
+      co_supervisor_name: "Pierre",
+      co_supervisor_surname: "Dubois",
+    },
+    {
+      title: "Blockchain-based Supply Chain Management",
+      title_fr:
+        "Gestion de la chaîne d'approvisionnement basée sur la Blockchain",
+      summary:
+        "Implementing a blockchain solution for transparent and secure supply chain management with smart contracts.",
+      summary_fr:
+        "Mise en œuvre d'une solution blockchain pour une gestion transparente et sécurisée de la chaîne d'approvisionnement avec des contrats intelligents.",
+      type: "Innovative",
+      option: "GL",
+      technologies: "Ethereum, Solidity, Web3.js, React",
+      material_needs:
+        "Blockchain development environment, Testing infrastructure",
+      material_needs_fr:
+        "Environnement de développement blockchain, Infrastructure de test",
+      co_supervisor_name: "Marc",
+      co_supervisor_surname: "Lambert",
+    },
+    {
+      title: "AR-based Educational Platform",
+      title_fr: "Plateforme éducative basée sur la RA",
+      summary:
+        "Developing an augmented reality platform for interactive educational content delivery and immersive learning experiences.",
+      summary_fr:
+        "Développement d'une plateforme de réalité augmentée pour la diffusion de contenu éducatif interactif et d'expériences d'apprentissage immersives.",
+      type: "Classical",
+      option: "SIC",
+      technologies: "Unity3D, ARCore, ARKit, C#",
+      material_needs: "AR-capable devices, 3D modeling software",
+      material_needs_fr:
+        "Appareils compatibles RA, Logiciel de modélisation 3D",
+      co_supervisor_name: "Emma",
+      co_supervisor_surname: "Martin",
+    },
+    {
+      title: "Neural Network-based Image Recognition System",
+      title_fr:
+        "Système de reconnaissance d'images basé sur les réseaux de neurones",
+      summary:
+        "Building an advanced image recognition system using deep learning for medical diagnosis assistance.",
+      summary_fr:
+        "Construction d'un système avancé de reconnaissance d'images utilisant l'apprentissage profond pour l'assistance au diagnostic médical.",
+      type: "Innovative",
+      option: "IA",
+      technologies: "PyTorch, OpenCV, CUDA, Docker",
+      material_needs: "GPU workstation, Medical image datasets",
+      material_needs_fr:
+        "Station de travail GPU, Jeux de données d'images médicales",
+      co_supervisor_name: "Lucas",
+      co_supervisor_surname: "Bernard",
+    },
+    {
+      title: "Microservices-based E-commerce Platform",
+      title_fr: "Plateforme E-commerce basée sur les microservices",
+      summary:
+        "Designing and implementing a scalable e-commerce platform using microservices architecture and cloud-native technologies.",
+      summary_fr:
+        "Conception et mise en œuvre d'une plateforme e-commerce évolutive utilisant une architecture microservices et des technologies cloud-natives.",
+      type: "Classical",
+      option: "GL",
+      technologies: "Spring Boot, Kubernetes, RabbitMQ, MongoDB",
+      material_needs: "Cloud infrastructure, Monitoring tools",
+      material_needs_fr: "Infrastructure cloud, Outils de surveillance",
+      co_supervisor_name: "Sophie",
+      co_supervisor_surname: "Leroy",
+    },
+  ];
+
+  const fillTestData = () => {
+    const randomProject =
+      testProjects[Math.floor(Math.random() * testProjects.length)];
+    const isEnglish = localStorage.getItem("language") === "en";
+
+    setFormData({
+      title: isEnglish ? randomProject.title : randomProject.title_fr,
+      summary: isEnglish ? randomProject.summary : randomProject.summary_fr,
+      type: randomProject.type,
+      option: randomProject.option,
+      technologies: randomProject.technologies,
+      material_needs: isEnglish
+        ? randomProject.material_needs
+        : randomProject.material_needs_fr,
+      co_supervisor_name: randomProject.co_supervisor_name,
+      co_supervisor_surname: randomProject.co_supervisor_surname,
     });
+
+    // Enable co-supervisor if the selected project has one
+    setHasCoSupervisor(true);
   };
 
   return (

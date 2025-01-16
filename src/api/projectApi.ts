@@ -35,11 +35,6 @@ export const projectApi = {
     const { userId } = verifyAuth();
 
     console.log("🏁 Starting project submission process");
-    console.log("📝 Raw input data:", {
-      data,
-      userId,
-      timestamp: new Date().toISOString(),
-    });
 
     const requestData = {
       // Common project fields
@@ -53,30 +48,12 @@ export const projectApi = {
       submitted_by: userId,
       submission_date: new Date().toISOString().split("T")[0],
       last_updated_date: new Date().toISOString().split("T")[0],
-
-      // Handle both student and teacher project proposals
-      project_proposal: {
-        proposal_status: "Pending",
-        is_final_version: true,
-        proposal_order: 1,
-        submitted_by: userId,
-        review_comments: "Initial submission",
-        proposer_type: data.proposal?.proposer_type || "Student",
-        // Optional fields based on proposer type
-        co_supervisor_name: data.proposal?.co_supervisor_name,
-        co_supervisor_surname: data.proposal?.co_supervisor_surname,
-        partner_id: data.proposal?.partner_id,
-        internship_details: data.proposal?.internship_details,
-      },
+      // Co-supervisor fields directly in the request
+      co_supervisor_name: data.co_supervisor_name || null,
+      co_supervisor_surname: data.co_supervisor_surname || null,
     };
 
-    console.log("🔍 Formatted request data:", {
-      title: requestData.title,
-      type: requestData.type,
-      option: requestData.option,
-      proposalDetails: requestData.project_proposal,
-      submittedBy: requestData.submitted_by,
-    });
+    console.log("📝 Formatted request data:", requestData);
 
     try {
       console.log("📤 Sending project creation request...");
