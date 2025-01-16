@@ -5,6 +5,7 @@ import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useAuthStore } from "../../store/authStore";
 import { useProjectStore } from "../../store/projectStore";
+import { useProjectContext } from "../../context/ProjectContext"; // Add this import
 import { useSnackbar } from "../../hooks/useSnackbar";
 import { useTranslation } from "../../hooks/useTranslation"; // Change this import to use our custom hook
 
@@ -21,7 +22,7 @@ interface SnackbarState {
 export function TeacherPFEForm() {
   const { t } = useTranslation(); // Now using our custom hook
   const { showSnackbar } = useSnackbar();
-
+  const { refreshProjects } = useProjectContext(); // Add this line
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const { submitProject, submitProposal } = useProjectStore();
@@ -133,6 +134,13 @@ export function TeacherPFEForm() {
       // Success message will automatically clear the info message
       showSnackbar(t.projectForm.notifications.submitSuccess, "success");
       console.log("✅ Project created:", response);
+
+      // Refresh projects list before navigating
+      try {
+        await refreshProjects();
+      } catch (refreshError) {
+        console.error("Failed to refresh projects:", refreshError);
+      }
       navigate("/projects");
     } catch (error: any) {
       // Error message

@@ -19,13 +19,13 @@ export const API_ENDPOINTS = {
     bulkDelete: "/users/bulk-delete",
   },
   projects: {
+    create: "/projects",
     list: "/projects",
-    create: "/projects", // Make sure this matches your Laravel route
+    propose: "/project-proposals",
     update: (id: number) => `/projects/${id}`,
     delete: (id: number) => `/projects/${id}`,
     validate: (id: number) => `/projects/validate/${id}`,
     supervise: "/projects/supervise",
-    propose: "/project-proposals", // Update this to match your Laravel route
     proposed: "/project-proposals",
   },
   students: {

@@ -143,4 +143,23 @@ export const projectApi = {
     );
     return response.data;
   },
+
+  async getProjects() {
+    const { userId } = verifyAuth();
+
+    try {
+      console.log("📤 Fetching projects...");
+      const response = await axios.get(API_ENDPOINTS.projects.list);
+
+      console.log("✅ Projects fetched successfully:", {
+        count: response.data.length,
+        timestamp: new Date().toISOString(),
+      });
+
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Error fetching projects:", error);
+      throw error;
+    }
+  },
 };

@@ -258,6 +258,11 @@ export const translations: Record<string, Translation> = {
         notAuthenticated: "User not authenticated",
       },
     },
+    common: {
+      refresh: "Refresh",
+      loading: "Loading...",
+      // Add any other common translations here
+    },
   },
   fr: {
     navigation: {
@@ -518,6 +523,11 @@ export const translations: Record<string, Translation> = {
         submitError: "Échec de la soumission du projet",
         notAuthenticated: "Utilisateur non authentifié",
       },
+    },
+    common: {
+      refresh: "Actualiser",
+      loading: "Chargement...",
+      // Add any other common translations here
     },
   },
 };

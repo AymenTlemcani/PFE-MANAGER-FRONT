@@ -252,4 +252,9 @@ export interface Translation {
       notAuthenticated: string;
     };
   };
+  common: {
+    refresh: string;
+    loading: string;
+    // Add other common translations here
+  };
 }

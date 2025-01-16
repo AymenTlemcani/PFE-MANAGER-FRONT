@@ -1,15 +1,36 @@
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react"; // Add RefreshCw import
 import { useNavigate } from "react-router-dom";
 import { useProjectContext } from "../../context/ProjectContext";
 import { useAuthStore } from "../../store/authStore";
-// Add these imports
+import { useTranslation } from "../../hooks/useTranslation"; // Add this import
 import { Avatar } from "../../components/ui/Avatar";
 import { Tooltip } from "../../components/ui/Tooltip";
+import { Button } from "../../components/ui/Button"; // Add Button import
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const currentLang = localStorage.getItem("language") || "en";
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: currentLang === "en", // Use 12-hour format for English, 24-hour for French
+  };
+
+  return new Intl.DateTimeFormat(
+    currentLang === "fr" ? "fr-FR" : "en-US",
+    options
+  ).format(date);
+};
 
 export function ProjectsPage() {
   const navigate = useNavigate();
-  const { projects } = useProjectContext();
+  const { projects, loading, refreshProjects } = useProjectContext(); // Add loading and refreshProjects
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation(); // Add translation hook
 
   const handleNewProject = () => {
     if (user?.role === "company") {
@@ -19,27 +40,59 @@ export function ProjectsPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    await refreshProjects();
+  };
+
+  // Add LoadingOverlay component
+  const LoadingOverlay = () => (
+    <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 flex items-center justify-center z-50">
+      <div className="flex flex-col items-center gap-2">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="text-sm text-gray-600 dark:text-gray-300">
+          {t.common.loading}
+        </span>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {loading && <LoadingOverlay />}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {user?.role === 'company' ? 'Company Projects' : 'My Projects'}
+          {user?.role === "company" ? "Company Projects" : "My Projects"}
         </h1>
-        <button
-          onClick={handleNewProject}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          {user?.role === 'company' ? 'Submit New Project Proposal' : 'Submit New PFE'}
-        </button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            className="flex items-center gap-2"
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            {t.projectForm.refresh || "Refresh"} {/* Use fallback text */}
+          </Button>
+          <button
+            onClick={handleNewProject}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            {user?.role === "company"
+              ? "Submit New Project Proposal"
+              : "Submit New PFE"}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {user?.role === 'company' ? 'Project Proposals' : 'Submitted PFE Projects'}
+            {user?.role === "company"
+              ? "Project Proposals"
+              : "Submitted PFE Projects"}
           </h2>
-          {user?.role === 'company' ? (
+          {user?.role === "company" ? (
             <CompanyProjectsList projects={projects} />
           ) : (
             <ProjectsList projects={projects} />
@@ -52,137 +105,103 @@ export function ProjectsPage() {
 
 function ProjectsList({ projects }) {
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation(); // Add translation hook
 
-  // Modified to show projects based on user role
-  const userProjects = projects.filter((p) => {
-    if (user?.role === "student") {
-      return p.studentId === user?.id;
-    } else if (user?.role === "teacher") {
-      return p.supervisorId === user?.id || p.coSupervisorId === user?.id;
-    }
-    return false;
-  });
-
-  if (!userProjects || userProjects.length === 0) {
+  if (!projects || projects.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        No projects submitted yet. Click "Submit New PFE" to get started.
+        {t.projectForm.noProjects}
       </div>
     );
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pending Partner Validation":
+    switch (status.toLowerCase()) {
+      case "proposed":
         return "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200";
-      case "Pending Review":
-        return "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200";
-      case "Approved":
+      case "validated":
         return "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200";
-      case "Rejected":
-        return "bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200";
+      case "assigned":
+        return "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200";
+      case "inprogress":
+        return "bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200";
+      case "completed":
+        return "bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200";
       default:
         return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
     }
   };
 
-  const getProjectTypeLabel = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case "classic":
-        return "Classic";
-      case "innovative":
-        return "Innovative";
-      case "research":
-        return "Research";
-      case "company_internship":
-        return "Company Internship";
-      default:
-        return type || "N/A";
-    }
-  };
-
   return (
     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-      {userProjects.map((project) => (
-        <div key={project.id} className="py-4">
+      {projects.map((project) => (
+        <div key={project.project_id} className="py-4">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  {project.title}
-                </h3>
-                <Tooltip
-                  content={
-                    <div className="p-2">
-                      <div className="flex items-center gap-2">
-                        <Avatar
-                          src={project.submitterAvatar}
-                          fallback={project.submitterName[0]}
-                          size="sm"
-                        />
-                        <div>
-                          <p className="font-medium">{project.submitterName}</p>
-                          <p className="text-xs text-gray-500 capitalize">
-                            {project.submittedBy}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Proposed by</span>
-                    <Avatar
-                      src={project.submitterAvatar}
-                      fallback={project.submitterName[0]}
-                      size="xs"
-                      className="cursor-pointer"
-                    />
-                  </div>
-                </Tooltip>
-              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                {project.title}
+              </h3>
               <div className="space-y-1">
+                {/* Option field */}
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">Option:</span> {project.option}
+                  <span className="font-medium">{t.projectForm.option}:</span>{" "}
+                  {project.option}
                 </p>
+
+                {/* Project Type field */}
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">Type:</span>{" "}
-                  {getProjectTypeLabel(project.type)}
+                  <span className="font-medium">
+                    {t.projectForm.projectType}:
+                  </span>{" "}
+                  {project.type}
                 </p>
-                {project.partnerName && (
+
+                {/* Co-supervisor field - only show if exists */}
+                {project.co_supervisor_name && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium">Partner:</span>{" "}
-                    {project.partnerName}
+                    <span className="font-medium">
+                      {t.studentProject.coSupervisor}:
+                    </span>{" "}
+                    {project.co_supervisor_name} {project.co_supervisor_surname}
                   </p>
                 )}
+
+                {/* Technologies field */}
+                {project.technologies && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-medium">
+                      {t.projectForm.requiredTechnologies}:
+                    </span>{" "}
+                    {project.technologies}
+                  </p>
+                )}
+
+                {/* Material Needs field - only show if exists */}
+                {project.material_needs && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-medium">
+                      {t.projectForm.materialNeeds}:
+                    </span>{" "}
+                    {project.material_needs}
+                  </p>
+                )}
+
+                {/* Updated Submission Date field */}
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">Technologies:</span>{" "}
-                  {project.technologies}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">Submitted:</span>{" "}
-                  {new Date(project.submittedDate).toLocaleDateString()}
+                  <span className="font-medium">
+                    {t.studentProject.submitted}:
+                  </span>{" "}
+                  {formatDate(project.submission_date)}
                 </p>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <span
-                className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
-                  project.status
-                )}`}
-              >
-                {project.status}
-              </span>
-              {project.status === "Rejected" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/projects/new?edit=${project.id}`)}
-                >
-                  Edit & Resubmit
-                </Button>
-              )}
-            </div>
+            <span
+              className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
+                project.status
+              )}`}
+            >
+              {project.status}
+            </span>
           </div>
         </div>
       ))}
@@ -190,16 +209,19 @@ function ProjectsList({ projects }) {
   );
 }
 
+// Also update the company projects list
 function CompanyProjectsList({ projects }) {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
+  const { t } = useTranslation(); // Add translation hook
 
   const companyProjects = projects.filter((p) => p.companyId === user?.id);
 
   if (!companyProjects || companyProjects.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        No projects submitted yet. Click "Submit New Project Proposal" to get started.
+        No projects submitted yet. Click "Submit New Project Proposal" to get
+        started.
       </div>
     );
   }
@@ -230,29 +252,37 @@ function CompanyProjectsList({ projects }) {
               </h3>
               <div className="space-y-1">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">Required Skills:</span> {project.technologies}
+                  <span className="font-medium">Required Skills:</span>{" "}
+                  {project.technologies}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-medium">Type:</span> {project.type}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">Duration:</span> {project.duration}
+                  <span className="font-medium">Duration:</span>{" "}
+                  {project.duration}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-medium">Submitted:</span>{" "}
-                  {new Date(project.submittedDate).toLocaleDateString()}
+                  {formatDate(project.submittedDate)}
                 </p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(project.status)}`}>
+              <span
+                className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
+                  project.status
+                )}`}
+              >
                 {project.status}
               </span>
               {project.status === "Rejected" && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate(`/projects/company/edit/${project.id}`)}
+                  onClick={() =>
+                    navigate(`/projects/company/edit/${project.id}`)
+                  }
                 >
                   Edit & Resubmit
                 </Button>

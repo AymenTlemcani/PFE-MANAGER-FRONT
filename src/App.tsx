@@ -18,7 +18,7 @@ import { StudentProjectPage } from "./pages/projects/StudentProjectPage";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import { TeacherPFEForm } from "./pages/projects/TeacherPFEForm";
 import { StudentPFEForm } from "./pages/projects/StudentPFEForm";
-import { ProjectProvider } from "./context/ProjectProvider";
+import { ProjectProvider } from "./context/ProjectContext"; // Update this import
 import EmailPeriodConfigPage from "./pages/admin/EmailPeriodConfigPage";
 import { ProjectValidationPage } from "./pages/projects/ProjectValidationPage";
 import { useThemeStore } from "./store/themeStore";
@@ -103,6 +103,8 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <ProjectProvider>
+          {" "}
+          {/* Changed from ProjectProvider to match the export */}
           <NotificationsProvider>
             <Routes>
               <Route
