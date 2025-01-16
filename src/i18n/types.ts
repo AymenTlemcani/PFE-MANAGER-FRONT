@@ -216,4 +216,40 @@ export interface Translation {
     error: string;
     loadFailed: string;
   };
+  projectForm: {
+    submitNewProject: string;
+    fillTestData: string;
+    projectDetails: string;
+    projectTitle: string;
+    option: string;
+    projectType: string;
+    projectSummary: string;
+    technicalRequirements: string;
+    requiredTechnologies: string;
+    materialNeeds: string;
+    addCoSupervisor: string;
+    coSupervisorDetails: string;
+    coSupervisorName: string;
+    coSupervisorSurname: string;
+    cancel: string;
+    submitProject: string;
+    selectOption: string;
+    selectType: string;
+    classical: string;
+    innovative: string;
+    technologiesPlaceholder: string;
+    validation: {
+      enterTitle: string;
+      selectOption: string;
+      selectType: string;
+      provideSummary: string;
+      fillRequiredFields: string;
+    };
+    notifications: {
+      submitting: string;
+      submitSuccess: string;
+      submitError: string;
+      notAuthenticated: string;
+    };
+  };
 }

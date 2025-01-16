@@ -29,6 +29,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { UserFormPage } from "./pages/admin/UserFormPage";
 import { AllUsersPage } from "./pages/admin/AllUsersPage";
+import { SnackbarManager } from "./components/ui/SnackbarManager";
+import { useSnackbarStore } from "./hooks/useSnackbar";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -87,6 +89,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 function App() {
   const user = useAuthStore((state) => state.user);
   const isDark = useThemeStore((state) => state.isDark);
+  const { messages, removeMessage } = useSnackbarStore();
 
   useEffect(() => {
     if (isDark) {
@@ -235,6 +238,14 @@ function App() {
                 />
               </Route>
             </Routes>
+            <SnackbarManager
+              snackbars={messages.map((msg) => ({
+                id: msg.id.toString(),
+                message: msg.message,
+                type: msg.type,
+              }))}
+              onClose={removeMessage}
+            />
           </NotificationsProvider>
         </ProjectProvider>
       </BrowserRouter>

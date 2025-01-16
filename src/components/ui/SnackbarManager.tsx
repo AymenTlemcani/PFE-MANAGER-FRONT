@@ -2,16 +2,17 @@ import { Snackbar } from "./Snackbar";
 
 // import React from "react";
 
+// Update SnackbarItem interface to match the store type
 export interface SnackbarItem {
   id: string;
   message: string;
-  type: "success" | "error" | "info";
+  type: "success" | "error" | "info" | "warning";
   onUndo?: () => void;
 }
 
 interface SnackbarManagerProps {
   snackbars: SnackbarItem[];
-  onClose: (id: string) => void;
+  onClose: (id: number) => void; // Update to accept number instead of string
 }
 
 export function SnackbarManager({ snackbars, onClose }: SnackbarManagerProps) {
@@ -20,11 +21,10 @@ export function SnackbarManager({ snackbars, onClose }: SnackbarManagerProps) {
       {snackbars.map((snackbar) => (
         <div key={snackbar.id} className="pointer-events-auto">
           <Snackbar
-            key={`${snackbar.id}-${snackbar.message}`}
             message={snackbar.message}
             type={snackbar.type}
             isOpen={true}
-            onClose={() => onClose(snackbar.id)}
+            onClose={() => onClose(parseInt(snackbar.id))}
             onUndo={snackbar.onUndo}
           />
         </div>
