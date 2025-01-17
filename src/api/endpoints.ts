@@ -28,6 +28,8 @@ export const API_ENDPOINTS = {
     supervise: "/projects/supervise",
     proposed: "/project-proposals",
     listByStatus: (status: string) => `/projects?status=${status}`,
+    proposals: "/project-proposals",
+    validateProposal: (id: number) => `/project-proposals/${id}`,
   },
   students: {
     list: "/students",

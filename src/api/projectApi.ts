@@ -192,36 +192,42 @@ export const projectApi = {
     }
   },
 
-  async approveProject(projectId: number, comments: string) {
+  async approveProject(proposalId: number, comments: string) {
     verifyAuth();
     try {
+      console.log("📤 Approving project proposal:", { proposalId, comments });
       const response = await axios.put(
-        `${API_ENDPOINTS.projects.proposals}/${projectId}`,
+        API_ENDPOINTS.projects.validateProposal(proposalId),
         {
           proposal_status: "Approved",
           comments: comments,
         }
       );
+
+      console.log("✅ Project approval successful:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error approving project:", error);
+      console.error("❌ Error approving project:", error);
       throw error;
     }
   },
 
-  async rejectProject(projectId: number, comments: string) {
+  async rejectProject(proposalId: number, comments: string) {
     verifyAuth();
     try {
+      console.log("📤 Rejecting project proposal:", { proposalId, comments });
       const response = await axios.put(
-        `${API_ENDPOINTS.projects.proposals}/${projectId}`,
+        API_ENDPOINTS.projects.validateProposal(proposalId),
         {
           proposal_status: "Rejected",
           comments: comments,
         }
       );
+
+      console.log("✅ Project rejection successful:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error rejecting project:", error);
+      console.error("❌ Error rejecting project:", error);
       throw error;
     }
   },

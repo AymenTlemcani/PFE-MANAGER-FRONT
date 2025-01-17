@@ -76,21 +76,35 @@ export function ProjectValidationPage() {
 
   const handleApprove = async (project) => {
     try {
-      await projectApi.approveProject(project.proposal_id, "Project approved");
+      const proposalId = project.proposal?.proposal_id;
+      if (!proposalId) {
+        throw new Error("No proposal found for this project");
+      }
+
+      await projectApi.approveProject(proposalId, "Project approved");
       showSnackbar("Project approved successfully", "success");
-      fetchPendingProjects(); // Refresh the list
-    } catch (error) {
-      showSnackbar("Failed to approve project", "error");
+      fetchPendingProjects();
+    } catch (error: any) {
+      console.error("Failed to approve project:", error);
+      showSnackbar(
+        error.response?.data?.message || "Failed to approve project",
+        "error"
+      );
     }
   };
 
   const handleReject = (project) => {
-    setSelectedProject(project);
+    const proposalId = project.proposal?.proposal_id;
+    if (!proposalId) {
+      showSnackbar("No proposal found for this project", "error");
+      return;
+    }
+    setSelectedProject({ ...project, proposal_id: proposalId });
     setIsRejectDialogOpen(true);
   };
 
   const confirmReject = async () => {
-    if (!selectedProject || !rejectionReason.trim()) return;
+    if (!selectedProject?.proposal_id || !rejectionReason.trim()) return;
 
     try {
       await projectApi.rejectProject(
@@ -101,9 +115,13 @@ export function ProjectValidationPage() {
       setIsRejectDialogOpen(false);
       setRejectionReason("");
       setSelectedProject(null);
-      fetchPendingProjects(); // Refresh the list
-    } catch (error) {
-      showSnackbar("Failed to reject project", "error");
+      fetchPendingProjects();
+    } catch (error: any) {
+      console.error("Failed to reject project:", error);
+      showSnackbar(
+        error.response?.data?.message || "Failed to reject project",
+        "error"
+      );
     }
   };
 
