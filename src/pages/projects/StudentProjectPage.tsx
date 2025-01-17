@@ -25,7 +25,11 @@ export function StudentProjectPage() {
   const [validatedProjects, setValidatedProjects] = useState<Project[]>([]);
   const [proposals, setProposals] = useState<ProjectProposal[]>([]);
   const navigate = useNavigate();
-  const { projects, loading: projectsLoading } = useProjectContext();
+  const {
+    projects,
+    loading: projectsLoading,
+    refreshProjects,
+  } = useProjectContext();
   const [activeTab, setActiveTab] = useState<
     "available" | "selection" | "proposals"
   >("available");
@@ -163,9 +167,13 @@ export function StudentProjectPage() {
 
     try {
       setIsRefreshing(true);
+
       // Keep the current view while refreshing
-      await Promise.all([projectApi.getProposals(), projectApi.getProjects()]);
+      await Promise.all([projectApi.getProposals(), refreshProjects()]);
       await fetchProjectsAndProposals();
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+      setError("Failed to refresh data");
     } finally {
       setIsRefreshing(false);
     }

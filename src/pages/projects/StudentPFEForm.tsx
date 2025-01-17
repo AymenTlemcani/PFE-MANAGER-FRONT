@@ -71,6 +71,7 @@ export function StudentPFEForm() {
   const [projectType, setProjectType] = useState<"project" | "internship">(
     "project"
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -184,6 +185,9 @@ export function StudentPFEForm() {
     const canSubmit = await validateProposalLimit();
     if (!canSubmit) return;
 
+    setIsSubmitting(true); // Set submitting to true when starting submission
+    showSnackbar("Submitting project proposal...", "info");
+
     try {
       // Double check proposal limit
       const proposals = await projectApi.getProposals();
@@ -237,12 +241,20 @@ export function StudentPFEForm() {
       const response = await submitProject(projectData);
       console.log("✅ Project submitted successfully:", response);
 
-      showSnackbar("Project submitted successfully", "success");
+      showSnackbar("Project proposal submitted successfully", "success");
+
+      // Add refresh before navigation
+      try {
+        await refreshProjects();
+      } catch (refreshError) {
+        console.error("Failed to refresh projects:", refreshError);
+      }
 
       // Navigate back to projects page
       navigate("/project");
     } catch (error: any) {
       console.error("❌ Submit failed:", error);
+      showSnackbar(error.message || "Failed to submit project", "error");
 
       // Handle the specific validation error
       if (error.message === "Maximum number of project proposals (3) reached") {
@@ -269,6 +281,8 @@ export function StudentPFEForm() {
         submit: error.response?.data?.message || "Failed to submit project",
         ...(error.response?.data?.errors || {}),
       });
+    } finally {
+      setIsSubmitting(false); // Make sure to set submitting to false when done
     }
   };
 
@@ -578,30 +592,30 @@ export function StudentPFEForm() {
                       </label>
                     </div>
 
-                    {formData.paid && (
-                      <Input
-                        label="Monthly Salary (DZD)"
-                        name="salary"
-                        type="number"
-                        value={formData.salary}
-                        onChange={(e) =>
-                          setFormData({ ...formData, salary: e.target.value })
-                        }
-                        error={errors.salary}
-                        className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-                      />
-                    )}
+                    {/* Rest of the form */}
+                    <Input
+                      label="Salary"
+                      name="salary"
+                      value={formData.salary}
+                      onChange={(e) =>
+                        setFormData({ ...formData, salary: e.target.value })
+                      }
+                      error={errors.salary}
+                      required={formData.paid}
+                      className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                    />
                   </div>
                 </div>
               </div>
             </>
           ) : (
             <>
-              {/* Research Project Details */}
+              {/* Research Project Details Section */}
               <div className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  Research Details
+                  Research Project Details
                 </h3>
+
                 <div className="space-y-4">
                   <Input
                     label="Required Technologies"
@@ -611,143 +625,102 @@ export function StudentPFEForm() {
                       setFormData({ ...formData, technologies: e.target.value })
                     }
                     error={errors.technologies}
+                    placeholder="e.g., React, Node.js, Python"
                     required
                     className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                   />
 
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                      Hardware Requirements
-                    </label>
-                    <textarea
-                      name="hardwareRequirements"
-                      value={formData.hardwareRequirements}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          hardwareRequirements: e.target.value,
-                        })
-                      }
-                      rows={4}
-                      className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[120px]"
-                    />
-                  </div>
+                  <Input
+                    label="Location"
+                    name="location"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    error={errors.location}
+                    required
+                    className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                  />
 
-                  {/* Partner Selection - Only for research projects */}
-                  <div className="space-y-4 mt-8">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                      Partner Selection (Optional)
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search for a partner..."
-                          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100"
-                        />
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      </div>
-
-                      {searchQuery && (
-                        <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
-                          {filteredPartners.length > 0 ? (
-                            filteredPartners.map((partner) => (
-                              <button
-                                key={partner.id}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({
-                                    ...formData,
-                                    partnerId: partner.id,
-                                    partnerName: `${partner.firstName} ${partner.lastName}`,
-                                  });
-                                  setSearchQuery("");
-                                }}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center justify-between"
-                              >
-                                <div>
-                                  <p className="font-medium text-gray-900 dark:text-white">
-                                    {partner.firstName} {partner.lastName}
-                                  </p>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {partner.masterOption}
-                                  </p>
-                                </div>
-                                {formData.partnerId === partner.id && (
-                                  <span className="text-blue-500">
-                                    Selected
-                                  </span>
-                                )}
-                              </button>
-                            ))
-                          ) : (
-                            <div className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                              No matching students found
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {formData.partnerId && (
-                        <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">
-                              Selected Partner: {formData.partnerName}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormData({
-                                ...formData,
-                                partnerId: "",
-                                partnerName: "",
-                              });
-                            }}
-                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <Input
+                    label="Hardware Requirements"
+                    name="hardwareRequirements"
+                    value={formData.hardwareRequirements}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hardwareRequirements: e.target.value,
+                      })
+                    }
+                    className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                  />
                 </div>
               </div>
             </>
           )}
-        </div>
 
-        <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-8 py-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/project")}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">
-              {hasExistingProposal ? "Update Proposal" : "Submit Proposal"}
+          {/* Partner Selection */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              Partner Selection
+            </h3>
+
+            <div className="space-y-4">
+              <Input
+                label="Search Partner"
+                name="searchPartner"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+              />
+
+              <div className="space-y-2">
+                {filteredPartners.length > 0 ? (
+                  <ul className="space-y-2">
+                    {filteredPartners.map((partner) => (
+                      <li
+                        key={partner.id}
+                        className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="text-gray-900 dark:text-white">
+                            {partner.firstName} {partner.lastName}
+                          </div>
+                          <div className="text-gray-500 dark:text-gray-400">
+                            {partner.masterOption}
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              partnerId: partner.id,
+                              partnerName: `${partner.firstName} ${partner.lastName}`,
+                            })
+                          }
+                        >
+                          Select
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No partners found
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit Proposal"}
             </Button>
           </div>
         </div>
       </form>
     </div>
   );
-}
-
-async function sendPartnerNotification(partnerId: string, projectId: string) {
-  // TODO: Implement actual notification sending
-  await fetch("/api/notifications", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      recipientId: partnerId,
-      type: "PARTNERSHIP_REQUEST",
-      projectId: projectId,
-    }),
-  });
 }
