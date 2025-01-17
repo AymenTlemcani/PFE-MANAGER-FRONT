@@ -14,6 +14,14 @@ export interface Project {
   project_id?: number;
   material_needs?: string | null;
 
+  // Additional fields for company projects
+  company_id?: number;
+  company_name?: string; // Add this field
+  internship_location?: string;
+  internship_duration_months?: number;
+  internship_start_date?: string;
+  internship_salary?: number;
+
   // Project proposal fields moved to project_proposal
   project_proposal?: {
     co_supervisor_name: string;
@@ -44,4 +52,20 @@ export interface ProjectProposal {
     duration: number;
     location: string;
   };
+}
+
+// Add interfaces for company data
+export interface Company {
+  company_id: number;
+  user_id: number;
+  company_name: string;
+  contact_name: string;
+  contact_surname: string;
+  industry: string;
+  address: string;
+}
+
+export interface User {
+  // ...existing code...
+  company?: Company; // Add this field
 }

@@ -62,11 +62,19 @@ export const projectApi = {
         type: data.type,
         submitted_by: userId,
         status: "Proposed",
+        // Company fields - send both id and name
+        company_id: data.company_id,
+        company_name: data.company_name,
+        // Internship fields
+        internship_location: data.internship_location,
+        internship_duration_months: data.internship_duration_months,
+        internship_start_date: data.internship_start_date,
+        internship_salary: data.internship_salary,
         // Include proposal data
         proposal: {
           ...data.proposal,
           submitted_by: userId,
-          proposer_type: "Student",
+          proposer_type: data.type === "Internship" ? "Company" : "Student",
           proposal_status: "Pending",
         },
       };

@@ -4,15 +4,18 @@ import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useProjectContext } from "../../context/ProjectContext";
 import { useAuthStore } from "../../store/authStore";
+import { useSnackbar } from "../../hooks/useSnackbar"; // Add this import
+import { projectApi } from "../../api/projectApi"; // Add this import
 import { X } from "lucide-react"; // Add this import
 
 interface FormErrors {
   title?: string;
-  type?: string;
   technologies?: string;
   duration?: string;
   description?: string;
-  requirements?: string;
+  location?: string;
+  salary?: string;
+  startDate?: string;
   submit?: string;
 }
 
@@ -21,29 +24,47 @@ export function CompanyPFEForm() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const { addProject, projects } = useProjectContext();
+  const { showSnackbar } = useSnackbar(); // Add this hook
   const [errors, setErrors] = useState<FormErrors>({});
 
   const [formData, setFormData] = useState({
     title: "",
-    type: "Internship", // Set default type to Internship
+    type: "Internship",
     technologies: "",
-    duration: "",
-    description: "",
-    requirements: "",
-    paid: false,
-    salary: "",
+    summary: "", // Changed from description to match backend
     location: "",
+    option: "GL", // Required by backend
+    company_name: user?.companyName || "",
+    internship_location: "",
+    internship_salary: "",
+    internship_start_date: "",
+    internship_duration_months: "",
   });
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
     if (!formData.title) newErrors.title = "Title is required";
+    if (!formData.summary) newErrors.summary = "Description is required";
     if (!formData.technologies)
-      newErrors.technologies = "Required skills are required";
-    if (!formData.duration) newErrors.duration = "Duration is required";
-    if (!formData.description)
-      newErrors.description = "Description is required";
-    if (!formData.location) newErrors.location = "Location is required";
+      newErrors.technologies = "Technologies are required";
+    if (!formData.internship_location)
+      newErrors.location = "Location is required";
+    if (!formData.internship_duration_months)
+      newErrors.duration = "Duration is required";
+    if (!formData.internship_start_date)
+      newErrors.startDate = "Start date is required";
+
+    // Validate duration is between 4 and 12 months
+    const duration = parseInt(formData.internship_duration_months);
+    if (isNaN(duration) || duration < 4 || duration > 12) {
+      newErrors.duration = "Duration must be between 4 and 12 months";
+    }
+
+    // Validate start date is in the future
+    const startDate = new Date(formData.internship_start_date);
+    if (startDate <= new Date()) {
+      newErrors.startDate = "Start date must be in the future";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -51,37 +72,96 @@ export function CompanyPFEForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    console.log("🔄 Starting form submission...");
+
+    if (!validateForm()) {
+      return;
+    }
 
     try {
-      const newProject = {
-        id: id ? Number(id) : Date.now(),
-        ...formData,
-        companyId: user?.id,
-        companyName: user?.companyName,
-        status: "Pending Review",
-        submittedDate: new Date().toISOString().split("T")[0],
+      if (!user?.company?.company_id || !user?.company?.company_name) {
+        throw new Error("Company information not found");
+      }
+
+      console.log("📝 Preparing project data...");
+      const projectData = {
+        title: formData.title,
+        summary: formData.summary,
+        technologies: formData.technologies,
+        type: "Internship",
+        option: formData.option,
+        submitted_by: user?.user_id,
+        status: "Proposed",
+        company_id: user.company.company_id, // Use company_id instead of company_name
+        company_name: user.company.company_name, // Add company name
+        internship_location: formData.internship_location,
+        internship_duration_months: parseInt(
+          formData.internship_duration_months
+        ),
+        internship_start_date: formData.internship_start_date,
+        internship_salary: formData.internship_salary
+          ? parseFloat(formData.internship_salary)
+          : null,
+        proposal: {
+          proposer_type: "Company",
+          submitted_by: user?.user_id,
+          proposal_status: "Pending",
+          is_final_version: true,
+          proposal_order: 1,
+        },
       };
 
-      addProject(newProject);
+      console.log("📤 Submitting project with data:", projectData);
+
+      const response = await projectApi.submitProject(projectData);
+      console.log("✅ Project submitted successfully:", response);
+
+      showSnackbar("Internship offer submitted successfully", "success");
       navigate("/projects");
-    } catch (error) {
-      setErrors({ submit: "Failed to submit project" });
+    } catch (error: any) {
+      console.error("❌ Submit failed:", {
+        error,
+        message: error.message,
+        response: error.response?.data,
+        formData,
+      });
+
+      // Handle validation errors
+      if (error.response?.data?.errors) {
+        Object.entries(error.response.data.errors).forEach(
+          ([field, messages]: [string, any]) => {
+            if (Array.isArray(messages)) {
+              messages.forEach((message) => {
+                showSnackbar(`${field}: ${message}`, "error");
+              });
+            }
+          }
+        );
+      }
+
+      setErrors({
+        submit:
+          error.response?.data?.message || "Failed to submit internship offer",
+        ...(error.response?.data?.errors || {}),
+      });
     }
   };
 
   const fillTestData = () => {
     setFormData({
-      title: "AI-Powered Customer Service Platform",
+      title: "Full Stack Developer Intern",
       type: "Internship",
-      technologies: "Python, TensorFlow, React, Node.js, MongoDB",
-      duration: "6 months",
-      description:
-        "Development of an intelligent customer service platform using AI to automate responses and improve customer satisfaction. The system will use natural language processing and machine learning to handle customer inquiries.",
-      requirements: "Strong background in machine learning and web development",
-      paid: true,
-      salary: "1200",
-      location: "Algiers, Algeria",
+      technologies: "React, Node.js, TypeScript, PostgreSQL",
+      summary:
+        "Join our development team as a Full Stack Developer Intern. You will work on building modern web applications using React and Node.js, participate in the full development lifecycle, and learn industry best practices for software development.",
+      option: "GL",
+      company_name: user?.companyName || "",
+      internship_location: "Algiers, Algeria",
+      internship_salary: "45000",
+      internship_start_date: new Date(Date.now() + 7776000000)
+        .toISOString()
+        .split("T")[0], // 90 days in future
+      internship_duration_months: "6",
     });
   };
 
@@ -89,8 +169,9 @@ export function CompanyPFEForm() {
     <div className="h-full">
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 h-full border border-gray-200 dark:border-gray-700 shadow-sm"
+        className="bg-white dark:bg-gray-800 h-full border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg"
       >
+        {/* Header */}
         <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -114,9 +195,10 @@ export function CompanyPFEForm() {
         </div>
 
         <div className="px-8 py-8 space-y-8">
+          {/* Basic Details Section */}
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Internship Details
+              Basic Details
             </h3>
             <div className="space-y-4">
               <Input
@@ -129,11 +211,31 @@ export function CompanyPFEForm() {
                 error={errors.title}
                 required
                 placeholder="e.g., Full Stack Developer Intern"
-                className="text-lg p-3"
+                className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               />
 
               <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Department
+                  </label>
+                  <select
+                    value={formData.option}
+                    onChange={(e) =>
+                      setFormData({ ...formData, option: e.target.value })
+                    }
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
+                    required
+                  >
+                    <option value="GL">GL</option>
+                    <option value="IA">IA</option>
+                    <option value="RSD">RSD</option>
+                    <option value="SIC">SIC</option>
+                  </select>
+                </div>
+
                 <Input
+                  type="text"
                   label="Required Skills"
                   name="technologies"
                   value={formData.technologies}
@@ -143,105 +245,122 @@ export function CompanyPFEForm() {
                   error={errors.technologies}
                   placeholder="e.g., React, Node.js, Python"
                   required
-                  className="text-lg p-3"
-                />
-                <Input
-                  label="Duration (months)"
-                  name="duration"
-                  type="number"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration: e.target.value })
-                  }
-                  error={errors.duration}
-                  required
-                  min="1"
-                  max="12"
-                  className="text-lg p-3"
+                  className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                 />
               </div>
-
-              <Input
-                label="Location"
-                name="location"
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-                error={errors.location}
-                required
-                placeholder="e.g., Algiers, Algeria"
-                className="text-lg p-3"
-              />
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Internship Description
+                  Description
                 </label>
                 <textarea
-                  value={formData.description}
+                  value={formData.summary}
                   onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                    setFormData({ ...formData, summary: e.target.value })
                   }
                   rows={6}
-                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[160px] focus:ring-2 focus:ring-blue-500"
                   placeholder="Describe the internship position, responsibilities, and requirements"
+                  required
                 />
-                {errors.description && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.description}
+                {errors.summary && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                    {errors.summary}
                   </p>
                 )}
               </div>
+            </div>
+          </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="paid"
-                    checked={formData.paid}
-                    onChange={(e) =>
-                      setFormData({ ...formData, paid: e.target.checked })
-                    }
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="paid"
-                    className="text-sm text-gray-700 dark:text-gray-200"
-                  >
-                    Paid Internship
-                  </label>
-                </div>
+          {/* Internship Details Section */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              Internship Details
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-8">
+                <Input
+                  type="date"
+                  label="Start Date"
+                  name="internship_start_date"
+                  value={formData.internship_start_date}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      internship_start_date: e.target.value,
+                    })
+                  }
+                  error={errors.startDate}
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                />
 
-                {formData.paid && (
-                  <Input
-                    label="Monthly Salary (DZD)"
-                    name="salary"
-                    type="number"
-                    value={formData.salary}
-                    onChange={(e) =>
-                      setFormData({ ...formData, salary: e.target.value })
-                    }
-                    placeholder="Enter monthly salary"
-                    className="text-lg p-3"
-                  />
-                )}
+                <Input
+                  type="number"
+                  label="Duration (months)"
+                  name="internship_duration_months"
+                  value={formData.internship_duration_months}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      internship_duration_months: e.target.value,
+                    })
+                  }
+                  error={errors.duration}
+                  required
+                  min="4"
+                  max="12"
+                  className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-8">
+                <Input
+                  label="Location"
+                  name="internship_location"
+                  value={formData.internship_location}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      internship_location: e.target.value,
+                    })
+                  }
+                  error={errors.location}
+                  required
+                  placeholder="e.g., Algiers, Algeria"
+                  className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                />
+
+                <Input
+                  type="number"
+                  label="Monthly Salary (DZD)"
+                  name="internship_salary"
+                  value={formData.internship_salary}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      internship_salary: e.target.value,
+                    })
+                  }
+                  className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                />
               </div>
             </div>
           </div>
         </div>
 
+        {/* Form Actions */}
         <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-8 py-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex justify-end gap-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => navigate("/projects")}
-              className="px-6 py-3 text-lg"
             >
               Cancel
             </Button>
-            <Button type="submit" className="px-6 py-3 text-lg">
+            <Button type="submit">
               {id ? "Update Internship" : "Submit Internship"}
             </Button>
           </div>
