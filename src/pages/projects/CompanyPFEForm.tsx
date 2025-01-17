@@ -23,9 +23,10 @@ export function CompanyPFEForm() {
   const { id } = useParams();
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
-  const { addProject, projects } = useProjectContext();
+  const { addProject, projects, refreshProjects } = useProjectContext(); // Add refreshProjects
   const { showSnackbar } = useSnackbar(); // Add this hook
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -77,6 +78,9 @@ export function CompanyPFEForm() {
     if (!validateForm()) {
       return;
     }
+
+    setIsSubmitting(true);
+    showSnackbar("Submitting internship offer...", "info");
 
     try {
       if (!user?.company?.company_id || !user?.company?.company_name) {
@@ -151,6 +155,8 @@ export function CompanyPFEForm() {
           error.response?.data?.message || "Failed to submit internship offer",
         ...(error.response?.data?.errors || {}),
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -367,8 +373,12 @@ export function CompanyPFEForm() {
             >
               Cancel
             </Button>
-            <Button type="submit">
-              {id ? "Update Internship" : "Submit Internship"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting
+                ? "Submitting..."
+                : id
+                ? "Update Internship"
+                : "Submit Internship"}
             </Button>
           </div>
         </div>

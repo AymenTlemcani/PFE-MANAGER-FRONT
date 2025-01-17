@@ -12,6 +12,8 @@ import { useTranslation } from "../../hooks/useTranslation"; // Add this import
 import { Avatar } from "../../components/ui/Avatar";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/Button"; // Add Button import
+import { useSnackbar } from "../../hooks/useSnackbar"; // Add this import
+import { useState } from "react"; // Add useState import
 
 // Add getStatusColor helper function at the top level
 const getStatusColor = (status: string) => {
@@ -55,6 +57,8 @@ export function ProjectsPage() {
   const { projects, loading, refreshProjects } = useProjectContext(); // Add loading and refreshProjects
   const user = useAuthStore((state) => state.user);
   const { t } = useTranslation(); // Add translation hook
+  const { showSnackbar } = useSnackbar(); // Add this hook
+  const [isRefreshing, setIsRefreshing] = useState(false); // Add state for refresh
 
   const handleNewProject = () => {
     if (user?.role === "Company") {
@@ -65,11 +69,17 @@ export function ProjectsPage() {
   };
 
   const handleRefresh = async () => {
+    if (isRefreshing) return;
+
     try {
+      setIsRefreshing(true);
       await refreshProjects();
       showSnackbar("Projects refreshed successfully", "success");
     } catch (error) {
       showSnackbar("Failed to refresh projects", "error");
+      console.error("Refresh failed:", error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
