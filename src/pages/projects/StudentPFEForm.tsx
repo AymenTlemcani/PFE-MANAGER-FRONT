@@ -6,6 +6,8 @@ import { Button } from "../../components/ui/Button";
 import { useProjectContext } from "../../context/ProjectContext";
 import { useAuthStore } from "../../store/authStore";
 import { useProjectStore } from "../../store/projectStore";
+import { projectApi } from "../../api/projectApi";
+import { useSnackbar } from "../../hooks/useSnackbar";
 
 interface FormErrors {
   [key: string]: string;
@@ -40,6 +42,7 @@ export function StudentPFEForm() {
   const navigate = useNavigate();
   const { addProject } = useProjectContext();
   const { submitProject, submitProposal } = useProjectStore();
+  const { showSnackbar } = useSnackbar();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [availablePartners, setAvailablePartners] = useState<Student[]>([]);
   const [hasExistingProposal, setHasExistingProposal] = useState(false);
@@ -119,6 +122,40 @@ export function StudentPFEForm() {
     fetchProposalCount();
   }, []);
 
+  useEffect(() => {
+    validateProposalLimit();
+  }, []);
+
+  const validateProposalLimit = async () => {
+    try {
+      // Check both project submissions and proposals
+      const projects = await projectApi.getProjects();
+      const studentProjects = projects.filter(
+        (p) => p.submitted_by === user?.user_id && p.status !== "Rejected"
+      );
+
+      console.log("🔍 Validating proposal limit:", {
+        projects: studentProjects.length,
+        userId: user?.user_id,
+      });
+
+      if (studentProjects.length >= 3) {
+        showSnackbar(
+          "Maximum number of project proposals (3) reached",
+          "error"
+        );
+        navigate("/project");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("❌ Error checking proposal limit:", error);
+      showSnackbar("Failed to validate proposal limit", "error");
+      return false;
+    }
+  };
+
   const validateForm = () => {
     const newErrors: FormErrors = {};
     if (!formData.title.trim()) newErrors.title = "Project title is required";
@@ -139,16 +176,34 @@ export function StudentPFEForm() {
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Check proposal limit before submitting
+    const canSubmit = await validateProposalLimit();
+    if (!canSubmit) return;
+
     try {
-      console.log("🔒 User auth check:", { user });
+      // Double check proposal limit
+      const proposals = await projectApi.getProposals();
+      const studentProposals = proposals.filter(
+        (p) => p.submitted_by === user?.user_id && p.proposer_type === "Student"
+      );
+
+      if (studentProposals.length >= 3) {
+        showSnackbar(
+          "Maximum number of project proposals (3) reached",
+          "error"
+        );
+        navigate("/project");
+        return;
+      }
+
       const userId = user?.id || user?.user_id;
       if (!userId) {
         throw new Error("User not authenticated");
       }
 
       const userIdNum = parseInt(userId.toString());
-      localStorage.setItem("user_id", userIdNum.toString());
 
+      // Prepare project data
       const projectData = {
         title: formData.title,
         summary: formData.summary,
@@ -163,7 +218,7 @@ export function StudentPFEForm() {
           submitted_by: userIdNum,
           proposal_status: "Pending",
           is_final_version: true,
-          proposal_order: 1,
+          proposal_order: studentProposals.length + 1,
           partner_id: formData.partnerId || undefined,
           internship_details: {
             duration: parseInt(formData.duration),
@@ -173,18 +228,39 @@ export function StudentPFEForm() {
         },
       };
 
-      console.log("📦 Student project data prepared:", projectData);
+      console.log("📤 Submitting project:", projectData);
+
       const response = await submitProject(projectData);
-      console.log("✅ Student project created:", response);
+      console.log("✅ Project submitted successfully:", response);
 
-      // If there's a partner, send notification
-      if (formData.partnerId) {
-        await sendPartnerNotification(formData.partnerId, response.project_id);
-      }
+      showSnackbar("Project submitted successfully", "success");
 
-      navigate("/projects");
+      // Navigate back to projects page
+      navigate("/project");
     } catch (error: any) {
       console.error("❌ Submit failed:", error);
+
+      // Handle the specific validation error
+      if (error.message === "Maximum number of project proposals (3) reached") {
+        showSnackbar(error.message, "error");
+        navigate("/project");
+        return;
+      }
+
+      // Handle validation errors
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        Object.entries(errors).forEach(([field, messages]: [string, any]) => {
+          if (Array.isArray(messages)) {
+            messages.forEach((message) => {
+              showSnackbar(`${field}: ${message}`, "error");
+            });
+          }
+        });
+      } else {
+        showSnackbar(error.message || "Failed to submit project", "error");
+      }
+
       setErrors({
         submit: error.response?.data?.message || "Failed to submit project",
         ...(error.response?.data?.errors || {}),

@@ -36,71 +36,59 @@ export const projectApi = {
 
     console.log("🏁 Starting project submission process");
 
-    const requestData = {
-      // Common project fields
-      title: data.title,
-      summary: data.summary,
-      technologies: data.technologies,
-      material_needs: data.material_needs || null,
-      option: data.option,
-      type: data.type,
-      status: "Proposed",
-      submitted_by: userId,
-      submission_date: new Date().toISOString().split("T")[0],
-      last_updated_date: new Date().toISOString().split("T")[0],
-      // Co-supervisor fields directly in the request
-      co_supervisor_name: data.co_supervisor_name || null,
-      co_supervisor_surname: data.co_supervisor_surname || null,
-    };
-
-    console.log("📝 Formatted request data:", requestData);
-
     try {
-      console.log("📤 Sending project creation request...");
+      // First check the submission count
+      const existingProjects = await this.getProjects();
+      const studentProjects = existingProjects.filter(
+        (p) => p.submitted_by === userId && p.status !== "Rejected"
+      );
+
+      console.log("📊 Current project count:", {
+        total: studentProjects.length,
+        projects: studentProjects,
+      });
+
+      if (studentProjects.length >= 3) {
+        throw new Error("Maximum number of project proposals (3) reached");
+      }
+
+      // Format request data
+      const requestData = {
+        title: data.title,
+        summary: data.summary,
+        technologies: data.technologies,
+        material_needs: data.material_needs,
+        option: data.option,
+        type: data.type,
+        submitted_by: userId,
+        status: "Proposed",
+        // Include proposal data
+        proposal: {
+          ...data.proposal,
+          submitted_by: userId,
+          proposer_type: "Student",
+          proposal_status: "Pending",
+        },
+      };
+
+      console.log("📝 Formatted request data:", requestData);
+
       const response = await axios.post(
         API_ENDPOINTS.projects.create,
         requestData
       );
 
-      console.log("✅ Project creation successful!", {
-        projectId: response.data.project_id,
+      console.log("✅ Project creation successful:", {
+        project: response.data,
         status: response.status,
-        responseData: response.data,
-        timestamp: new Date().toISOString(),
-      });
-
-      console.log("📊 Database record created:", {
-        project: {
-          id: response.data.project_id,
-          title: response.data.title,
-          type: response.data.type,
-          status: response.data.status,
-        },
-        proposal: {
-          id: response.data.project_proposal?.proposal_id,
-          status: response.data.project_proposal?.proposal_status,
-          proposerType: response.data.project_proposal?.proposer_type,
-        },
       });
 
       return response.data;
     } catch (error: any) {
-      console.error("❌ Project Submission Error:", {
-        error,
-        sqlError: error.response?.data?.sqlError,
-        requestData,
-        validationErrors: error.response?.data?.errors,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Log specific validation failures if any
-      if (error.response?.data?.errors) {
-        console.error("🚫 Validation Failures:", {
-          fields: Object.keys(error.response.data.errors),
-          details: error.response.data.errors,
-        });
+      // Handle both frontend and backend validations
+      if (error.response?.data?.errors?.submissions) {
+        throw new Error("Maximum number of project proposals (3) reached");
       }
-
       throw error;
     }
   },

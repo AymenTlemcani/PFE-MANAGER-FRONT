@@ -8,6 +8,7 @@ import { Project, ProjectProposal } from "../../types/project";
 import { projectApi } from "../../api/projectApi";
 import { Tabs } from "../../components/ui/Tabs";
 import { useAuthStore } from "../../store/authStore";
+import { useSnackbar } from "../../hooks/useSnackbar";
 
 export function StudentProjectPage() {
   const { t } = useTranslation();
@@ -21,6 +22,7 @@ export function StudentProjectPage() {
     "available" | "selection" | "proposals"
   >("available");
   const { user } = useAuthStore();
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     fetchProjectsAndProposals();
@@ -85,6 +87,48 @@ export function StudentProjectPage() {
     }
   };
 
+  const handleNewProjectClick = () => {
+    if (proposals.length >= 3) {
+      showSnackbar("Maximum number of project proposals (3) reached", "error");
+      return;
+    }
+    navigate("/projects/new");
+  };
+
+  const validateProposalLimit = async () => {
+    try {
+      const proposalResponse = await projectApi.getProposals();
+      console.log("🔍 Checking student proposals:", proposalResponse);
+
+      // Filter proposals for current student
+      const studentProposals = proposalResponse.filter(
+        (proposal) =>
+          proposal.submitted_by === user?.user_id &&
+          proposal.proposer_type === "Student" &&
+          proposal.proposal_status !== "Rejected" // Only count non-rejected proposals
+      );
+
+      console.log("📊 Found student proposals:", {
+        total: studentProposals.length,
+        proposals: studentProposals,
+      });
+
+      if (studentProposals.length >= 3) {
+        showSnackbar(
+          "Maximum number of project proposals (3) reached",
+          "error"
+        );
+        navigate("/projects");
+        return;
+      }
+
+      setProposalCount(studentProposals.length);
+    } catch (error) {
+      console.error("❌ Error checking proposal limit:", error);
+      showSnackbar("Failed to validate proposal limit", "error");
+    }
+  };
+
   if (isLoading || projectsLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -103,6 +147,63 @@ export function StudentProjectPage() {
 
   const hasReachedProposalLimit = proposals.length >= 3;
 
+  const renderProposalContent = (proposal: ProjectProposal) => {
+    const projectDetails = projects.find(
+      (p) => p.project_id === proposal.project_id
+    );
+
+    return (
+      <div
+        key={proposal.proposal_id}
+        className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              {projectDetails?.title || `Project #${proposal.project_id}`}
+            </h3>
+            <div className="space-y-1">
+              {projectDetails && (
+                <>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-medium">
+                      {t.studentProject.type}:
+                    </span>{" "}
+                    {projectDetails.type}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-medium">
+                      {t.studentProject.option}:
+                    </span>{" "}
+                    {projectDetails.option}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {projectDetails.summary}
+                  </p>
+                </>
+              )}
+              <div className="mt-2">
+                <ProposalStatus status={proposal.proposal_status} />
+                {proposal.review_comments && (
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                    <span className="font-medium">Feedback:</span>{" "}
+                    {proposal.review_comments}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/projects/${proposal.project_id}`)}
+          >
+            View Details
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -111,7 +212,7 @@ export function StudentProjectPage() {
         </h1>
         {!hasReachedProposalLimit && (
           <Button
-            onClick={() => navigate("/projects/new")}
+            onClick={handleNewProjectClick}
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
@@ -256,55 +357,3 @@ function ProposalStatus({
     </span>
   );
 }
-
-const renderProposalContent = (proposal: ProjectProposal) => {
-  const projectDetails = projects.find(
-    (p) => p.project_id === proposal.project_id
-  );
-
-  return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="flex justify-between items-start">
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            {projectDetails?.title || `Project #${proposal.project_id}`}
-          </h3>
-          <div className="space-y-1">
-            {projectDetails && (
-              <>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">{t.studentProject.type}:</span>{" "}
-                  {projectDetails.type}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium">
-                    {t.studentProject.option}:
-                  </span>{" "}
-                  {projectDetails.option}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {projectDetails.summary}
-                </p>
-              </>
-            )}
-            <div className="mt-2">
-              <ProposalStatus status={proposal.proposal_status} />
-              {proposal.review_comments && (
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-medium">Feedback:</span>{" "}
-                  {proposal.review_comments}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate(`/projects/${proposal.project_id}`)}
-        >
-          View Details
-        </Button>
-      </div>
-    </div>
-  );
-};
