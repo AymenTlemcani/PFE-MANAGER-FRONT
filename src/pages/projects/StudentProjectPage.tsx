@@ -159,15 +159,19 @@ export function StudentProjectPage() {
   };
 
   const handleRefresh = async () => {
+    if (isRefreshing) return;
+
     try {
       setIsRefreshing(true);
+      // Keep the current view while refreshing
+      await Promise.all([projectApi.getProposals(), projectApi.getProjects()]);
       await fetchProjectsAndProposals();
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  if (isLoading || projectsLoading) {
+  if (projectsLoading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-gray-500 dark:text-gray-400">{t.loading}</div>
@@ -343,12 +347,12 @@ export function StudentProjectPage() {
             onClick={handleRefresh}
             variant="outline"
             className="flex items-center gap-2"
-            disabled={isLoading || isRefreshing}
+            disabled={isRefreshing}
           >
             <RefreshCw
               className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
             />
-            {t.projectForm.refresh || "Refresh"}
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
           {!hasReachedProposalLimit && (
             <Button
@@ -362,72 +366,78 @@ export function StudentProjectPage() {
         </div>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as typeof activeTab)}
-      >
-        <Tabs.List>
-          <Tabs.Trigger value="available">
-            Available Projects ({validatedProjects.length})
-          </Tabs.Trigger>
-          <Tabs.Trigger value="selection">My Selection (0)</Tabs.Trigger>
-          <Tabs.Trigger value="proposals">
-            My Proposals ({proposals.length}/3)
-          </Tabs.Trigger>
-        </Tabs.List>
+      <div className="relative">
+        {isRefreshing && (
+          <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 backdrop-blur-sm rounded-lg" />
+        )}
 
-        <Tabs.Content value="available">
-          {validatedProjects.length > 0 ? (
-            <div className="mt-6 space-y-4">
-              {validatedProjects.map(renderAvailableProject)}
-            </div>
-          ) : (
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as typeof activeTab)}
+        >
+          <Tabs.List>
+            <Tabs.Trigger value="available">
+              Available Projects ({validatedProjects.length})
+            </Tabs.Trigger>
+            <Tabs.Trigger value="selection">My Selection (0)</Tabs.Trigger>
+            <Tabs.Trigger value="proposals">
+              My Proposals ({proposals.length}/3)
+            </Tabs.Trigger>
+          </Tabs.List>
+
+          <Tabs.Content value="available">
+            {validatedProjects.length > 0 ? (
+              <div className="mt-6 space-y-4">
+                {validatedProjects.map(renderAvailableProject)}
+              </div>
+            ) : (
+              <div className="mt-6 text-center py-12">
+                <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                  No Projects Available for Selection
+                </h3>
+                <p className="mt-2 text-gray-500 dark:text-gray-400">
+                  There are currently no validated projects available for
+                  selection. Please check back later or submit your own project
+                  proposal.
+                </p>
+              </div>
+            )}
+          </Tabs.Content>
+
+          <Tabs.Content value="selection">
             <div className="mt-6 text-center py-12">
-              <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+              <ListChecks className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-                No Projects Available for Selection
+                No Projects Selected
               </h3>
               <p className="mt-2 text-gray-500 dark:text-gray-400">
-                There are currently no validated projects available for
-                selection. Please check back later or submit your own project
-                proposal.
+                Browse available projects and add them to your selection list.
+                You can select up to 10 projects to prioritize.
               </p>
             </div>
-          )}
-        </Tabs.Content>
+          </Tabs.Content>
 
-        <Tabs.Content value="selection">
-          <div className="mt-6 text-center py-12">
-            <ListChecks className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-              No Projects Selected
-            </h3>
-            <p className="mt-2 text-gray-500 dark:text-gray-400">
-              Browse available projects and add them to your selection list. You
-              can select up to 10 projects to prioritize.
-            </p>
-          </div>
-        </Tabs.Content>
-
-        <Tabs.Content value="proposals">
-          {proposals.length > 0 ? (
-            <div className="mt-6 grid grid-cols-1 gap-4">
-              {proposals.map((proposal) => renderProposalContent(proposal))}
-            </div>
-          ) : (
-            <div className="mt-6 text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-                No Project Proposals
-              </h3>
-              <p className="mt-2 text-gray-500 dark:text-gray-400">
-                You haven't submitted any project proposals yet. You can submit
-                up to 3 proposals.
-              </p>
-            </div>
-          )}
-        </Tabs.Content>
-      </Tabs>
+          <Tabs.Content value="proposals">
+            {proposals.length > 0 ? (
+              <div className="mt-6 grid grid-cols-1 gap-4">
+                {proposals.map((proposal) => renderProposalContent(proposal))}
+              </div>
+            ) : (
+              <div className="mt-6 text-center py-12">
+                <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                  No Project Proposals
+                </h3>
+                <p className="mt-2 text-gray-500 dark:text-gray-400">
+                  You haven't submitted any project proposals yet. You can
+                  submit up to 3 proposals.
+                </p>
+              </div>
+            )}
+          </Tabs.Content>
+        </Tabs>
+      </div>
     </div>
   );
 }

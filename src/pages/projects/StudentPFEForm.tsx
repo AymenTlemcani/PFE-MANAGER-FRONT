@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../../components/ui/Input";
@@ -67,6 +67,10 @@ export function StudentPFEForm() {
     type: "", // Added type field
   });
   const [proposalCount, setProposalCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [projectType, setProjectType] = useState<"project" | "internship">(
+    "project"
+  );
 
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -288,6 +292,24 @@ export function StudentPFEForm() {
     });
   };
 
+  // Filter students based on search query
+  const filteredPartners = availablePartners.filter((partner) => {
+    const fullName = `${partner.firstName} ${partner.lastName}`.toLowerCase();
+    return (
+      fullName.includes(searchQuery.toLowerCase()) && partner.id !== user?.id
+    );
+  });
+
+  // Update project type when internship/research is selected
+  useEffect(() => {
+    if (projectType === "internship") {
+      setFormData((prev) => ({
+        ...prev,
+        type: "Internship",
+      }));
+    }
+  }, [projectType]);
+
   if (proposalCount >= 3) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -336,87 +358,44 @@ export function StudentPFEForm() {
         </div>
 
         <div className="px-8 py-8 space-y-8">
-          {/* Students Section */}
+          {/* Project Type Selection */}
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Student Details
+              Project Type
             </h3>
-            <div className="grid grid-cols-2 gap-8">
-              <Input
-                label="Student Name"
-                value={formData.studentName}
-                disabled
-                className="text-lg p-3 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-              />
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Select Partner (Optional)
-                </label>
-                <select
-                  name="partnerId"
-                  value={formData.partnerId}
-                  onChange={(e) => {
-                    const partner = availablePartners.find(
-                      (p) => p.id === e.target.value
-                    );
-                    setFormData({
-                      ...formData,
-                      partnerId: e.target.value,
-                      partnerName: partner
-                        ? `${partner.firstName} ${partner.lastName}`
-                        : "",
-                    });
-                  }}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
-                >
-                  <option value="">Work Individually</option>
-                  {availablePartners.map((partner) => (
-                    <option key={partner.id} value={partner.id}>
-                      {partner.firstName} {partner.lastName} -{" "}
-                      {partner.masterOption}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Company Details
-            </h3>
-            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Select Company
-                </label>
-                <select
-                  name="companyId"
-                  value={formData.companyId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, companyId: e.target.value })
-                  }
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
-                >
-                  <option value="">Select a Company</option>
-                  {companies.map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.companyName} - {company.industry}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <Input
-                label="Supervisor Name at Company"
-                name="supervisorName"
-                value={formData.supervisorName}
-                onChange={(e) =>
-                  setFormData({ ...formData, supervisorName: e.target.value })
-                }
-                className="text-lg p-3 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-              />
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setProjectType("project")}
+                className={`flex-1 py-4 px-6 rounded-lg border-2 ${
+                  projectType === "project"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                    : "border-gray-200 dark:border-gray-700"
+                }`}
+              >
+                <h4 className="font-medium text-gray-900 dark:text-white">
+                  Research Project
+                </h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Academic research or development project
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setProjectType("internship")}
+                className={`flex-1 py-4 px-6 rounded-lg border-2 ${
+                  projectType === "internship"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                    : "border-gray-200 dark:border-gray-700"
+                }`}
+              >
+                <h4 className="font-medium text-gray-900 dark:text-white">
+                  Internship
+                </h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Company-based internship project
+                </p>
+              </button>
             </div>
           </div>
 
@@ -461,40 +440,28 @@ export function StudentPFEForm() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                    Project Type
-                  </label>
-                  <select
-                    name="type"
-                    value={formData.type}
-                    onChange={(e) =>
-                      setFormData({ ...formData, type: e.target.value })
-                    }
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
-                    required
-                  >
-                    <option value="">Select Type</option>
-                    <option value="Classical">Classical</option>
-                    <option value="Innovative">Innovative</option>
-                    <option value="StartUp">StartUp</option>
-                    <option value="Patent">Patent</option>
-                    <option value="Internship">Internship</option>
-                  </select>
-                </div>
-
-                <Input
-                  label="Duration (months)"
-                  name="duration"
-                  type="text"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration: e.target.value })
-                  }
-                  error={errors.duration}
-                  required
-                  className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-                />
+                {projectType === "project" && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                      Project Type
+                    </label>
+                    <select
+                      name="type"
+                      value={formData.type}
+                      onChange={(e) =>
+                        setFormData({ ...formData, type: e.target.value })
+                      }
+                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
+                      required
+                    >
+                      <option value="">Select Type</option>
+                      <option value="Classical">Classical</option>
+                      <option value="Innovative">Innovative</option>
+                      <option value="StartUp">StartUp</option>
+                      <option value="Patent">Patent</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -515,96 +482,242 @@ export function StudentPFEForm() {
             </div>
           </div>
 
-          {/* Internship Details */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Internship Details
-            </h3>
+          {/* Conditional sections based on project type */}
+          {projectType === "internship" ? (
+            <>
+              {/* Company Details Section */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Company Details
+                </h3>
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                      Select Company
+                    </label>
+                    <select
+                      name="companyId"
+                      value={formData.companyId}
+                      onChange={(e) =>
+                        setFormData({ ...formData, companyId: e.target.value })
+                      }
+                      className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 [&>option]:dark:bg-gray-800"
+                    >
+                      <option value="">Select a Company</option>
+                      {companies.map((company) => (
+                        <option key={company.id} value={company.id}>
+                          {company.companyName} - {company.industry}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-            <div className="space-y-4">
-              <Input
-                label="Required Technologies"
-                name="technologies"
-                value={formData.technologies}
-                onChange={(e) =>
-                  setFormData({ ...formData, technologies: e.target.value })
-                }
-                error={errors.technologies}
-                placeholder="e.g., React, Node.js, Python"
-                required
-                className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-              />
-
-              <Input
-                label="Location"
-                name="location"
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-                error={errors.location}
-                required
-                className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-              />
-
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="paid"
-                    checked={formData.paid}
-                    onChange={(e) =>
-                      setFormData({ ...formData, paid: e.target.checked })
-                    }
-                    className="h-4 w-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded"
-                  />
-                  <label
-                    htmlFor="paid"
-                    className="ml-2 text-sm text-gray-700 dark:text-gray-200"
-                  >
-                    Paid Internship
-                  </label>
-                </div>
-
-                {formData.paid && (
                   <Input
-                    label="Monthly Salary (DZD)"
-                    name="salary"
-                    type="number"
-                    value={formData.salary}
+                    label="Supervisor Name at Company"
+                    name="supervisorName"
+                    value={formData.supervisorName}
                     onChange={(e) =>
-                      setFormData({ ...formData, salary: e.target.value })
+                      setFormData({
+                        ...formData,
+                        supervisorName: e.target.value,
+                      })
                     }
-                    error={errors.salary}
+                    className="text-lg p-3 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                  />
+                </div>
+              </div>
+
+              {/* Internship Details Section */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Internship Details
+                </h3>
+
+                <div className="space-y-4">
+                  <Input
+                    label="Required Technologies"
+                    name="technologies"
+                    value={formData.technologies}
+                    onChange={(e) =>
+                      setFormData({ ...formData, technologies: e.target.value })
+                    }
+                    error={errors.technologies}
+                    placeholder="e.g., React, Node.js, Python"
+                    required
                     className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                   />
-                )}
-              </div>
-            </div>
-          </div>
 
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Hardware Requirements
-            </h3>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Hardware Requirements
-              </label>
-              <textarea
-                name="hardwareRequirements"
-                value={formData.hardwareRequirements}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    hardwareRequirements: e.target.value,
-                  })
-                }
-                rows={4}
-                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[120px]"
-              />
-            </div>
-          </div>
+                  <Input
+                    label="Location"
+                    name="location"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    error={errors.location}
+                    required
+                    className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                  />
+
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="paid"
+                        checked={formData.paid}
+                        onChange={(e) =>
+                          setFormData({ ...formData, paid: e.target.checked })
+                        }
+                        className="h-4 w-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded"
+                      />
+                      <label
+                        htmlFor="paid"
+                        className="ml-2 text-sm text-gray-700 dark:text-gray-200"
+                      >
+                        Paid Internship
+                      </label>
+                    </div>
+
+                    {formData.paid && (
+                      <Input
+                        label="Monthly Salary (DZD)"
+                        name="salary"
+                        type="number"
+                        value={formData.salary}
+                        onChange={(e) =>
+                          setFormData({ ...formData, salary: e.target.value })
+                        }
+                        error={errors.salary}
+                        className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Research Project Details */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Research Details
+                </h3>
+                <div className="space-y-4">
+                  <Input
+                    label="Required Technologies"
+                    name="technologies"
+                    value={formData.technologies}
+                    onChange={(e) =>
+                      setFormData({ ...formData, technologies: e.target.value })
+                    }
+                    error={errors.technologies}
+                    required
+                    className="dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                  />
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                      Hardware Requirements
+                    </label>
+                    <textarea
+                      name="hardwareRequirements"
+                      value={formData.hardwareRequirements}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hardwareRequirements: e.target.value,
+                        })
+                      }
+                      rows={4}
+                      className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-gray-100 min-h-[120px]"
+                    />
+                  </div>
+
+                  {/* Partner Selection - Only for research projects */}
+                  <div className="space-y-4 mt-8">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                      Partner Selection (Optional)
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search for a partner..."
+                          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      </div>
+
+                      {searchQuery && (
+                        <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
+                          {filteredPartners.length > 0 ? (
+                            filteredPartners.map((partner) => (
+                              <button
+                                key={partner.id}
+                                type="button"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    partnerId: partner.id,
+                                    partnerName: `${partner.firstName} ${partner.lastName}`,
+                                  });
+                                  setSearchQuery("");
+                                }}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center justify-between"
+                              >
+                                <div>
+                                  <p className="font-medium text-gray-900 dark:text-white">
+                                    {partner.firstName} {partner.lastName}
+                                  </p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {partner.masterOption}
+                                  </p>
+                                </div>
+                                {formData.partnerId === partner.id && (
+                                  <span className="text-blue-500">
+                                    Selected
+                                  </span>
+                                )}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-4 py-3 text-gray-500 dark:text-gray-400">
+                              No matching students found
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {formData.partnerId && (
+                        <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              Selected Partner: {formData.partnerName}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                partnerId: "",
+                                partnerName: "",
+                              });
+                            }}
+                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-8 py-6 border-t border-gray-200 dark:border-gray-700">
