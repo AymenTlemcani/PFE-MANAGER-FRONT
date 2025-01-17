@@ -164,21 +164,28 @@ export const projectApi = {
     }
   },
 
-  async getProjectsByStatus(status: string) {
+  async getProjectsByStatus(status?: string) {
     const { userId } = verifyAuth();
     try {
-      console.log("📤 Fetching projects by status:", status);
-      const response = await axios.get(
-        API_ENDPOINTS.projects.listByStatus(status)
-      );
+      console.log("📤 Fetching projects by status:", status || "all");
+
+      // If no status is provided, fetch all projects
+      const url = status
+        ? API_ENDPOINTS.projects.listByStatus(status)
+        : API_ENDPOINTS.projects.list;
+
+      const response = await axios.get(url);
+
+      // Handle both response formats
+      const projects = response.data.projects || response.data;
 
       console.log("✅ Projects fetched successfully:", {
-        status,
-        count: response.data.projects.length,
+        status: status || "all",
+        count: projects.length,
         timestamp: new Date().toISOString(),
       });
 
-      return response.data.projects;
+      return projects;
     } catch (error) {
       console.error("❌ Error fetching projects by status:", error);
       throw error;

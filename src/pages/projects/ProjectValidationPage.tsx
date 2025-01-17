@@ -6,6 +6,8 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  RefreshCw,
+  Filter,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Dialog } from "../../components/ui/Dialog";
@@ -30,19 +32,43 @@ export function ProjectValidationPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { projects, loading: projectsLoading } = useProjectContext();
   const [pendingProjects, setPendingProjects] = useState<Project[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("Proposed");
+
+  // Available status options
+  const statusOptions = [
+    { value: "all", label: "All Projects" },
+    { value: "Proposed", label: "Proposed" },
+    { value: "Approved", label: "Approved" },
+    { value: "Rejected", label: "Rejected" },
+  ];
 
   useEffect(() => {
     fetchPendingProjects();
-  }, []);
+  }, [selectedStatus]);
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    try {
+      setIsRefreshing(true);
+      await fetchPendingProjects();
+      showSnackbar("Projects refreshed successfully", "success");
+    } catch (error) {
+      showSnackbar("Failed to refresh projects", "error");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const fetchPendingProjects = async () => {
     try {
       setIsLoading(true);
-      const projects = await projectApi.getProjectsByStatus("Proposed");
+      const status = selectedStatus === "all" ? undefined : selectedStatus;
+      const projects = await projectApi.getProjectsByStatus(status);
       setPendingProjects(projects);
     } catch (error) {
-      console.error("Failed to fetch pending projects:", error);
-      showSnackbar("Failed to fetch pending projects", "error");
+      console.error("Failed to fetch projects:", error);
+      showSnackbar("Failed to fetch projects", "error");
     } finally {
       setIsLoading(false);
     }
@@ -117,47 +143,112 @@ export function ProjectValidationPage() {
     return text && text.length > maxLength;
   };
 
-  const renderProjectSubmitter = (project) => {
-    if (project.type === "Internship") {
-      return (
-        <div className="flex items-center gap-2">
-          <Avatar
-            src={project.submitter?.avatar}
-            fallback={project.company_name?.[0] || "C"}
-            size="sm"
-          />
-          <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {project.company_name}
-            </p>
-            <p className="text-xs text-gray-500">
-              {project.option} •{" "}
-              {new Date(project.submission_date).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-      );
+  const getSubmitterName = (project) => {
+    if (!project.submitter) return "Unknown";
+
+    switch (project.submitter.role) {
+      case "Student":
+        return project.submitter?.student?.name
+          ? `${project.submitter.student.name} ${project.submitter.student.surname}`
+          : "Student";
+      case "Teacher":
+        return project.submitter?.teacher?.name
+          ? `${project.submitter.teacher.name} ${project.submitter.teacher.surname}`
+          : project.submitter.email.split("@")[0];
+      case "Company":
+        return project.company_name || project.submitter.email.split("@")[0];
+      default:
+        return project.submitter.email.split("@")[0] || "Unknown";
     }
+  };
+
+  const getSubmitterDetails = (project) => {
+    const base = {
+      name: getSubmitterName(project),
+      role: project.submitter?.role || "Unknown",
+      avatar: project.submitter?.profile_picture_url,
+    };
+
+    switch (project.submitter?.role) {
+      case "Student":
+        return {
+          ...base,
+          details: project.submitter?.student?.master_option || project.option,
+        };
+      case "Teacher":
+        return {
+          ...base,
+          details: project.submitter?.teacher?.grade || "Teacher",
+        };
+      case "Company":
+        return {
+          ...base,
+          details: project.internship_location || "Company",
+        };
+      default:
+        return base;
+    }
+  };
+
+  const renderProjectSubmitter = (project) => {
+    const submitter = getSubmitterDetails(project);
 
     return (
       <div className="flex items-center gap-2">
         <Avatar
-          src={project.submitter?.avatar}
-          fallback={project.submitter_details?.name?.[0] || "U"}
+          src={submitter.avatar}
+          fallback={submitter.name[0] || "?"}
           size="sm"
         />
         <div>
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {project.submitter_details?.name}{" "}
-            {project.submitter_details?.surname}
+            {submitter.name}
+            <span className="ml-2 text-xs text-gray-500">
+              ({submitter.role})
+            </span>
           </p>
           <p className="text-xs text-gray-500">
-            {project.option} •{" "}
+            {submitter.details} •{" "}
             {new Date(project.submission_date).toLocaleDateString()}
           </p>
         </div>
       </div>
     );
+  };
+
+  const getSubmitterInitial = (project) => {
+    const name = getSubmitterName(project);
+    return name?.[0] || "?";
+  };
+
+  const getEmptyStateMessage = (status: string) => {
+    switch (status) {
+      case "Proposed":
+        return {
+          icon: <FileText className="mx-auto h-12 w-12 text-gray-400" />,
+          title: "No Pending Projects",
+          description:
+            "There are currently no projects waiting for validation.",
+        };
+      case "Approved":
+        return {
+          icon: <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />,
+          title: "No Approved Projects",
+          description: "No projects have been approved yet.",
+        };
+      case "Rejected":
+        return {
+          icon: <XCircle className="mx-auto h-12 w-12 text-gray-400" />,
+          title: "No Rejected Projects",
+          description: "No projects have been rejected.",
+        };
+      default:
+        return {
+          icon: <FileText className="mx-auto h-12 w-12 text-gray-400" />,
+          title: "No Projects Found",
+          description: "There are no projects matching the selected status.",
+        };
+    }
   };
 
   return (
@@ -170,6 +261,30 @@ export function ProjectValidationPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Review and validate submitted project proposals
           </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+          >
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            className="flex items-center gap-2"
+            disabled={isRefreshing}
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </Button>
         </div>
       </div>
 
@@ -188,12 +303,12 @@ export function ProjectValidationPage() {
         </div>
       ) : pendingProjects.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <FileText className="mx-auto h-12 w-12 text-gray-400" />
+          {getEmptyStateMessage(selectedStatus).icon}
           <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-            No Pending Projects
+            {getEmptyStateMessage(selectedStatus).title}
           </h3>
           <p className="mt-2 text-gray-500 dark:text-gray-400">
-            There are currently no projects waiting for validation.
+            {getEmptyStateMessage(selectedStatus).description}
           </p>
         </div>
       ) : (
