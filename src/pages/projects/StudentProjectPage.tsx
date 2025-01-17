@@ -8,6 +8,7 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
 } from "lucide-react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useProjectContext } from "../../context/ProjectContext";
@@ -33,6 +34,7 @@ export function StudentProjectPage() {
   const [expandedDescriptions, setExpandedDescriptions] = useState<
     Record<number, boolean>
   >({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const toggleDescription = (projectId: number) => {
     setExpandedDescriptions((prev) => ({
@@ -153,6 +155,15 @@ export function StudentProjectPage() {
     } catch (error) {
       console.error("❌ Error checking proposal limit:", error);
       showSnackbar("Failed to validate proposal limit", "error");
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchProjectsAndProposals();
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -327,15 +338,28 @@ export function StudentProjectPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           {t.studentProject.pfeProjects}
         </h1>
-        {!hasReachedProposalLimit && (
+        <div className="flex items-center gap-2">
           <Button
-            onClick={handleNewProjectClick}
+            onClick={handleRefresh}
+            variant="outline"
             className="flex items-center gap-2"
+            disabled={isLoading || isRefreshing}
           >
-            <Plus className="h-4 w-4" />
-            {t.studentProject.proposeNewProject}
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {t.projectForm.refresh || "Refresh"}
           </Button>
-        )}
+          {!hasReachedProposalLimit && (
+            <Button
+              onClick={handleNewProjectClick}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              {t.studentProject.proposeNewProject}
+            </Button>
+          )}
+        </div>
       </div>
 
       <Tabs
