@@ -116,6 +116,13 @@ export function CompanyPFEForm() {
       const response = await projectApi.submitProject(projectData);
       console.log("✅ Project submitted successfully:", response);
 
+      // Add refresh before navigation
+      try {
+        await refreshProjects();
+      } catch (refreshError) {
+        console.error("Failed to refresh projects:", refreshError);
+      }
+
       showSnackbar("Internship offer submitted successfully", "success");
       navigate("/projects");
     } catch (error: any) {

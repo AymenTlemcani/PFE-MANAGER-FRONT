@@ -13,6 +13,24 @@ import { Avatar } from "../../components/ui/Avatar";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { Button } from "../../components/ui/Button"; // Add Button import
 
+// Add getStatusColor helper function at the top level
+const getStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "proposed":
+      return "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200";
+    case "validated":
+      return "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200";
+    case "assigned":
+      return "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200";
+    case "inprogress":
+      return "bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200";
+    case "completed":
+      return "bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200";
+    default:
+      return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
+  }
+};
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const currentLang = localStorage.getItem("language") || "en";
@@ -47,7 +65,12 @@ export function ProjectsPage() {
   };
 
   const handleRefresh = async () => {
-    await refreshProjects();
+    try {
+      await refreshProjects();
+      showSnackbar("Projects refreshed successfully", "success");
+    } catch (error) {
+      showSnackbar("Failed to refresh projects", "error");
+    }
   };
 
   // Add LoadingOverlay component

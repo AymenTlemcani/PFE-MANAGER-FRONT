@@ -71,5 +71,15 @@ export const useProjectContext = () => {
   if (context === undefined) {
     throw new Error("useProjectContext must be used within a ProjectProvider");
   }
-  return context;
+  return {
+    ...context,
+    refreshProjects: async () => {
+      try {
+        context.setLoading?.(true);
+        await context.refreshProjects();
+      } finally {
+        context.setLoading?.(false);
+      }
+    },
+  };
 };
