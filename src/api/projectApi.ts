@@ -33,26 +33,31 @@ const verifyAuth = () => {
 export const projectApi = {
   async submitProject(data: Partial<Project>) {
     const { userId } = verifyAuth();
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
     console.log("🏁 Starting project submission process");
 
     try {
-      // First check the submission count
-      const existingProjects = await this.getProjects();
-      const studentProjects = existingProjects.filter(
-        (p) => p.submitted_by === userId && p.status !== "Rejected"
-      );
+      // Only check submission count for students
+      if (user.role === "Student") {
+        const existingProjects = await this.getProjects();
+        // Use user.user_id instead of userId from token
+        const studentProjects = existingProjects.filter(
+          (p) => p.submitted_by === user.user_id && p.status !== "Rejected"
+        );
 
-      console.log("📊 Current project count:", {
-        total: studentProjects.length,
-        projects: studentProjects,
-      });
+        console.log("📊 Current project count:", {
+          total: studentProjects.length,
+          projects: studentProjects,
+          userId: user.user_id, // Log the actual user ID being used
+        });
 
-      if (studentProjects.length >= 3) {
-        throw new Error("Maximum number of project proposals (3) reached");
+        if (studentProjects.length >= 3) {
+          throw new Error("Maximum number of project proposals (3) reached");
+        }
       }
 
-      // Format request data
+      // Format request data using correct user ID
       const requestData = {
         title: data.title,
         summary: data.summary,
@@ -60,7 +65,7 @@ export const projectApi = {
         material_needs: data.material_needs,
         option: data.option,
         type: data.type,
-        submitted_by: userId,
+        submitted_by: user.user_id, // Use user.user_id instead of token userId
         status: "Proposed",
         // Company fields - send both id and name
         company_id: data.company_id,
@@ -73,8 +78,8 @@ export const projectApi = {
         // Include proposal data
         proposal: {
           ...data.proposal,
-          submitted_by: userId,
-          proposer_type: data.type === "Internship" ? "Company" : "Student",
+          submitted_by: user.user_id, // Use user.user_id here too
+          proposer_type: user.role,
           proposal_status: "Pending",
         },
       };
@@ -155,6 +160,53 @@ export const projectApi = {
       return response.data;
     } catch (error: any) {
       console.error("❌ Error fetching projects:", error);
+      throw error;
+    }
+  },
+
+  async approveProject(projectId: number, comments: string) {
+    verifyAuth();
+    try {
+      const response = await axios.put(
+        `${API_ENDPOINTS.projects.proposals}/${projectId}`,
+        {
+          proposal_status: "Approved",
+          comments: comments,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error approving project:", error);
+      throw error;
+    }
+  },
+
+  async rejectProject(projectId: number, comments: string) {
+    verifyAuth();
+    try {
+      const response = await axios.put(
+        `${API_ENDPOINTS.projects.proposals}/${projectId}`,
+        {
+          proposal_status: "Rejected",
+          comments: comments,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error rejecting project:", error);
+      throw error;
+    }
+  },
+
+  async getPendingProjects() {
+    verifyAuth();
+    try {
+      const response = await axios.get(API_ENDPOINTS.projects.proposals);
+      return response.data.filter(
+        (proposal) => proposal.proposal_status === "Pending"
+      );
+    } catch (error) {
+      console.error("Error fetching pending projects:", error);
       throw error;
     }
   },
