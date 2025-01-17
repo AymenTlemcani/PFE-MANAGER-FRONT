@@ -1,7 +1,14 @@
 import { Button } from "../../components/ui/Button";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Plus, ListChecks, FileText } from "lucide-react";
+import {
+  BookOpen,
+  Plus,
+  ListChecks,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useProjectContext } from "../../context/ProjectContext";
 import { Project, ProjectProposal } from "../../types/project";
@@ -23,6 +30,26 @@ export function StudentProjectPage() {
   >("available");
   const { user } = useAuthStore();
   const { showSnackbar } = useSnackbar();
+  const [expandedDescriptions, setExpandedDescriptions] = useState<
+    Record<number, boolean>
+  >({});
+
+  const toggleDescription = (projectId: number) => {
+    setExpandedDescriptions((prev) => ({
+      ...prev,
+      [projectId]: !prev[projectId],
+    }));
+  };
+
+  const truncateDescription = (text: string, maxLength: number = 200) => {
+    if (!text) return "";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "... more";
+  };
+
+  const isTextTruncated = (text: string, maxLength: number = 200) => {
+    return text && text.length > maxLength;
+  };
 
   useEffect(() => {
     fetchProjectsAndProposals();
@@ -152,57 +179,147 @@ export function StudentProjectPage() {
       (p) => p.project_id === proposal.project_id
     );
 
+    if (!projectDetails) return null;
+
     return (
       <div
         key={proposal.proposal_id}
-        className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+        className="group bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer relative"
+        onClick={() => toggleDescription(proposal.proposal_id)}
       >
-        <div className="flex justify-between items-start">
-          <div className="space-y-2">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              {projectDetails?.title || `Project #${proposal.project_id}`}
-            </h3>
-            <div className="space-y-1">
-              {projectDetails && (
-                <>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium">
-                      {t.studentProject.type}:
-                    </span>{" "}
-                    {projectDetails.type}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium">
-                      {t.studentProject.option}:
-                    </span>{" "}
-                    {projectDetails.option}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {projectDetails.summary}
-                  </p>
-                </>
-              )}
-              <div className="mt-2">
+        <div className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-wrap flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {projectDetails.title}
+                </h3>
                 <ProposalStatus status={proposal.proposal_status} />
-                {proposal.review_comments && (
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium">Feedback:</span>{" "}
-                    {proposal.review_comments}
-                  </p>
-                )}
+              </div>
+              {isTextTruncated(projectDetails.summary) && (
+                <div className="text-gray-400">
+                  {expandedDescriptions[proposal.proposal_id] ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </div>
+              )}
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              {expandedDescriptions[proposal.proposal_id]
+                ? projectDetails.summary
+                : truncateDescription(projectDetails.summary)}
+            </p>
+
+            <div className="grid grid-cols-3 gap-4 pt-2">
+              <div>
+                <p className="text-xs font-medium uppercase text-gray-500">
+                  Option
+                </p>
+                <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                  {projectDetails.option}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase text-gray-500">
+                  Type
+                </p>
+                <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                  {projectDetails.type}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase text-gray-500">
+                  Technologies
+                </p>
+                <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                  {projectDetails.technologies || "Not specified"}
+                </p>
               </div>
             </div>
+
+            {proposal.review_comments && (
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-md border border-gray-100 dark:border-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Feedback:</span>{" "}
+                  {proposal.review_comments}
+                </p>
+              </div>
+            )}
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/projects/${proposal.project_id}`)}
-          >
-            View Details
-          </Button>
         </div>
+        <div className="absolute inset-0 rounded-lg ring-1 ring-black/5 group-hover:ring-black/10 dark:ring-white/5 dark:group-hover:ring-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       </div>
     );
   };
+
+  const renderAvailableProject = (project: Project) => (
+    <div
+      key={project.project_id}
+      className="group bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer relative"
+      onClick={() => toggleDescription(project.project_id)}
+    >
+      <div className="p-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-wrap flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {project.title}
+              </h3>
+              <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 rounded-full">
+                {project.type}
+              </span>
+            </div>
+            {isTextTruncated(project.summary) && (
+              <div className="text-gray-400">
+                {expandedDescriptions[project.project_id] ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </div>
+            )}
+          </div>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            {expandedDescriptions[project.project_id]
+              ? project.summary
+              : truncateDescription(project.summary)}
+          </p>
+
+          <div className="grid grid-cols-3 gap-4 pt-2">
+            <div>
+              <p className="text-xs font-medium uppercase text-gray-500">
+                Option
+              </p>
+              <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                {project.option}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-gray-500">
+                Type
+              </p>
+              <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                {project.type}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-gray-500">
+                Technologies
+              </p>
+              <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                {project.technologies || "Not specified"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute inset-0 rounded-lg ring-1 ring-black/5 group-hover:ring-black/10 dark:ring-white/5 dark:group-hover:ring-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -237,46 +354,8 @@ export function StudentProjectPage() {
 
         <Tabs.Content value="available">
           {validatedProjects.length > 0 ? (
-            <div className="mt-6 grid grid-cols-1 gap-4">
-              {validatedProjects.map((project) => (
-                <div
-                  key={project.project_id}
-                  className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                        {project.title}
-                      </h3>
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-medium">
-                            {t.studentProject.type}:
-                          </span>{" "}
-                          {project.type}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-medium">
-                            {t.studentProject.option}:
-                          </span>{" "}
-                          {project.option}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {project.summary}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        navigate(`/projects/${project.project_id}`)
-                      }
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            <div className="mt-6 space-y-4">
+              {validatedProjects.map(renderAvailableProject)}
             </div>
           ) : (
             <div className="mt-6 text-center py-12">
