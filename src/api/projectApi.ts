@@ -164,6 +164,27 @@ export const projectApi = {
     }
   },
 
+  async getProjectsByStatus(status: string) {
+    const { userId } = verifyAuth();
+    try {
+      console.log("📤 Fetching projects by status:", status);
+      const response = await axios.get(
+        API_ENDPOINTS.projects.listByStatus(status)
+      );
+
+      console.log("✅ Projects fetched successfully:", {
+        status,
+        count: response.data.projects.length,
+        timestamp: new Date().toISOString(),
+      });
+
+      return response.data.projects;
+    } catch (error) {
+      console.error("❌ Error fetching projects by status:", error);
+      throw error;
+    }
+  },
+
   async approveProject(projectId: number, comments: string) {
     verifyAuth();
     try {

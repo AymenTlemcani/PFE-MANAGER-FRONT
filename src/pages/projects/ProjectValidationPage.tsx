@@ -12,8 +12,9 @@ import { Dialog } from "../../components/ui/Dialog";
 import { useNavigate } from "react-router-dom";
 import { Avatar } from "../../components/ui/Avatar";
 import { useProjectContext } from "../../context/ProjectContext"; // Add this import
-import { projectApi } from "../../api/projectApi";
 import { useSnackbar } from "../../hooks/useSnackbar";
+import { Project } from "../../types/project";
+import { projectApi } from "../../api/projectApi";
 
 export function ProjectValidationPage() {
   const [selectedProject, setSelectedProject] = useState(null);
@@ -26,19 +27,21 @@ export function ProjectValidationPage() {
     Record<number, boolean>
   >({});
   const { showSnackbar } = useSnackbar();
-  const [isLoading, setIsLoading] = useState(false);
-  const [pendingProjects, setPendingProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { projects, loading: projectsLoading } = useProjectContext();
+  const [pendingProjects, setPendingProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     fetchPendingProjects();
   }, []);
 
   const fetchPendingProjects = async () => {
-    setIsLoading(true);
     try {
-      const data = await projectApi.getPendingProjects();
-      setPendingProjects(data);
+      setIsLoading(true);
+      const projects = await projectApi.getProjectsByStatus("Proposed");
+      setPendingProjects(projects);
     } catch (error) {
+      console.error("Failed to fetch pending projects:", error);
       showSnackbar("Failed to fetch pending projects", "error");
     } finally {
       setIsLoading(false);
@@ -114,6 +117,49 @@ export function ProjectValidationPage() {
     return text && text.length > maxLength;
   };
 
+  const renderProjectSubmitter = (project) => {
+    if (project.type === "Internship") {
+      return (
+        <div className="flex items-center gap-2">
+          <Avatar
+            src={project.submitter?.avatar}
+            fallback={project.company_name?.[0] || "C"}
+            size="sm"
+          />
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {project.company_name}
+            </p>
+            <p className="text-xs text-gray-500">
+              {project.option} •{" "}
+              {new Date(project.submission_date).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <Avatar
+          src={project.submitter?.avatar}
+          fallback={project.submitter_details?.name?.[0] || "U"}
+          size="sm"
+        />
+        <div>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {project.submitter_details?.name}{" "}
+            {project.submitter_details?.surname}
+          </p>
+          <p className="text-xs text-gray-500">
+            {project.option} •{" "}
+            {new Date(project.submission_date).toLocaleDateString()}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -154,9 +200,9 @@ export function ProjectValidationPage() {
         <div className="space-y-4">
           {pendingProjects.map((project) => (
             <div
-              key={project.id}
+              key={project.project_id}
               className="group bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer relative"
-              onClick={() => toggleDescription(project.id)}
+              onClick={() => toggleDescription(project.project_id)}
             >
               <div className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
@@ -173,13 +219,13 @@ export function ProjectValidationPage() {
                     <div className="group">
                       <div className="relative">
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                          {expandedDescriptions[project.id]
-                            ? project.description
-                            : truncateDescription(project.description)}
+                          {expandedDescriptions[project.project_id]
+                            ? project.summary
+                            : truncateDescription(project.summary)}
                         </p>
-                        {isTextTruncated(project.description) && (
+                        {isTextTruncated(project.summary) && (
                           <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {expandedDescriptions[project.id] ? (
+                            {expandedDescriptions[project.project_id] ? (
                               <ChevronUp className="h-5 w-5 text-gray-400" />
                             ) : (
                               <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -190,22 +236,7 @@ export function ProjectValidationPage() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Avatar
-                          src={project.submitterAvatar}
-                          fallback={project.submittedBy[0]}
-                          size="sm"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {project.submittedBy}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {project.option} Department •{" "}
-                            {project.submissionDate}
-                          </p>
-                        </div>
-                      </div>
+                      {renderProjectSubmitter(project)}
                       <div className="sm:ml-auto">
                         <p className="text-xs font-medium uppercase text-gray-500">
                           Technologies
