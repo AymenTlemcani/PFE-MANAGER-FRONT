@@ -15,6 +15,7 @@ import {
   Trash2, // Add this import
 } from "lucide-react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { Tabs } from "../../components/ui/Tabs";
 
 interface ProjectWishListItem {
   id: string;
@@ -36,6 +37,9 @@ interface AvailableProject {
   selectedIndex?: number; // Add this field to track selection order
 }
 
+// Add this type near your other interfaces
+type TabType = "available" | "selection" | "proposals";
+
 export function StudentProjectPage() {
   const { t } = useTranslation();
   const [project, setProject] = useState<any>(null);
@@ -52,6 +56,7 @@ export function StudentProjectPage() {
   const [showProposalsList, setShowProposalsList] = useState(false);
   const [maxSelections] = useState(10); // Changed from 3 to 10
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>("available");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -509,204 +514,207 @@ export function StudentProjectPage() {
     );
   }
 
-  // Otherwise show the no project state with wish list
+  // Replace the buttons section and content with this new tab view
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t.studentProject.pfeProjects}
-          </h1>
-        </div>
-        <div className="flex flex-wrap gap-2 sm:gap-4">
-          {projectProposals.length < 3 && (
-            <Button
-              onClick={() => navigate("/projects/new")}
-              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-            >
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">
-                {t.studentProject.proposeNewProject}
-              </span>
-              <span className="sm:hidden">
-                Propose ({projectProposals.length}/3)
-              </span>
-            </Button>
-          )}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {t.studentProject.pfeProjects}
+        </h1>
+        {projectProposals.length < 3 && (
           <Button
-            onClick={() => setShowSelectionList(!showSelectionList)}
-            variant="outline"
-            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+            onClick={() => navigate("/projects/new")}
+            className="flex items-center gap-2"
           >
-            <ListFilter className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">
-              {t.studentProject.selectionList}
-            </span>
-            <span>({projectWishList.length})</span>
+            <Plus className="h-4 w-4" />
+            {t.studentProject.proposeNewProject}
           </Button>
-          <Button
-            onClick={() => setShowProposalsList(!showProposalsList)}
-            variant="outline"
-            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-          >
-            <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">
-              {t.studentProject.myProposals}
-            </span>
-            <span>({projectProposals.length})</span>
-          </Button>
-        </div>
+        )}
       </div>
 
-      {showProposalsList && projectProposals.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              {t.studentProject.myProjectProposals}
-            </h3>
-            {/* Add clear button for testing */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearProposals}
-              className="text-red-600 hover:text-red-700"
-            >
-              {t.studentProject.clearAllTesting}
-            </Button>
-          </div>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {projectProposals.map((proposal) => (
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as TabType)}
+        className="w-full"
+      >
+        <Tabs.List>
+          <Tabs.Trigger value="available">
+            <ListChecks className="h-4 w-4 mr-2" />
+            Available Projects
+          </Tabs.Trigger>
+          <Tabs.Trigger value="selection">
+            <ListFilter className="h-4 w-4 mr-2" />
+            Selection List ({projectWishList.length})
+          </Tabs.Trigger>
+          <Tabs.Trigger value="proposals">
+            <FileText className="h-4 w-4 mr-2" />
+            My Proposals ({projectProposals.length})
+          </Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content value="available" className="mt-6">
+          <div className="grid grid-cols-1 gap-6">
+            {availableProjects.map((project) => (
               <div
-                key={proposal.id}
-                className="py-4 flex items-center justify-between"
+                key={project.id}
+                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
               >
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                    {proposal.title}
-                  </h4>
-                  <p className="text-sm text-gray-500">
-                    {proposal.type} • {t.studentProject.submitted}:{" "}
-                    {proposal.submittedDate}
-                  </p>
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      {project.selectedIndex !== undefined && (
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100 text-sm font-medium">
+                          {project.selectedIndex + 1}
+                        </span>
+                      )}
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                        {project.title}
+                      </h3>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="font-medium">
+                          {t.studentProject.type}:
+                        </span>{" "}
+                        {project.type}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="font-medium">
+                          {t.studentProject.supervisor}:
+                        </span>{" "}
+                        {project.supervisor}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="font-medium">
+                          {t.studentProject.technologies}:
+                        </span>{" "}
+                        {project.technologies}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {project.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {project.selectedIndex !== undefined ? (
+                      <span className="px-2 py-1 text-xs sm:text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
+                        <span className="hidden sm:inline">Added</span> (
+                        {project.selectedIndex + 1})
+                      </span>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        onClick={() => handleProjectSelection(project.id)}
+                        disabled={
+                          availableProjects.filter(
+                            (p) => p.selectedIndex !== undefined
+                          ).length >= maxSelections
+                        }
+                        className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                      >
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">
+                          Add to Selection List
+                        </span>
+                        <span className="sm:hidden">Add</span>
+                      </Button>
+                    )}
+                    {/* Demo acceptance button - only for selected projects */}
+                    {project.selectedIndex !== undefined && (
+                      <Button
+                        onClick={() => handleProjectAcceptance(project.id)}
+                        size="sm"
+                        className="text-xs bg-green-600/80 hover:bg-green-700/80 px-2 py-1"
+                      >
+                        <span className="hidden sm:inline">Accept</span>
+                        <span className="sm:hidden">OK</span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <span className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200">
-                  {proposal.status === "Under Review"
-                    ? t.studentProject.underReview
-                    : t.studentProject.pending}
-                </span>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        </Tabs.Content>
 
-      {showSelectionList && projectWishList.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              {t.studentProject.myProjectSelectionList}
-            </h3>
-            {hasUnsavedChanges && (
-              <Button
-                onClick={handleSaveSelections}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
-                variant="outline"
-              >
-                <Check className="h-4 w-4" />
-                Save Changes
-              </Button>
-            )}
-          </div>
-          <ProjectWishList
-            projects={projectWishList}
-            onReorder={handleReorderWishList}
-            onDelete={handleDeleteFromList}
-          />
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-6">
-        {availableProjects.map((project) => (
-          <div
-            key={project.id}
-            className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
-          >
-            <div className="flex justify-between items-start">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  {project.selectedIndex !== undefined && (
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-100 text-sm font-medium">
-                      {project.selectedIndex + 1}
-                    </span>
-                  )}
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                    {project.title}
-                  </h3>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium">
-                      {t.studentProject.type}:
-                    </span>{" "}
-                    {project.type}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium">
-                      {t.studentProject.supervisor}:
-                    </span>{" "}
-                    {project.supervisor}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium">
-                      {t.studentProject.technologies}:
-                    </span>{" "}
-                    {project.technologies}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {project.description}
-                  </p>
-                </div>
+        <Tabs.Content value="selection">
+          {projectWishList.length > 0 ? (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  {t.studentProject.myProjectSelectionList}
+                </h3>
+                {hasUnsavedChanges && (
+                  <Button
+                    onClick={handleSaveSelections}
+                    className="flex items-center gap-2"
+                    variant="outline"
+                  >
+                    <Check className="h-4 w-4" />
+                    Save Changes
+                  </Button>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2 items-center">
-                {project.selectedIndex !== undefined ? (
-                  <span className="px-2 py-1 text-xs sm:text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
-                    <span className="hidden sm:inline">Added</span> (
-                    {project.selectedIndex + 1})
-                  </span>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={() => handleProjectSelection(project.id)}
-                    disabled={
-                      availableProjects.filter(
-                        (p) => p.selectedIndex !== undefined
-                      ).length >= maxSelections
-                    }
-                    className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+              <ProjectWishList
+                projects={projectWishList}
+                onReorder={handleReorderWishList}
+                onDelete={handleDeleteFromList}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              No projects selected yet
+            </div>
+          )}
+        </Tabs.Content>
+
+        <Tabs.Content value="proposals">
+          {projectProposals.length > 0 ? (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  {t.studentProject.myProjectProposals}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearProposals}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  {t.studentProject.clearAllTesting}
+                </Button>
+              </div>
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {projectProposals.map((proposal) => (
+                  <div
+                    key={proposal.id}
+                    className="py-4 flex items-center justify-between"
                   >
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">
-                      Add to Selection List
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                        {proposal.title}
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        {proposal.type} • {t.studentProject.submitted}:{" "}
+                        {proposal.submittedDate}
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200">
+                      {proposal.status === "Under Review"
+                        ? t.studentProject.underReview
+                        : t.studentProject.pending}
                     </span>
-                    <span className="sm:hidden">Add</span>
-                  </Button>
-                )}
-                {/* Demo acceptance button - only for selected projects */}
-                {project.selectedIndex !== undefined && (
-                  <Button
-                    onClick={() => handleProjectAcceptance(project.id)}
-                    size="sm"
-                    className="text-xs bg-green-600/80 hover:bg-green-700/80 px-2 py-1"
-                  >
-                    <span className="hidden sm:inline">Accept</span>
-                    <span className="sm:hidden">OK</span>
-                  </Button>
-                )}
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              No proposals submitted yet
+            </div>
+          )}
+        </Tabs.Content>
+      </Tabs>
     </div>
   );
 }
