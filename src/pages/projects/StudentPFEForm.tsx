@@ -185,7 +185,7 @@ export function StudentPFEForm() {
     const canSubmit = await validateProposalLimit();
     if (!canSubmit) return;
 
-    setIsSubmitting(true); // Set submitting to true when starting submission
+    setIsSubmitting(true);
     showSnackbar("Submitting project proposal...", "info");
 
     try {
@@ -243,15 +243,20 @@ export function StudentPFEForm() {
 
       showSnackbar("Project proposal submitted successfully", "success");
 
-      // Add refresh before navigation
+      // Refresh both projects and proposals before navigation
       try {
-        await refreshProjects();
+        await Promise.all([
+          refreshProjects(),
+          projectApi.getProposals(), // Add this to refresh proposals
+        ]);
       } catch (refreshError) {
-        console.error("Failed to refresh projects:", refreshError);
+        console.error("Failed to refresh data:", refreshError);
       }
 
-      // Navigate back to projects page
-      navigate("/project");
+      // Navigate back to projects page with a slight delay to ensure data is refreshed
+      setTimeout(() => {
+        navigate("/project");
+      }, 100);
     } catch (error: any) {
       console.error("❌ Submit failed:", error);
       showSnackbar(error.message || "Failed to submit project", "error");
@@ -282,7 +287,7 @@ export function StudentPFEForm() {
         ...(error.response?.data?.errors || {}),
       });
     } finally {
-      setIsSubmitting(false); // Make sure to set submitting to false when done
+      setIsSubmitting(false);
     }
   };
 
@@ -345,8 +350,9 @@ export function StudentPFEForm() {
     <div className="h-full">
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 h-full border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg"
+        className="bg-white dark:bg-gray-800 h-full border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg flex flex-col"
       >
+        {/* Header */}
         <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -357,7 +363,7 @@ export function StudentPFEForm() {
             <button
               type="button"
               onClick={fillTestData}
-              className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded"
             >
               Fill Test Data
             </button>
@@ -365,13 +371,14 @@ export function StudentPFEForm() {
           <button
             type="button"
             onClick={() => navigate("/project")}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
             <X className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="px-8 py-8 space-y-8">
+        {/* Form Content - Scrollable */}
+        <div className="px-8 py-8 space-y-8 flex-1 overflow-y-auto">
           {/* Project Type Selection */}
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
@@ -712,10 +719,24 @@ export function StudentPFEForm() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isSubmitting}>
+        {/* Fixed Footer */}
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-8 py-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/project")}
+              className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+            >
               {isSubmitting ? "Submitting..." : "Submit Proposal"}
             </Button>
           </div>

@@ -58,8 +58,10 @@ export function StudentProjectPage() {
   };
 
   useEffect(() => {
-    fetchProjectsAndProposals();
-  }, [projects]);
+    if (!projectsLoading) {
+      fetchProjectsAndProposals();
+    }
+  }, [projects, projectsLoading]);
 
   const fetchProjectsAndProposals = async () => {
     try {
