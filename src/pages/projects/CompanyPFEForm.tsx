@@ -25,24 +25,25 @@ export function CompanyPFEForm() {
 
   const [formData, setFormData] = useState({
     title: "",
-    type: "",
+    type: "Internship", // Set default type to Internship
     technologies: "",
     duration: "",
     description: "",
     requirements: "",
     paid: false,
     salary: "",
+    location: "",
   });
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
     if (!formData.title) newErrors.title = "Title is required";
-    if (!formData.type) newErrors.type = "Type is required";
     if (!formData.technologies)
       newErrors.technologies = "Required skills are required";
     if (!formData.duration) newErrors.duration = "Duration is required";
     if (!formData.description)
       newErrors.description = "Description is required";
+    if (!formData.location) newErrors.location = "Location is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -72,7 +73,7 @@ export function CompanyPFEForm() {
   const fillTestData = () => {
     setFormData({
       title: "AI-Powered Customer Service Platform",
-      type: "development",
+      type: "Internship",
       technologies: "Python, TensorFlow, React, Node.js, MongoDB",
       duration: "6 months",
       description:
@@ -80,6 +81,7 @@ export function CompanyPFEForm() {
       requirements: "Strong background in machine learning and web development",
       paid: true,
       salary: "1200",
+      location: "Algiers, Algeria",
     });
   };
 
@@ -92,7 +94,7 @@ export function CompanyPFEForm() {
         <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {id ? "Edit Project Proposal" : "Submit New Project Proposal"}
+              {id ? "Edit Internship Offer" : "Submit New Internship Offer"}
             </h2>
             <button
               type="button"
@@ -114,11 +116,11 @@ export function CompanyPFEForm() {
         <div className="px-8 py-8 space-y-8">
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Project Details
+              Internship Details
             </h3>
-            <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-4">
               <Input
-                label="Project Title"
+                label="Internship Title"
                 name="title"
                 value={formData.title}
                 onChange={(e) =>
@@ -126,115 +128,105 @@ export function CompanyPFEForm() {
                 }
                 error={errors.title}
                 required
+                placeholder="e.g., Full Stack Developer Intern"
+                className="text-lg p-3"
+              />
+
+              <div className="grid grid-cols-2 gap-8">
+                <Input
+                  label="Required Skills"
+                  name="technologies"
+                  value={formData.technologies}
+                  onChange={(e) =>
+                    setFormData({ ...formData, technologies: e.target.value })
+                  }
+                  error={errors.technologies}
+                  placeholder="e.g., React, Node.js, Python"
+                  required
+                  className="text-lg p-3"
+                />
+                <Input
+                  label="Duration (months)"
+                  name="duration"
+                  type="number"
+                  value={formData.duration}
+                  onChange={(e) =>
+                    setFormData({ ...formData, duration: e.target.value })
+                  }
+                  error={errors.duration}
+                  required
+                  min="1"
+                  max="12"
+                  className="text-lg p-3"
+                />
+              </div>
+
+              <Input
+                label="Location"
+                name="location"
+                value={formData.location}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
+                error={errors.location}
+                required
+                placeholder="e.g., Algiers, Algeria"
                 className="text-lg p-3"
               />
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Project Type
+                  Internship Description
                 </label>
-                <select
-                  value={formData.type}
+                <textarea
+                  value={formData.description}
                   onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
+                    setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent p-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 dark:text-gray-100 [&>option]:bg-white [&>option]:dark:bg-gray-800"
-                >
-                  <option value="">Select type</option>
-                  <option value="internship">Internship</option>
-                  <option value="research">Research Project</option>
-                  <option value="development">Development Project</option>
-                </select>
-                {errors.type && (
-                  <p className="text-sm text-red-600 mt-1">{errors.type}</p>
+                  rows={6}
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
+                  placeholder="Describe the internship position, responsibilities, and requirements"
+                />
+                {errors.description && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.description}
+                  </p>
                 )}
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Project Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={6}
-                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent px-4 py-3 text-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
-                placeholder="Describe the project and its objectives"
-              />
-              {errors.description && (
-                <p className="text-sm text-red-600 mt-1">
-                  {errors.description}
-                </p>
-              )}
-            </div>
-          </div>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="paid"
+                    checked={formData.paid}
+                    onChange={(e) =>
+                      setFormData({ ...formData, paid: e.target.checked })
+                    }
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="paid"
+                    className="text-sm text-gray-700 dark:text-gray-200"
+                  >
+                    Paid Internship
+                  </label>
+                </div>
 
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Requirements and Details
-            </h3>
-            <div className="grid grid-cols-2 gap-8">
-              <Input
-                label="Required Skills"
-                name="technologies"
-                value={formData.technologies}
-                onChange={(e) =>
-                  setFormData({ ...formData, technologies: e.target.value })
-                }
-                error={errors.technologies}
-                placeholder="e.g., React, Node.js, Python"
-                required
-                className="text-lg p-3"
-              />
-              <Input
-                label="Duration"
-                name="duration"
-                value={formData.duration}
-                onChange={(e) =>
-                  setFormData({ ...formData, duration: e.target.value })
-                }
-                error={errors.duration}
-                placeholder="e.g., 6 months"
-                required
-                className="text-lg p-3"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <input
-                  type="checkbox"
-                  id="paid"
-                  checked={formData.paid}
-                  onChange={(e) =>
-                    setFormData({ ...formData, paid: e.target.checked })
-                  }
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label
-                  htmlFor="paid"
-                  className="text-sm text-gray-700 dark:text-gray-200"
-                >
-                  Paid Position
-                </label>
+                {formData.paid && (
+                  <Input
+                    label="Monthly Salary (DZD)"
+                    name="salary"
+                    type="number"
+                    value={formData.salary}
+                    onChange={(e) =>
+                      setFormData({ ...formData, salary: e.target.value })
+                    }
+                    placeholder="Enter monthly salary"
+                    className="text-lg p-3"
+                  />
+                )}
               </div>
-
-              {formData.paid && (
-                <Input
-                  label="Monthly Salary (DZD)"
-                  name="salary"
-                  type="number"
-                  value={formData.salary}
-                  onChange={(e) =>
-                    setFormData({ ...formData, salary: e.target.value })
-                  }
-                  placeholder="Enter monthly salary"
-                  className="text-lg p-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              )}
             </div>
           </div>
         </div>
@@ -250,7 +242,7 @@ export function CompanyPFEForm() {
               Cancel
             </Button>
             <Button type="submit" className="px-6 py-3 text-lg">
-              {id ? "Update Proposal" : "Submit Proposal"}
+              {id ? "Update Internship" : "Submit Internship"}
             </Button>
           </div>
         </div>

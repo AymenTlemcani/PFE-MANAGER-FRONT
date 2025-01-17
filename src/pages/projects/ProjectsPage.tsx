@@ -1,4 +1,10 @@
-import { Plus, RefreshCw } from "lucide-react"; // Add RefreshCw import
+import {
+  Plus,
+  RefreshCw,
+  Building,
+  FileText,
+  GraduationCap,
+} from "lucide-react"; // Fixed icon name
 import { useNavigate } from "react-router-dom";
 import { useProjectContext } from "../../context/ProjectContext";
 import { useAuthStore } from "../../store/authStore";
@@ -33,7 +39,7 @@ export function ProjectsPage() {
   const { t } = useTranslation(); // Add translation hook
 
   const handleNewProject = () => {
-    if (user?.role === "company") {
+    if (user?.role === "Company") {
       navigate("/projects/company/new");
     } else {
       navigate("/projects/new");
@@ -56,12 +62,23 @@ export function ProjectsPage() {
     </div>
   );
 
+  // Add helper function to filter company projects and internships
+  const filterCompanyProjects = (projects: Project[]) => {
+    const userProjects = projects.filter(
+      (p) => p.submitted_by === user?.user_id
+    );
+    return {
+      internships: userProjects.filter((p) => p.type === "Internship"),
+      otherProjects: userProjects.filter((p) => p.type !== "Internship"),
+    };
+  };
+
   return (
     <div className="space-y-6 relative">
       {loading && <LoadingOverlay />}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {user?.role === "company" ? "Company Projects" : "My Projects"}
+          {user?.role === "Company" ? "Internship Offers" : "My Projects"}
         </h1>
         <div className="flex gap-2">
           <Button
@@ -78,27 +95,99 @@ export function ProjectsPage() {
             className="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
           >
             <Plus className="h-5 w-5 mr-2" />
-            {user?.role === "company"
-              ? "Submit New Project Proposal"
+            {user?.role === "Company"
+              ? "Post New Internship"
               : "Submit New PFE"}
           </button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {user?.role === "company"
-              ? "Project Proposals"
-              : "Submitted PFE Projects"}
-          </h2>
-          {user?.role === "company" ? (
-            <CompanyProjectsList projects={projects} />
-          ) : (
-            <ProjectsList projects={projects} />
-          )}
+      {user?.role === "Company" ? (
+        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="p-6">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {filterCompanyProjects(projects).internships.length > 0 ? (
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filterCompanyProjects(projects).internships.map(
+                    (project) => (
+                      <div key={project.project_id} className="py-4">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                              {project.title}
+                            </h3>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <span className="font-medium">
+                                  Required Skills:
+                                </span>{" "}
+                                {project.technologies}
+                              </p>
+                              {project.internship_details && (
+                                <>
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <span className="font-medium">
+                                      Duration:
+                                    </span>{" "}
+                                    {project.internship_details.duration} months
+                                  </p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <span className="font-medium">
+                                      Location:
+                                    </span>{" "}
+                                    {project.internship_details.location}
+                                  </p>
+                                </>
+                              )}
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <span className="font-medium">Submitted:</span>{" "}
+                                {formatDate(project.submission_date)}
+                              </p>
+                            </div>
+                          </div>
+                          <span
+                            className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
+                              project.status
+                            )}`}
+                          >
+                            {project.status}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Building className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                    No Internship Offers
+                  </h3>
+                  <p className="mt-2 text-gray-500 dark:text-gray-400">
+                    You haven't posted any internship offers yet. Click "Post
+                    New Internship" to create one.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {user?.role === "company"
+                ? "Project Proposals"
+                : "Submitted PFE Projects"}
+            </h2>
+            {user?.role === "company" ? (
+              <CompanyProjectsList projects={projects} />
+            ) : (
+              <ProjectsList projects={projects} />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -108,9 +197,30 @@ function ProjectsList({ projects }) {
   const { t } = useTranslation(); // Add translation hook
 
   if (!projects || projects.length === 0) {
+    if (user?.role === "Teacher") {
+      return (
+        <div className="text-center py-12">
+          <GraduationCap className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+            No Projects Proposed
+          </h3>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
+            You haven't submitted any project proposals yet. Click "Submit New
+            Project Proposal" to create one.
+          </p>
+        </div>
+      );
+    }
+
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        {t.projectForm.noProjects}
+      <div className="text-center py-12">
+        <FileText className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+          No Projects Found
+        </h3>
+        <p className="mt-2 text-gray-500 dark:text-gray-400">
+          {t.projectForm.noProjects}
+        </p>
       </div>
     );
   }
