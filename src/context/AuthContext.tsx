@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "../store/authStore";
 import { getCurrentUser } from "../api/services/auth";
 import type { User } from "../types";
@@ -19,6 +19,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, setUser } = useAuthStore();
 
   useEffect(() => {
+    let mounted = true;
+
     const initAuth = async () => {
       console.group("🔍 Auth Initialization");
       const storedUser = localStorage.getItem("user");
@@ -30,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasStoredUser: !!storedUser,
       });
 
-      if (token) {
+      if (token && mounted) {
         // Always set axios default header
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
@@ -38,39 +40,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!storedUser) {
             console.log("🔄 No stored user, fetching...");
             const currentUser = await getCurrentUser();
-            setUser(currentUser);
+            mounted && setUser(currentUser);
           } else {
             // Use stored user data initially, then verify in background
             setUser(JSON.parse(storedUser));
             getCurrentUser().catch((error) => {
               console.error("❌ Session validation failed:", error);
-              localStorage.removeItem("authToken");
-              localStorage.removeItem("user");
-              setUser(null);
+              if (mounted) {
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("user");
+                setUser(null);
+              }
             });
           }
         } catch (error) {
           console.error("❌ Auth initialization failed:", error);
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("user");
-          setUser(null);
+          if (mounted) {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("user");
+            setUser(null);
+          }
         }
       }
 
-      setIsLoading(false);
+      mounted && setIsLoading(false);
       console.groupEnd();
     };
 
     initAuth();
+    return () => {
+      mounted = false;
+    };
   }, [setUser]);
 
   console.log("🔄 AuthProvider rendering:", { user, isLoading });
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      isLoading,
+    }),
+    [user, isLoading]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export { AuthContext };

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -12,6 +12,10 @@ export function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isScrollingDown = useScrollDirection();
   const headerRef = useRef<HTMLDivElement>(null);
+
+  const handleSidebarToggle = useCallback((isOpen: boolean) => {
+    setIsSidebarOpen(isOpen);
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -45,7 +49,7 @@ export function Layout() {
         ref={headerRef}
         className="fixed top-0 left-0 right-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
       >
-        <Header onMenuChange={(isOpen) => setIsSidebarOpen(isOpen)} />
+        <Header onMenuChange={handleSidebarToggle} />
       </div>
 
       <div className="flex h-screen pt-16">
