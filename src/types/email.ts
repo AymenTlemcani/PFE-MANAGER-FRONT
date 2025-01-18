@@ -6,7 +6,7 @@ export interface EmailTemplate {
   variables: string[];
 }
 
-export interface EmailPeriod {
+export interface EmailCampaign {
   id: string;
   name: string;
   startDate: string;
@@ -18,5 +18,23 @@ export interface EmailPeriod {
     closing: EmailTemplate;
   };
   targetAudience: "teachers" | "students" | "companies" | "all";
-  status: "pending" | "active" | "completed";
+  status: "draft" | "active" | "completed";
+}
+
+export interface ReminderSchedule {
+  id: string;
+  campaignId: string;
+  date: string;
+  template: EmailTemplate;
+  status: "pending" | "sent";
+}
+
+export interface CampaignLog {
+  id: string;
+  campaignId: string;
+  type: "initial" | "reminder" | "closing";
+  sentAt: string;
+  recipientCount: number;
+  status: "success" | "failure";
+  error?: string;
 }

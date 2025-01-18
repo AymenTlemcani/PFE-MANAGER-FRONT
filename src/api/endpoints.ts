@@ -48,10 +48,12 @@ export const API_ENDPOINTS = {
     },
   },
   emails: {
-    periods: "/email-periods",
-    templates: "/email-period-templates",
-    reminders: "/email-period-reminders",
-    sendReminders: "/email-period-reminders/send",
+    templates: "/email/templates",
+    campaigns: "/email/campaigns",
+    activateCampaign: (id: number) => `/email/campaigns/${id}/activate`,
+    campaignLogs: (id: number) => `/email/campaigns/${id}/logs`,
+    campaignReminders: (campaignId: number) =>
+      `/email/campaigns/${campaignId}/reminders`,
   },
   notifications: {
     list: "/notifications",
