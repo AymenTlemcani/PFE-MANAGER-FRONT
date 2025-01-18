@@ -189,9 +189,10 @@ export function StudentPFEForm() {
     showSnackbar("Submitting project proposal...", "info");
 
     try {
-      // Double check proposal limit
-      const proposals = await projectApi.getProposals();
-      const studentProposals = proposals.filter(
+      // Double check proposal limit with latest proposals
+      const proposalsResponse = await projectApi.getProposals();
+      const proposalsArray = proposalsResponse.proposals || [];
+      const studentProposals = proposalsArray.filter(
         (p) => p.submitted_by === user?.user_id && p.proposer_type === "Student"
       );
 
@@ -247,16 +248,14 @@ export function StudentPFEForm() {
       try {
         await Promise.all([
           refreshProjects(),
-          projectApi.getProposals(), // Add this to refresh proposals
+          projectApi.getProposals(), // Update proposal cache
         ]);
       } catch (refreshError) {
         console.error("Failed to refresh data:", refreshError);
       }
 
-      // Navigate back to projects page with a slight delay to ensure data is refreshed
-      setTimeout(() => {
-        navigate("/project");
-      }, 100);
+      // Navigate after successful submission
+      navigate("/project");
     } catch (error: any) {
       console.error("❌ Submit failed:", error);
       showSnackbar(error.message || "Failed to submit project", "error");

@@ -132,8 +132,23 @@ export const projectApi = {
 
   async getProposals() {
     verifyAuth();
-    const response = await axios.get(API_ENDPOINTS.projects.proposed);
-    return response.data;
+    try {
+      const response = await axios.get(API_ENDPOINTS.projects.proposed);
+      console.log("Raw proposals response:", response.data);
+
+      // Make sure we handle both array and object response formats
+      if (Array.isArray(response.data)) {
+        return { proposals: response.data };
+      } else if (response.data.proposals) {
+        return response.data;
+      } else {
+        console.warn("Unexpected proposals response format:", response.data);
+        return { proposals: [] };
+      }
+    } catch (error) {
+      console.error("Failed to fetch proposals:", error);
+      throw error;
+    }
   },
 
   async updateProposal(id: number, data: Partial<ProjectProposal>) {

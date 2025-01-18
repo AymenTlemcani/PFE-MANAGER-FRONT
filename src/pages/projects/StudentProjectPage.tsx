@@ -58,12 +58,15 @@ export function StudentProjectPage() {
   };
 
   useEffect(() => {
-    if (!projectsLoading) {
+    if (!projectsLoading && user) {
       fetchProjectsAndProposals();
     }
-  }, [projects, projectsLoading]);
+  }, [projects, projectsLoading, user]);
 
   const fetchProjectsAndProposals = async () => {
+    let studentProposals = [];
+    let availableProjects = [];
+
     try {
       setIsLoading(true);
       console.log("🔄 Starting to fetch projects and proposals...");
@@ -71,23 +74,51 @@ export function StudentProjectPage() {
       // Fetch user's proposals first
       const proposalResponse = await projectApi.getProposals();
       console.log("📥 Raw proposals fetched:", {
-        count: proposalResponse.length,
-        proposals: proposalResponse,
+        response: proposalResponse,
+        count: proposalResponse?.proposals?.length || 0,
+      });
+
+      // Get the proposals array from the response object
+      const proposalsArray = proposalResponse?.proposals || [];
+
+      // Debug log each proposal
+      proposalsArray.forEach((proposal, index) => {
+        console.log(`Proposal ${index + 1}:`, {
+          id: proposal.proposal_id,
+          projectId: proposal.project_id,
+          submittedBy: proposal.submitted_by,
+          status: proposal.proposal_status,
+          currentUserId: user?.user_id,
+        });
       });
 
       // Filter proposals for current student
-      const studentProposals = proposalResponse.filter(
-        (proposal) =>
-          proposal.submitted_by === user?.user_id &&
-          proposal.proposer_type === "Student"
-      );
+      studentProposals = proposalsArray.filter((proposal) => {
+        const isCurrentUser = proposal.submitted_by === user?.user_id;
+        const isStudent = proposal.proposer_type === "Student";
+
+        console.log("Filtering proposal:", {
+          proposalId: proposal.proposal_id,
+          isCurrentUser,
+          isStudent,
+          submittedBy: proposal.submitted_by,
+          userId: user?.user_id,
+          proposerType: proposal.proposer_type,
+        });
+
+        return isCurrentUser && isStudent;
+      });
+
+      // Set proposals state first
+      setProposals(studentProposals);
+
+      // Log filtered results
       console.log("🎯 Student proposals filtered:", {
-        totalCount: proposalResponse.length,
+        totalCount: proposalsArray.length,
         studentCount: studentProposals.length,
         userId: user?.user_id,
         filtered: studentProposals,
       });
-      setProposals(studentProposals);
 
       // Get the project IDs from the student's proposals
       const proposedProjectIds = studentProposals.map((p) => p.project_id);
@@ -96,26 +127,41 @@ export function StudentProjectPage() {
         ids: proposedProjectIds,
       });
 
-      // Get validated projects that haven't been proposed by the student
-      const availableProjects = projects.filter(
-        (project) =>
-          project.status === "Validated" &&
-          !proposedProjectIds.includes(project.project_id)
-      );
+      // Get available projects
+      availableProjects = projects.filter((project) => {
+        const hasApprovedProposal =
+          project.proposal?.proposal_status === "Approved";
+        const isFromTeacherOrCompany = ["Teacher", "Company"].includes(
+          project.submitter?.role || ""
+        );
+        const notAlreadyProposed = !proposedProjectIds.includes(
+          project.project_id
+        );
+
+        return (
+          hasApprovedProposal && isFromTeacherOrCompany && notAlreadyProposed
+        );
+      });
+
+      // Set validated projects state
+      setValidatedProjects(availableProjects);
+
       console.log("✨ Available projects filtered:", {
         totalProjects: projects.length,
-        validatedCount: projects.filter((p) => p.status === "Validated").length,
+        approvedCount: projects.filter(
+          (p) => p.proposal?.proposal_status === "Approved"
+        ).length,
         availableCount: availableProjects.length,
         projects: availableProjects,
       });
-      setValidatedProjects(availableProjects);
     } catch (error) {
       console.error("❌ Error fetching data:", error);
       setError("Failed to load projects");
     } finally {
+      // Log final state after updates
       console.log("✅ Fetch complete:", {
-        proposals: proposals.length,
-        validatedProjects: validatedProjects.length,
+        proposals: studentProposals.length || 0,
+        validatedProjects: availableProjects.length || 0,
         timestamp: new Date().toISOString(),
       });
       setIsLoading(false);
@@ -169,13 +215,22 @@ export function StudentProjectPage() {
 
     try {
       setIsRefreshing(true);
+      showSnackbar("Refreshing projects and proposals...", "info");
 
-      // Keep the current view while refreshing
-      await Promise.all([projectApi.getProposals(), refreshProjects()]);
+      // Refresh both projects and proposals
+      const [projectsResponse, proposalsResponse] = await Promise.all([
+        refreshProjects(),
+        projectApi.getProposals(),
+      ]);
+
+      // After projects are refreshed, fetch everything again
       await fetchProjectsAndProposals();
+
+      showSnackbar("Projects and proposals refreshed successfully", "success");
     } catch (error) {
       console.error("Failed to refresh data:", error);
       setError("Failed to refresh data");
+      showSnackbar("Failed to refresh data", "error");
     } finally {
       setIsRefreshing(false);
     }
@@ -200,11 +255,27 @@ export function StudentProjectPage() {
   const hasReachedProposalLimit = proposals.length >= 3;
 
   const renderProposalContent = (proposal: ProjectProposal) => {
+    // Find the project by ID
     const projectDetails = projects.find(
       (p) => p.project_id === proposal.project_id
     );
 
-    if (!projectDetails) return null;
+    console.log("Rendering proposal:", {
+      proposal,
+      projectDetails,
+      allProjects: projects,
+    });
+
+    // If project details aren't found, try to use details from the proposal itself
+    const displayData = {
+      title:
+        projectDetails?.title || proposal.project?.title || "Unknown Project",
+      summary: projectDetails?.summary || proposal.project?.summary || "",
+      option: projectDetails?.option || proposal.project?.option || "",
+      type: projectDetails?.type || proposal.project?.type || "",
+      technologies:
+        projectDetails?.technologies || proposal.project?.technologies || "",
+    };
 
     return (
       <div
@@ -217,11 +288,11 @@ export function StudentProjectPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-wrap flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {projectDetails.title}
+                  {displayData.title}
                 </h3>
                 <ProposalStatus status={proposal.proposal_status} />
               </div>
-              {isTextTruncated(projectDetails.summary) && (
+              {isTextTruncated(displayData.summary) && (
                 <div className="text-gray-400">
                   {expandedDescriptions[proposal.proposal_id] ? (
                     <ChevronUp className="h-5 w-5" />
@@ -234,8 +305,8 @@ export function StudentProjectPage() {
 
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
               {expandedDescriptions[proposal.proposal_id]
-                ? projectDetails.summary
-                : truncateDescription(projectDetails.summary)}
+                ? displayData.summary
+                : truncateDescription(displayData.summary)}
             </p>
 
             <div className="grid grid-cols-3 gap-4 pt-2">
@@ -244,7 +315,7 @@ export function StudentProjectPage() {
                   Option
                 </p>
                 <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
-                  {projectDetails.option}
+                  {displayData.option}
                 </p>
               </div>
               <div>
@@ -252,7 +323,7 @@ export function StudentProjectPage() {
                   Type
                 </p>
                 <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
-                  {projectDetails.type}
+                  {displayData.type}
                 </p>
               </div>
               <div>
@@ -260,7 +331,7 @@ export function StudentProjectPage() {
                   Technologies
                 </p>
                 <p className="text-sm text-gray-900 dark:text-gray-100 mt-1">
-                  {projectDetails.technologies || "Not specified"}
+                  {displayData.technologies || "Not specified"}
                 </p>
               </div>
             </div>
@@ -431,7 +502,10 @@ export function StudentProjectPage() {
           <Tabs.Content value="proposals">
             {proposals.length > 0 ? (
               <div className="mt-6 grid grid-cols-1 gap-4">
-                {proposals.map((proposal) => renderProposalContent(proposal))}
+                {proposals.map((proposal) => {
+                  console.log("Mapping proposal:", proposal);
+                  return renderProposalContent(proposal);
+                })}
               </div>
             ) : (
               <div className="mt-6 text-center py-12">
