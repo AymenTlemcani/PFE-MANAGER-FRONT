@@ -18,16 +18,14 @@ import { useState } from "react"; // Add useState import
 // Add getStatusColor helper function at the top level
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case "proposed":
+    case "pending":
       return "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200";
-    case "validated":
+    case "approved":
       return "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200";
-    case "assigned":
+    case "rejected":
+      return "bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200";
+    case "edited":
       return "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200";
-    case "inprogress":
-      return "bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200";
-    case "completed":
-      return "bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200";
     default:
       return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
   }
@@ -260,16 +258,14 @@ function ProjectsList({ projects }) {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "proposed":
+      case "pending":
         return "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200";
-      case "validated":
+      case "approved":
         return "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200";
-      case "assigned":
+      case "rejected":
+        return "bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200";
+      case "edited":
         return "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200";
-      case "inprogress":
-        return "bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200";
-      case "completed":
-        return "bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200";
       default:
         return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
     }
@@ -340,10 +336,10 @@ function ProjectsList({ projects }) {
             </div>
             <span
               className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
-                project.status
+                project.proposal?.proposal_status || project.status
               )}`}
             >
-              {project.status}
+              {project.proposal?.proposal_status || project.status}
             </span>
           </div>
         </div>
