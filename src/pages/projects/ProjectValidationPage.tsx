@@ -282,6 +282,142 @@ export function ProjectValidationPage() {
     }
   };
 
+  const getProposalStatusStyles = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200";
+      case "Approved":
+        return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200";
+      case "Rejected":
+        return "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200";
+      case "Edited":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-200";
+    }
+  };
+
+  const getProjectTypeStyles = (type: string) => {
+    switch (type) {
+      case "Classical":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200";
+      case "Innovative":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200";
+      case "StartUp":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200";
+      case "Patent":
+        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-200";
+      case "Internship":
+        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-200";
+    }
+  };
+
+  const renderActionButtons = (project) => {
+    const status = project.proposal?.proposal_status;
+
+    switch (status) {
+      case "Pending":
+        return (
+          <>
+            <Button
+              onClick={() => handleApprove(project)}
+              variant="outline"
+              className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-green-50 hover:bg-green-100 text-green-600 border-green-200 hover:border-green-300 dark:bg-green-900/20 dark:hover:bg-green-900/30 dark:text-green-400 dark:border-green-900/50"
+              size="sm"
+            >
+              <CheckCircle className="h-5 w-5" />
+              <span className="hidden sm:inline ml-2 flex-1">Approve</span>
+            </Button>
+            <Button
+              onClick={() => handleEdit(project)}
+              variant="outline"
+              className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2"
+              size="sm"
+            >
+              <PenSquare className="h-5 w-5" />
+              <span className="hidden sm:inline ml-2 flex-1">Edit</span>
+            </Button>
+            <Button
+              onClick={() => handleReject(project)}
+              variant="outline"
+              className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:border-red-900/50"
+              size="sm"
+            >
+              <XCircle className="h-5 w-5" />
+              <span className="hidden sm:inline ml-2 flex-1">Reject</span>
+            </Button>
+          </>
+        );
+      case "Edited":
+        return (
+          <>
+            <Button
+              onClick={() => handleApprove(project)}
+              variant="outline"
+              className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-green-50 hover:bg-green-100 text-green-600"
+              size="sm"
+            >
+              <CheckCircle className="h-5 w-5" />
+              <span className="hidden sm:inline ml-2 flex-1">Approve</span>
+            </Button>
+            <Button
+              onClick={() => handleReject(project)}
+              variant="outline"
+              className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-red-50 hover:bg-red-100 text-red-600"
+              size="sm"
+            >
+              <XCircle className="h-5 w-5" />
+              <span className="hidden sm:inline ml-2 flex-1">Reject</span>
+            </Button>
+          </>
+        );
+      case "Approved":
+      case "Rejected":
+        return (
+          <Button
+            onClick={() => handleEdit(project)}
+            variant="outline"
+            className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2"
+            size="sm"
+          >
+            <PenSquare className="h-5 w-5" />
+            <span className="hidden sm:inline ml-2 flex-1">View Details</span>
+          </Button>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderActionSection = (project) => {
+    const status = project.proposal?.proposal_status;
+
+    return (
+      <div className="flex sm:flex-col gap-2 min-w-0 sm:min-w-[120px]">
+        {/* Status tag - visible by default, hidden on hover */}
+        <div className="flex-1 group-hover:hidden">
+          <span
+            className={`w-full inline-flex justify-center px-3 py-1.5 text-sm font-medium rounded-md ${getProposalStatusStyles(
+              status
+            )}`}
+          >
+            {status}
+          </span>
+        </div>
+
+        {/* Action buttons - hidden by default, visible on hover */}
+        <div
+          className="hidden group-hover:flex sm:group-hover:flex-col gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {renderActionButtons(project)}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -357,9 +493,15 @@ export function ProjectValidationPage() {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {project.title}
                       </h3>
-                      <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 rounded-full">
-                        {project.type}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${getProjectTypeStyles(
+                            project.type
+                          )}`}
+                        >
+                          {project.type}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="group">
@@ -394,42 +536,7 @@ export function ProjectValidationPage() {
                     </div>
                   </div>
 
-                  <div
-                    className="flex sm:flex-col gap-2 min-w-0 sm:min-w-[120px]"
-                    onClick={(e) => e.stopPropagation()} // Prevent card expansion when clicking buttons
-                  >
-                    <Button
-                      onClick={() => handleApprove(project)}
-                      variant="outline"
-                      className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-green-50 hover:bg-green-100 text-green-600 border-green-200 hover:border-green-300 dark:bg-green-900/20 dark:hover:bg-green-900/30 dark:text-green-400 dark:border-green-900/50"
-                      size="sm"
-                    >
-                      <CheckCircle className="h-5 w-5" />
-                      <span className="hidden sm:inline ml-2 flex-1">
-                        Approve
-                      </span>
-                    </Button>
-                    <Button
-                      onClick={() => handleEdit(project)}
-                      variant="outline"
-                      className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2"
-                      size="sm"
-                    >
-                      <PenSquare className="h-5 w-5" />
-                      <span className="hidden sm:inline ml-2 flex-1">Edit</span>
-                    </Button>
-                    <Button
-                      onClick={() => handleReject(project)}
-                      variant="outline"
-                      className="flex-1 sm:w-[120px] flex items-center justify-center sm:justify-start px-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:border-red-900/50"
-                      size="sm"
-                    >
-                      <XCircle className="h-5 w-5" />
-                      <span className="hidden sm:inline ml-2 flex-1">
-                        Reject
-                      </span>
-                    </Button>
-                  </div>
+                  {renderActionSection(project)}
                 </div>
               </div>
               <div className="absolute inset-0 rounded-lg ring-1 ring-black/5 group-hover:ring-black/10 dark:ring-white/5 dark:group-hover:ring-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
