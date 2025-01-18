@@ -33,12 +33,13 @@ export function ProjectValidationPage() {
   const { projects, loading: projectsLoading } = useProjectContext();
   const [pendingProjects, setPendingProjects] = useState<Project[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<string>("Proposed");
+  const [selectedStatus, setSelectedStatus] = useState<string>("Pending");
 
   // Available status options
   const statusOptions = [
-    { value: "all", label: "All Projects" },
-    { value: "Proposed", label: "Proposed" },
+    { value: "all", label: "All Proposals" },
+    { value: "Pending", label: "Pending" },
+    { value: "Edited", label: "Edited" },
     { value: "Approved", label: "Approved" },
     { value: "Rejected", label: "Rejected" },
   ];
@@ -64,11 +65,20 @@ export function ProjectValidationPage() {
     try {
       setIsLoading(true);
       const status = selectedStatus === "all" ? undefined : selectedStatus;
-      const projects = await projectApi.getProjectsByStatus(status);
-      setPendingProjects(projects);
+      const response = await projectApi.getProposalsByStatus(status);
+
+      // Map proposals to include project details
+      const projectsWithProposals = response.proposals.map((proposal) => ({
+        ...proposal.project,
+        proposal: proposal,
+        submitter: proposal.submitter,
+        submitter_details: proposal.submitter_details,
+      }));
+
+      setPendingProjects(projectsWithProposals);
     } catch (error) {
-      console.error("Failed to fetch projects:", error);
-      showSnackbar("Failed to fetch projects", "error");
+      console.error("Failed to fetch proposals:", error);
+      showSnackbar("Failed to fetch proposals", "error");
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +91,10 @@ export function ProjectValidationPage() {
         throw new Error("No proposal found for this project");
       }
 
-      await projectApi.approveProject(proposalId, "Project approved");
+      await projectApi.updateProposal(proposalId, {
+        proposal_status: "Approved",
+        comments: "Project approved",
+      });
       showSnackbar("Project approved successfully", "success");
       fetchPendingProjects();
     } catch (error: any) {
@@ -107,10 +120,10 @@ export function ProjectValidationPage() {
     if (!selectedProject?.proposal_id || !rejectionReason.trim()) return;
 
     try {
-      await projectApi.rejectProject(
-        selectedProject.proposal_id,
-        rejectionReason
-      );
+      await projectApi.updateProposal(selectedProject.proposal_id, {
+        proposal_status: "Rejected",
+        comments: rejectionReason,
+      });
       showSnackbar("Project rejected successfully", "success");
       setIsRejectDialogOpen(false);
       setRejectionReason("");
@@ -241,7 +254,7 @@ export function ProjectValidationPage() {
 
   const getEmptyStateMessage = (status: string) => {
     switch (status) {
-      case "Proposed":
+      case "Pending":
         return {
           icon: <FileText className="mx-auto h-12 w-12 text-gray-400" />,
           title: "No Pending Projects",

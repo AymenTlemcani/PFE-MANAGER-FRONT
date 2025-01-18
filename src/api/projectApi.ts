@@ -192,6 +192,30 @@ export const projectApi = {
     }
   },
 
+  async getProposalsByStatus(status?: string) {
+    const { userId } = verifyAuth();
+    try {
+      console.log("📤 Fetching proposals by status:", status || "all");
+
+      const url = status
+        ? `${API_ENDPOINTS.projects.proposals}?status=${status}`
+        : API_ENDPOINTS.projects.proposals;
+
+      const response = await axios.get(url);
+
+      console.log("✅ Proposals fetched successfully:", {
+        status: status || "all",
+        count: response.data.proposals?.length || 0,
+        timestamp: new Date().toISOString(),
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("❌ Error fetching proposals by status:", error);
+      throw error;
+    }
+  },
+
   async approveProject(proposalId: number, comments: string) {
     verifyAuth();
     try {

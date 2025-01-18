@@ -30,6 +30,9 @@ export const API_ENDPOINTS = {
     listByStatus: (status: string) => `/projects?status=${status}`,
     proposals: "/project-proposals",
     validateProposal: (id: number) => `/project-proposals/${id}`,
+    proposalsByStatus: (status: string) =>
+      `/project-proposals?status=${status}`,
+    updateProposal: (id: number) => `/project-proposals/${id}`,
   },
   students: {
     list: "/students",
