@@ -33,6 +33,7 @@ import { EmailTemplate } from "../../../types/email";
 import { EmailTemplateForm } from "./EmailTemplateForm";
 import { useNavigate } from "react-router-dom";
 import { ContextMenu, ContextMenuItem } from "../../ui/ContextMenu";
+import { useSnackbar } from "../../../hooks/useSnackbar";
 
 interface EmailTemplatesProps {
   onAddTemplate: () => void;
@@ -44,6 +45,7 @@ interface SortConfig {
 }
 
 export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
+  const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
@@ -135,11 +137,40 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
-    // Will implement actual delete logic later
-    console.log("Deleting template:", selectedTemplate?.id);
-    setIsDeleteDialogOpen(false);
-    setSelectedTemplate(null);
+  const confirmDelete = async () => {
+    try {
+      if (Array.isArray(selectedTemplate)) {
+        // Handle bulk delete
+        for (const templateId of selectedTemplate) {
+          await emailApi.deleteTemplate(parseInt(templateId));
+        }
+        setSelectedTemplates(new Set());
+        showSnackbar(
+          `${selectedTemplate.length} templates deleted successfully`,
+          "success"
+        );
+      } else if (selectedTemplate) {
+        // Handle single template delete
+        await emailApi.deleteTemplate(selectedTemplate.template_id);
+        showSnackbar(
+          `Template "${selectedTemplate.name}" deleted successfully`,
+          "success"
+        );
+      }
+
+      // Refresh templates list
+      await fetchTemplates();
+
+      // Close dialog and reset selection
+      setIsDeleteDialogOpen(false);
+      setSelectedTemplate(null);
+    } catch (error: any) {
+      console.error("❌ Error deleting template(s):", error);
+      showSnackbar(
+        error.message || "Failed to delete template(s). Please try again.",
+        "error"
+      );
+    }
   };
 
   const handleSort = (field: string) => {
