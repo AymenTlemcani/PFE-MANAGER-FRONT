@@ -6,18 +6,21 @@ import { X } from "lucide-react";
 export interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
+  onClickOutside?: () => void;
+  title?: React.ReactNode;
   description?: string;
-  children?: React.ReactNode;
+  children: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
   confirmVariant?: ButtonProps["variant"];
   onConfirm?: () => void;
+  className?: string;
 }
 
 export function Dialog({
   isOpen,
   onClose,
+  onClickOutside,
   title,
   description,
   children,
@@ -25,17 +28,26 @@ export function Dialog({
   cancelText = "Cancel",
   confirmVariant = "primary",
   onConfirm,
+  className = "max-w-2xl w-full",
 }: DialogProps) {
   if (!isOpen) return null;
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClickOutside?.();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-black/25 dark:bg-black/40"
-        onClick={onClose}
-      />
-      <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 shadow-lg">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      onClick={handleBackdropClick}
+    >
+      <div className="min-h-screen px-4 flex items-center justify-center bg-black/50">
+        <div
+          className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-xl mx-auto ${className}`}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="absolute right-4 top-4">
             <button
               onClick={onClose}

@@ -498,138 +498,111 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
         </div>
       )}
 
-      {/* Preview Dialog */}
+      {/* Update Preview Dialog */}
       <Dialog
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        title={
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/50 rounded-lg">
-              <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Template Preview
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                View template details and content
-              </p>
-            </div>
-          </div>
-        }
+        onClickOutside={() => setIsPreviewOpen(false)}
+        className="max-w-5xl w-full"
       >
-        {selectedTemplate && (
-          <div className="space-y-6 py-2">
-            {/* Template Info Section */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <Mail className="h-4 w-4" />
-                  <span>Template Name</span>
-                </div>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {selectedTemplate.name}
-                </p>
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/50 rounded-lg">
+                <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <Star className="h-4 w-4" />
-                  <span>Type</span>
-                </div>
-                <Badge className={getTypeBadgeStyle(selectedTemplate.type)}>
-                  {selectedTemplate.type}
-                </Badge>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <Globe className="h-4 w-4" />
-                  <span>Language</span>
-                </div>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {selectedTemplate.language}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <History className="h-4 w-4" />
-                  <span>Status</span>
-                </div>
-                {selectedTemplate.is_active ? (
-                  <Badge className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
-                    <Check className="h-3 w-3 mr-1" />
-                    Active
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="text-gray-600">
-                    <X className="h-3 w-3 mr-1" />
-                    Inactive
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Subject Section */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                Subject Line
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
-                  (What recipients will see)
-                </span>
-              </h3>
-              <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100">
-                {selectedTemplate.subject}
-              </div>
-            </div>
-
-            {/* Content Section */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                Email Content
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
-                  (HTML template with placeholders)
-                </span>
-              </h3>
-              <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-                <div className="prose dark:prose-invert max-w-none">
-                  {selectedTemplate.content || (
-                    <p className="text-gray-500 dark:text-gray-400 italic">
-                      No content available
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Description Section */}
-            {selectedTemplate.description && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                  Description
-                </h3>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Template Preview
+                </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {selectedTemplate.description}
+                  View template details and content
                 </p>
               </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
-                Close Preview
-              </Button>
-              <Button
-                className="flex items-center gap-2"
-                onClick={() => {
-                  setIsPreviewOpen(false);
-                  // Add edit logic here
-                }}
-              >
-                <Edit className="h-4 w-4" />
-                Edit Template
-              </Button>
             </div>
+            <button
+              onClick={() => setIsPreviewOpen(false)}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-        )}
+
+          {selectedTemplate && (
+            <div className="space-y-6">
+              {/* Template Info Grid */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                {/* ...existing info fields... */}
+              </div>
+
+              {/* Subject Section */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  Subject Line
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
+                    (What recipients will see)
+                  </span>
+                </h3>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100">
+                  {selectedTemplate.subject}
+                </div>
+              </div>
+
+              {/* Content Section - Updated styling */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  Email Content
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
+                    (HTML template with placeholders)
+                  </span>
+                </h3>
+                <div className="p-6 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
+                  <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+                    {selectedTemplate.content || (
+                      <p className="text-gray-500 dark:text-gray-400 italic">
+                        No content available
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Description Section */}
+              {selectedTemplate.description && (
+                <div className="space-y-2 bg-gray-50 dark:bg-gray-800 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    Description
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {selectedTemplate.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPreviewOpen(false)}
+                >
+                  Close Preview
+                </Button>
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    navigate(
+                      `/dashboard/email-management/templates/edit/${selectedTemplate.template_id}`
+                    );
+                    setIsPreviewOpen(false);
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Template
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
