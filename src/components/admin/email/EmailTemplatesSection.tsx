@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { RefreshCw } from "lucide-react"; // Add this import
 import {
   Plus,
   Edit,
@@ -26,6 +28,8 @@ import { Badge } from "../../../components/ui/Badge";
 import { Dialog } from "../../../components/ui/Dialog";
 import { Tooltip } from "../../../components/ui/Tooltip";
 import { useState, useCallback } from "react";
+import { emailApi } from "../../../api/emailApi";
+import { EmailTemplate } from "../../../types/email";
 
 interface EmailTemplatesProps {
   onAddTemplate: () => void;
@@ -39,8 +43,9 @@ interface SortConfig {
 export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
-  const [isLoading] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<EmailTemplate | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -50,28 +55,36 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
   const [selectedTemplates, setSelectedTemplates] = useState<Set<string>>(
     new Set()
   );
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Temporary mock data - will be replaced with API data later
-  const templates = [
-    {
-      id: "1",
-      name: "Welcome Email",
-      subject: "Welcome to PFE Manager",
-      description: "Sent to new users upon registration",
-      type: "System",
-      language: "French",
-      is_active: true,
-    },
-    {
-      id: "2",
-      name: "Reminder Template",
-      subject: "Action Required: Project Submission",
-      description: "Reminder for project submission deadline",
-      type: "Reminder",
-      language: "French",
-      is_active: true,
-    },
-  ];
+  const fetchTemplates = async () => {
+    try {
+      setIsLoading(true);
+      console.log("📬 Fetching email templates...");
+      const data = await emailApi.getTemplates();
+      console.log("📨 Received templates:", data);
+      setTemplates(data);
+    } catch (error) {
+      console.error("❌ Error fetching templates:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchTemplates();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log("🔄 Initial templates load");
+    fetchTemplates();
+  }, []);
 
   const getTypeBadgeStyle = (type: string) => {
     switch (type) {
@@ -127,13 +140,13 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
     }));
   };
 
-  const toggleTemplateSelection = (templateId: string) => {
+  const toggleTemplateSelection = (templateId: number) => {
     setSelectedTemplates((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(templateId)) {
-        newSet.delete(templateId);
+      if (newSet.has(templateId.toString())) {
+        newSet.delete(templateId.toString());
       } else {
-        newSet.add(templateId);
+        newSet.add(templateId.toString());
       }
       return newSet;
     });
@@ -143,7 +156,9 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
     if (selectedTemplates.size === filteredTemplates.length) {
       setSelectedTemplates(new Set());
     } else {
-      setSelectedTemplates(new Set(filteredTemplates.map((t) => t.id)));
+      setSelectedTemplates(
+        new Set(filteredTemplates.map((t) => t.template_id.toString()))
+      );
     }
   };
 
@@ -215,10 +230,23 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
             Manage your email templates for various communications
           </p>
         </div>
-        <Button onClick={onAddTemplate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Template
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={isRefreshing ? "opacity-50" : ""}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+          <Button onClick={onAddTemplate}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Template
+          </Button>
+        </div>
       </div>
 
       {selectedTemplates.size > 0 && (
@@ -329,19 +357,23 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {sortedTemplates.map((template) => (
                   <tr
-                    key={template.id}
+                    key={template.template_id}
                     className={`group transition-all duration-200 ${
-                      selectedTemplates.has(template.id)
+                      selectedTemplates.has(template.template_id.toString())
                         ? "bg-blue-50/50 dark:bg-blue-900/20"
                         : "hover:bg-gray-50/80 dark:hover:bg-gray-700/50"
                     }`}
                   >
                     <td className="px-6 py-4 w-0">
                       <button
-                        onClick={() => toggleTemplateSelection(template.id)}
+                        onClick={() =>
+                          toggleTemplateSelection(template.template_id)
+                        }
                         className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                       >
-                        {selectedTemplates.has(template.id) ? (
+                        {selectedTemplates.has(
+                          template.template_id.toString()
+                        ) ? (
                           <CheckSquare className="h-5 w-5" />
                         ) : (
                           <Square className="h-5 w-5" />

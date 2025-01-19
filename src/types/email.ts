@@ -1,24 +1,34 @@
 export interface EmailTemplate {
-  id: string;
+  template_id: number;
   name: string;
   subject: string;
-  body: string;
-  variables: string[];
+  content: string;
+  description?: string;
+  placeholders?: string[];
+  type: "System" | "Notification" | "Reminder";
+  language: "French" | "English";
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface EmailCampaign {
-  id: string;
+  campaign_id: number;
   name: string;
-  startDate: string;
-  reminderDates: string[];
-  closingDate: string;
-  templates: {
-    initial: EmailTemplate;
-    reminder: EmailTemplate;
-    closing: EmailTemplate;
-  };
-  targetAudience: "teachers" | "students" | "companies" | "all";
-  status: "draft" | "active" | "completed";
+  type: "Notification" | "Reminder" | "System";
+  target_audience:
+    | "Students"
+    | "Teachers"
+    | "Companies"
+    | "Administrators"
+    | "All";
+  start_date: string;
+  end_date: string;
+  status: "Draft" | "Active" | "Completed" | "Cancelled";
+  reminder_schedules?: ReminderSchedule[];
+  email_logs?: CampaignLog[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ReminderSchedule {

@@ -52,6 +52,16 @@ api.interceptors.request.use(
       data: config.data,
     });
 
+    // Add email endpoints debugging
+    if (config.url?.includes("/email")) {
+      console.log("📧 Email API Request:", {
+        endpoint: config.url,
+        method: config.method,
+        data: config.data,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     return config;
   },
   (error) => {
@@ -70,6 +80,17 @@ api.interceptors.response.use(
       status: response.status,
       data: response.data,
     });
+
+    // Add email-specific response logging
+    if (response.config.url?.includes("/email")) {
+      console.log("📧 Email API Response:", {
+        endpoint: response.config.url,
+        status: response.status,
+        data: response.data,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     return response;
   },
   (error) => {
