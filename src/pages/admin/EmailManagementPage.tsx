@@ -2,12 +2,18 @@ import { useState } from "react";
 import { Tabs } from "../../components/ui/Tabs";
 import { Mail, FileText } from "lucide-react"; // Changed Template to FileText
 import { useTranslation } from "../../hooks/useTranslation";
+import { EmailTemplatesSection } from "../../components/admin/email/EmailTemplatesSection";
 
 export function EmailManagementPage() {
   const [activeTab, setActiveTab] = useState<"campaigns" | "templates">(
     "campaigns"
   );
   const { t } = useTranslation();
+
+  const handleAddTemplate = () => {
+    // Will implement this later when creating the add template form
+    console.log("Add template clicked");
+  };
 
   return (
     <div className="space-y-6">
@@ -42,8 +48,7 @@ export function EmailManagementPage() {
 
           <Tabs.Content value="templates">
             <div className="mt-6">
-              <h2>Email Templates Content</h2>
-              {/* Add templates content here */}
+              <EmailTemplatesSection onAddTemplate={handleAddTemplate} />
             </div>
           </Tabs.Content>
         </Tabs>
