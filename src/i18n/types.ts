@@ -16,6 +16,7 @@ export interface Translation {
     proposals: string;
     interns: string;
     projectValidation: string;
+    emailManagement: string;
   };
   login: {
     title: string;
@@ -185,6 +186,11 @@ export interface Translation {
     saveChanges: string;
     maxReminders: string;
     addReminder: string;
+  };
+  emailManagement: {
+    title: string;
+    campaigns: string;
+    templates: string;
   };
   allUsers: {
     title: string;

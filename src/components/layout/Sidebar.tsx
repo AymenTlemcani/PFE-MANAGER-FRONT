@@ -36,6 +36,11 @@ const getRoleNavigation = (
       path: "/dashboard/users",
     },
     {
+      name: t.navigation.emailManagement,
+      icon: Mail,
+      path: "/dashboard/email-management",
+    },
+    {
       name: t.navigation.emailConfiguration,
       icon: Mail,
       path: "/dashboard/emails",

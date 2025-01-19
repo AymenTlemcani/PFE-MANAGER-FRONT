@@ -19,6 +19,7 @@ export const translations: Record<string, Translation> = {
       interns: "Interns",
       projectValidation: "Project Validation",
       myStudents: "My Students",
+      emailManagement: "Email Management",
     },
     login: {
       title: "Sign in to PFE Platform",
@@ -191,6 +192,11 @@ export const translations: Record<string, Translation> = {
       maxReminders: "Max Reminders Added",
       addReminder: "Add Reminder",
     },
+    emailManagement: {
+      title: "Email Management",
+      campaigns: "Email Campaigns",
+      templates: "Email Templates",
+    },
     allUsers: {
       title: "All Users",
       deleteSelected: "Delete Selected",
@@ -282,6 +288,7 @@ export const translations: Record<string, Translation> = {
       interns: "Stagiaires",
       projectValidation: "Validation des Projets",
       myStudents: "Mes Étudiants",
+      emailManagement: "Gestion des Emails",
     },
     login: {
       title: "Connexion à PFE Platform",
@@ -456,6 +463,11 @@ export const translations: Record<string, Translation> = {
       saveChanges: "Enregistrer les Modifications",
       maxReminders: "Nombre Maximum de Rappels Atteint",
       addReminder: "Ajouter un Rappel",
+    },
+    emailManagement: {
+      title: "Gestion des Emails",
+      campaigns: "Campagnes Email",
+      templates: "Modèles Email",
     },
     allUsers: {
       title: "Tous les Utilisateurs",
