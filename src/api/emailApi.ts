@@ -168,20 +168,39 @@ export const emailApi = {
     }
   },
 
-  async createCampaign(data: EmailCampaignCreate) {
-    console.log("📤 Creating new campaign:", data);
+  async createCampaign(data: EmailCampaignCreate): Promise<EmailCampaign> {
+    console.log("📤 Creating new campaign:", {
+      ...data,
+      reminders: data.reminders?.length,
+    });
+
     try {
+      const formattedData = {
+        ...data,
+        // Format reminders to match backend expectations
+        reminders: data.reminders?.map((r) => ({
+          ...r,
+          send_time: r.send_time + ":00", // Add seconds to time
+        })),
+      };
+
       const response = await axios.post<EmailCampaign>(
         API_ENDPOINTS.emails.campaigns,
-        data
+        formattedData
       );
-      console.log("✅ Campaign created successfully:", response.data);
+
+      console.log("✅ Campaign created successfully:", {
+        id: response.data.campaign_id,
+        name: response.data.name,
+        reminders: response.data.reminder_schedules?.length,
+      });
+
       return response.data;
     } catch (error) {
       console.error("❌ Failed to create campaign:", {
         error,
         data,
-        response: error.response?.data,
+        message: error.response?.data?.message,
       });
       throw error;
     }

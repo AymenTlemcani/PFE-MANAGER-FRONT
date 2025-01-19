@@ -32,11 +32,14 @@ export interface EmailCampaign {
 }
 
 export interface ReminderSchedule {
-  id: string;
-  campaignId: string;
-  date: string;
-  template: EmailTemplate;
-  status: "pending" | "sent";
+  schedule_id: number;
+  campaign_id: number;
+  template_id: number;
+  days_before_deadline: number;
+  send_time: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CampaignLog {

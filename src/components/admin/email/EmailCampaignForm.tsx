@@ -128,9 +128,15 @@ export function EmailCampaignForm({
   };
 
   const validateForm = () => {
+    console.log("🔍 Validating form data...");
     const newErrors: Record<string, string> = {};
+
+    // Basic field validation
     if (!formData.name?.trim()) {
       newErrors.name = "Campaign name is required";
+    }
+    if (!formData.template_id) {
+      newErrors.template_id = "Email template is required";
     }
     if (!formData.start_date) {
       newErrors.start_date = "Start date is required";
@@ -138,13 +144,31 @@ export function EmailCampaignForm({
     if (!formData.end_date) {
       newErrors.end_date = "End date is required";
     }
-    if (
-      formData.start_date &&
-      formData.end_date &&
-      new Date(formData.start_date) > new Date(formData.end_date)
-    ) {
-      newErrors.end_date = "End date must be after start date";
+
+    // Date validation
+    if (formData.start_date && formData.end_date) {
+      const start = new Date(formData.start_date);
+      const end = new Date(formData.end_date);
+      const now = new Date();
+
+      if (start < now) {
+        newErrors.start_date = "Start date must be in the future";
+      }
+      if (end <= start) {
+        newErrors.end_date = "End date must be after start date";
+      }
     }
+
+    // Reminder validation
+    if (reminders.length === 0) {
+      newErrors.reminders = "At least one reminder is required";
+    }
+
+    console.log("📋 Validation results:", {
+      hasErrors: Object.keys(newErrors).length > 0,
+      errors: newErrors,
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -154,18 +178,53 @@ export function EmailCampaignForm({
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    console.log("🔄 Preparing campaign submission...");
+
     try {
+      const campaignData = {
+        ...formData,
+        reminders: reminders.map((r) => ({
+          days_before_deadline: r.days_before_deadline,
+          send_time: r.send_time,
+          template_id: formData.template_id,
+        })),
+      };
+
+      console.log("📤 Submitting campaign data:", campaignData);
+
       if (campaignId) {
-        await emailApi.updateCampaign(campaignId, formData);
+        console.log(`📝 Updating campaign ${campaignId}...`);
+        await emailApi.updateCampaign(campaignId, campaignData);
         showSnackbar("Campaign updated successfully", "success");
       } else {
-        await emailApi.createCampaign(formData);
+        console.log("📬 Creating new campaign...");
+        await emailApi.createCampaign(campaignData);
         showSnackbar("Campaign created successfully", "success");
       }
+
+      console.log("✅ Campaign saved successfully!");
       onSuccess();
     } catch (error: any) {
-      console.error("Campaign submission failed:", error);
-      showSnackbar(error.message || "Failed to save campaign", "error");
+      console.error("❌ Campaign submission failed:", error);
+
+      // Handle validation errors from backend
+      if (error.response?.data?.errors) {
+        const backendErrors = error.response.data.errors;
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          ...Object.fromEntries(
+            Object.entries(backendErrors).map(([key, value]) => [
+              key,
+              Array.isArray(value) ? value[0] : value,
+            ])
+          ),
+        }));
+      }
+
+      showSnackbar(
+        error.response?.data?.message || "Failed to save campaign",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
