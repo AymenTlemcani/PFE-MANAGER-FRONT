@@ -32,6 +32,7 @@ import { emailApi } from "../../../api/emailApi";
 import { EmailTemplate } from "../../../types/email";
 import { EmailTemplateForm } from "./EmailTemplateForm";
 import { useNavigate } from "react-router-dom";
+import { ContextMenu, ContextMenuItem } from "../../ui/ContextMenu";
 
 interface EmailTemplatesProps {
   onAddTemplate: () => void;
@@ -61,6 +62,11 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    template: EmailTemplate;
+  } | null>(null);
 
   const fetchTemplates = async () => {
     try {
@@ -223,6 +229,20 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
     fetchTemplates();
   };
 
+  const handleContextMenu = (e: React.MouseEvent, template: EmailTemplate) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      template,
+    });
+  };
+
+  const handleRowClick = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setIsPreviewOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -373,7 +393,9 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
                 {sortedTemplates.map((template) => (
                   <tr
                     key={template.template_id}
-                    className={`group transition-all duration-200 ${
+                    onClick={() => handleRowClick(template)}
+                    onContextMenu={(e) => handleContextMenu(e, template)}
+                    className={`group transition-all duration-200 cursor-pointer ${
                       selectedTemplates.has(template.template_id.toString())
                         ? "bg-blue-50/50 dark:bg-blue-900/20"
                         : "hover:bg-gray-50/80 dark:hover:bg-gray-700/50"
@@ -640,6 +662,47 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
           </div>
         </div>
       </Dialog>
+
+      {/* Add Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+        >
+          <ContextMenuItem
+            icon={<Eye className="h-4 w-4" />}
+            onClick={() => {
+              setSelectedTemplate(contextMenu.template);
+              setIsPreviewOpen(true);
+              setContextMenu(null);
+            }}
+          >
+            Preview
+          </ContextMenuItem>
+          <ContextMenuItem
+            icon={<Edit className="h-4 w-4" />}
+            onClick={() => {
+              navigate(
+                `/dashboard/email-management/templates/edit/${contextMenu.template.template_id}`
+              );
+              setContextMenu(null);
+            }}
+          >
+            Edit
+          </ContextMenuItem>
+          <ContextMenuItem
+            icon={<Trash2 className="h-4 w-4" />}
+            onClick={() => {
+              handleDelete(contextMenu.template);
+              setContextMenu(null);
+            }}
+            destructive
+          >
+            Delete
+          </ContextMenuItem>
+        </ContextMenu>
+      )}
 
       {/* Add Form Dialog */}
       <Dialog isOpen={isFormOpen} onClose={() => setIsFormOpen(false)}>
