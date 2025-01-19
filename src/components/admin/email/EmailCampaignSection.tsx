@@ -96,6 +96,16 @@ export function EmailCampaignSection() {
     setSelectedCampaign(null);
   };
 
+  const getUpcomingReminder = (campaign: EmailCampaign) => {
+    if (!campaign.reminder_schedules?.length) return null;
+    return campaign.reminder_schedules.reduce((nearest, current) => {
+      if (!nearest) return current;
+      return new Date(current.date) < new Date(nearest.date)
+        ? current
+        : nearest;
+    }, null);
+  };
+
   const statusOptions = ["all", "Draft", "Active", "Completed", "Cancelled"];
 
   if (isLoading) {
@@ -176,57 +186,84 @@ export function EmailCampaignSection() {
         {filteredCampaigns.map((campaign) => (
           <div
             key={campaign.campaign_id}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-4"
+            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
-            <div className="flex justify-between items-start">
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                {campaign.name}
-              </h3>
-              <Badge className={getStatusBadgeStyle(campaign.status)}>
-                {campaign.status}
-              </Badge>
+            {/* Campaign Header */}
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-medium text-gray-900 dark:text-white">
+                  {campaign.name}
+                </h3>
+                <Badge className={getStatusBadgeStyle(campaign.status)}>
+                  {campaign.status}
+                </Badge>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {campaign.type} • {campaign.target_audience}
+              </p>
             </div>
 
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <Mail className="h-4 w-4 mr-2" />
-                {campaign.type}
-              </div>
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <Users className="h-4 w-4 mr-2" />
-                {campaign.target_audience}
-              </div>
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
+            {/* Campaign Details */}
+            <div className="p-4 space-y-3">
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                 <Calendar className="h-4 w-4 mr-2" />
-                {new Date(campaign.start_date).toLocaleDateString()} -{" "}
-                {new Date(campaign.end_date).toLocaleDateString()}
+                <span>
+                  {new Date(campaign.start_date).toLocaleDateString()} -{" "}
+                  {new Date(campaign.end_date).toLocaleDateString()}
+                </span>
               </div>
+
+              {/* Reminder Schedule */}
+              {campaign.reminder_schedules?.length > 0 && (
+                <div className="pt-2">
+                  <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                    Reminder Schedule
+                  </h4>
+                  <div className="space-y-2">
+                    {campaign.reminder_schedules.map((reminder, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center text-sm text-gray-600 dark:text-gray-300"
+                      >
+                        <Clock className="h-4 w-4 mr-2" />
+                        <span>
+                          {reminder.days_before_deadline} days before •{" "}
+                          {reminder.send_time}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  navigate(
-                    `/dashboard/email-management/campaigns/${campaign.campaign_id}`
-                  )
-                }
-              >
-                Details
-              </Button>
-              {campaign.status === "Draft" && (
+            {/* Campaign Actions */}
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-2">
                 <Button
+                  variant="outline"
                   size="sm"
-                  onClick={() => {
-                    setSelectedCampaign(campaign);
-                    setIsActivateDialogOpen(true);
-                  }}
+                  onClick={() =>
+                    navigate(
+                      `/dashboard/email-management/campaigns/${campaign.campaign_id}`
+                    )
+                  }
                 >
-                  <PlayCircle className="h-4 w-4 mr-2" />
-                  Activate
+                  Details
                 </Button>
-              )}
+                {campaign.status === "Draft" && (
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCampaign(campaign);
+                      setIsActivateDialogOpen(true);
+                    }}
+                  >
+                    <PlayCircle className="h-4 w-4 mr-2" />
+                    Activate
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}
