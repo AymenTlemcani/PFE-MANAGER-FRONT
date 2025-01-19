@@ -575,28 +575,75 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
       <Dialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
-        title="Delete Template"
+        className="max-w-md w-full"
       >
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 text-amber-600 dark:text-amber-500">
-            <AlertTriangle className="h-5 w-5" />
-            <p className="font-medium">
-              Are you sure you want to delete this template?
+        <div className="px-6 py-4">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/50">
+              <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Confirm Deletion
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {selectedTemplates.size > 1
+                  ? `Are you sure you want to delete ${selectedTemplates.size} templates?`
+                  : "Are you sure you want to delete this template?"}
+              </p>
+            </div>
+          </div>
+
+          {selectedTemplate && !Array.isArray(selectedTemplate) && (
+            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Template Name
+                  </span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100">
+                    {selectedTemplate.name}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Type
+                  </span>
+                  <Badge className={getTypeBadgeStyle(selectedTemplate.type)}>
+                    {selectedTemplate.type}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            <p className="flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              This action cannot be undone. All associated data will be
+              permanently removed.
             </p>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            This action cannot be undone. The template will be permanently
-            removed from the system.
-          </p>
+
           <div className="flex justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete Template
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white dark:text-white flex items-center justify-center"
+            >
+              <span className="flex items-center gap-2">
+                <Trash2 className="h-4 w-4" />
+                {selectedTemplates.size > 1
+                  ? `Delete ${selectedTemplates.size} Templates`
+                  : "Delete Template"}
+              </span>
             </Button>
           </div>
         </div>
