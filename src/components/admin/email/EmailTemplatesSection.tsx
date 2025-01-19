@@ -384,9 +384,6 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
                   <SortableHeader field="type">Type</SortableHeader>
                   <SortableHeader field="language">Language</SortableHeader>
                   <SortableHeader field="is_active">Status</SortableHeader>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -401,7 +398,10 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
                         : "hover:bg-gray-50/80 dark:hover:bg-gray-700/50"
                     }`}
                   >
-                    <td className="px-6 py-4 w-0">
+                    <td
+                      className="px-6 py-4 w-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         onClick={() =>
                           toggleTemplateSelection(template.template_id)
@@ -450,45 +450,6 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
                           Inactive
                         </Badge>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 flex justify-end gap-2">
-                        <Tooltip content="Preview template">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedTemplate(template);
-                              setIsPreviewOpen(true);
-                            }}
-                            className="hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                          >
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">Preview</span>
-                          </Button>
-                        </Tooltip>
-                        <Tooltip content="Edit template">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                        </Tooltip>
-                        <Tooltip content="Delete template">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(template)}
-                            className="text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </Tooltip>
-                      </div>
                     </td>
                   </tr>
                 ))}
