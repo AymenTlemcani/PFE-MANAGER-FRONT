@@ -243,6 +243,13 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
     setIsPreviewOpen(true);
   };
 
+  const handleEdit = (template: EmailTemplate) => {
+    navigate(
+      `/dashboard/email-management/templates/edit/${template.template_id}`,
+      { state: { template } } // Pass template data in navigation state
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -551,9 +558,7 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
                 <Button
                   className="flex items-center gap-2"
                   onClick={() => {
-                    navigate(
-                      `/dashboard/email-management/templates/edit/${selectedTemplate.template_id}`
-                    );
+                    handleEdit(selectedTemplate);
                     setIsPreviewOpen(false);
                   }}
                 >
@@ -617,9 +622,7 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
           <ContextMenuItem
             icon={<Edit className="h-4 w-4" />}
             onClick={() => {
-              navigate(
-                `/dashboard/email-management/templates/edit/${contextMenu.template.template_id}`
-              );
+              handleEdit(contextMenu.template);
               setContextMenu(null);
             }}
           >

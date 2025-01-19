@@ -19,7 +19,7 @@ export function EmailTemplateForm({
 }: EmailTemplateFormProps) {
   const { showSnackbar } = useSnackbar();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     name: template?.name || "",
     subject: template?.subject || "",
     content: template?.content || "",
@@ -28,7 +28,7 @@ export function EmailTemplateForm({
     language: template?.language || "French",
     is_active: template?.is_active ?? true,
     placeholders: template?.placeholders || [],
-  });
+  }));
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -55,7 +55,6 @@ export function EmailTemplateForm({
     try {
       const formattedData = {
         ...formData,
-        // Ensure placeholders is an array
         placeholders: Array.isArray(formData.placeholders)
           ? formData.placeholders
           : formData.content
@@ -63,23 +62,27 @@ export function EmailTemplateForm({
               ?.map((p) => p.replace(/[{}]/g, "")) || [],
       };
 
-      console.log("📤 Submitting template data:", formattedData);
+      console.log("📤 Submitting template data:", {
+        ...formattedData,
+        id: template?.template_id,
+        isUpdate: !!template,
+      });
 
+      let response;
       if (template?.template_id) {
-        const response = await emailApi.updateTemplate(
+        response = await emailApi.updateTemplate(
           template.template_id,
           formattedData
         );
         console.log("✅ Template updated:", response);
         showSnackbar("Template updated successfully", "success");
       } else {
-        const response = await emailApi.createTemplate(formattedData);
+        response = await emailApi.createTemplate(formattedData);
         console.log("✅ Template created:", response);
         showSnackbar("Template created successfully", "success");
       }
 
       onSuccess();
-      onClose();
     } catch (error: any) {
       console.error("❌ Template submission failed:", error);
 
