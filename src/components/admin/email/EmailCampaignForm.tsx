@@ -38,6 +38,65 @@ export function EmailCampaignForm({
     { days_before_deadline: 1, send_time: "09:00" },
   ]);
 
+  const testCampaigns = [
+    {
+      name: "End of Year Project Submissions",
+      type: "Reminder",
+      target_audience: "Students",
+      start_date: new Date().toISOString().split("T")[0],
+      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      status: "Draft",
+      template_id: templates[0]?.template_id,
+      reminders: [
+        { days_before_deadline: 7, send_time: "09:00" },
+        { days_before_deadline: 3, send_time: "09:00" },
+        { days_before_deadline: 1, send_time: "09:00" },
+      ],
+    },
+    {
+      name: "Teacher Evaluation Period",
+      type: "Notification",
+      target_audience: "Teachers",
+      start_date: new Date().toISOString().split("T")[0],
+      end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      status: "Draft",
+      template_id: templates[0]?.template_id,
+      reminders: [
+        { days_before_deadline: 5, send_time: "10:00" },
+        { days_before_deadline: 2, send_time: "10:00" },
+      ],
+    },
+    {
+      name: "Company Partnership Program",
+      type: "System",
+      target_audience: "Companies",
+      start_date: new Date().toISOString().split("T")[0],
+      end_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      status: "Draft",
+      template_id: templates[0]?.template_id,
+      reminders: [
+        { days_before_deadline: 10, send_time: "08:00" },
+        { days_before_deadline: 3, send_time: "08:00" },
+      ],
+    },
+  ];
+
+  const fillTestData = () => {
+    const randomCampaign =
+      testCampaigns[Math.floor(Math.random() * testCampaigns.length)];
+    setFormData({
+      ...randomCampaign,
+      template_id: templates[0]?.template_id, // Use first available template
+    });
+    setReminders(randomCampaign.reminders);
+  };
+
   useEffect(() => {
     fetchTemplates();
     if (campaignId) {
@@ -146,12 +205,19 @@ export function EmailCampaignForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Header with close button */}
+      {/* Header with close button and test data button */}
       <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             {campaignId ? "Edit Email Campaign" : "New Email Campaign"}
           </h2>
+          <button
+            type="button"
+            onClick={fillTestData}
+            className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors"
+          >
+            Fill Test Data
+          </button>
         </div>
         <button
           type="button"
