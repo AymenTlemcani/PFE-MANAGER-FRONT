@@ -3,6 +3,7 @@ import { Tabs } from "../../components/ui/Tabs";
 import { Mail, FileText } from "lucide-react"; // Changed Template to FileText
 import { useTranslation } from "../../hooks/useTranslation";
 import { EmailTemplatesSection } from "../../components/admin/email/EmailTemplatesSection";
+import { EmailCampaignSection } from "../../components/admin/email/EmailCampaignSection";
 
 export function EmailManagementPage() {
   const [activeTab, setActiveTab] = useState<"campaigns" | "templates">(
@@ -41,8 +42,7 @@ export function EmailManagementPage() {
 
           <Tabs.Content value="campaigns">
             <div className="mt-6">
-              <h2>Email Campaigns Content</h2>
-              {/* Add campaigns content here */}
+              <EmailCampaignSection />
             </div>
           </Tabs.Content>
 
