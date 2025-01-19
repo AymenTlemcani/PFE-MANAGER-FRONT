@@ -32,6 +32,7 @@ import { AllUsersPage } from "./pages/admin/AllUsersPage";
 import { SnackbarManager } from "./components/ui/SnackbarManager";
 import { useSnackbarStore } from "./hooks/useSnackbar";
 import { EmailManagementPage } from "./pages/admin/EmailManagementPage";
+import { EmailTemplateFormPage } from "./pages/admin/email/EmailTemplateFormPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -241,14 +242,32 @@ function App() {
                     </AdminRoute>
                   }
                 />
-                <Route
-                  path="dashboard/email-management"
-                  element={
-                    <AdminRoute>
-                      <EmailManagementPage />
-                    </AdminRoute>
-                  }
-                />
+                <Route path="dashboard/email-management">
+                  <Route
+                    index
+                    element={
+                      <AdminRoute>
+                        <EmailManagementPage />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="templates/new"
+                    element={
+                      <AdminRoute>
+                        <EmailTemplateFormPage />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="templates/edit/:id"
+                    element={
+                      <AdminRoute>
+                        <EmailTemplateFormPage />
+                      </AdminRoute>
+                    }
+                  />
+                </Route>
               </Route>
             </Routes>
             <SnackbarManager

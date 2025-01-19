@@ -1,0 +1,228 @@
+import { useState } from "react";
+import { X } from "lucide-react";
+import { Button } from "../../ui/Button";
+import { Input } from "../../ui/Input";
+import { emailApi } from "../../../api/emailApi";
+import { useSnackbar } from "../../../hooks/useSnackbar";
+import type { EmailTemplate } from "../../../types/email";
+
+interface EmailTemplateFormProps {
+  onClose: () => void;
+  onSuccess: () => void;
+  template?: EmailTemplate; // For editing existing template
+}
+
+export function EmailTemplateForm({
+  onClose,
+  onSuccess,
+  template,
+}: EmailTemplateFormProps) {
+  const { showSnackbar } = useSnackbar();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: template?.name || "",
+    subject: template?.subject || "",
+    content: template?.content || "",
+    description: template?.description || "",
+    type: template?.type || "Notification",
+    language: template?.language || "French",
+    is_active: template?.is_active ?? true,
+    placeholders: template?.placeholders || [],
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) {
+      newErrors.name = "Template name is required";
+    }
+    if (!formData.subject.trim()) {
+      newErrors.subject = "Subject line is required";
+    }
+    if (!formData.content.trim()) {
+      newErrors.content = "Email content is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      if (template?.template_id) {
+        await emailApi.updateTemplate(template.template_id, formData);
+        showSnackbar("Template updated successfully", "success");
+      } else {
+        await emailApi.createTemplate(formData);
+        showSnackbar("Template created successfully", "success");
+      }
+      onSuccess();
+      onClose();
+    } catch (error: any) {
+      showSnackbar(error.message || "Failed to save template", "error");
+      if (error.validationErrors) {
+        setErrors(error.validationErrors);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Header */}
+      <div className="flex justify-between items-center px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            {template ? "Edit Email Template" : "New Email Template"}
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        >
+          <X className="h-6 w-6" />
+        </button>
+      </div>
+
+      {/* Form Content */}
+      <form onSubmit={handleSubmit} className="px-8 py-6 space-y-8">
+        <div className="space-y-4">
+          <Input
+            label="Template Name"
+            name="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            error={errors.name}
+            required
+          />
+
+          <Input
+            label="Subject Line"
+            name="subject"
+            value={formData.subject}
+            onChange={(e) =>
+              setFormData({ ...formData, subject: e.target.value })
+            }
+            error={errors.subject}
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Template Type
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    type: e.target.value as EmailTemplate["type"],
+                  })
+                }
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
+              >
+                <option value="System">System</option>
+                <option value="Notification">Notification</option>
+                <option value="Reminder">Reminder</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Language
+              </label>
+              <select
+                value={formData.language}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    language: e.target.value as EmailTemplate["language"],
+                  })
+                }
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
+              >
+                <option value="French">French</option>
+                <option value="English">English</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              Email Content
+            </label>
+            <textarea
+              value={formData.content}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
+              rows={10}
+              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
+              required
+            />
+            {errors.content && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {errors.content}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              Description (Optional)
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              rows={3}
+              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="is_active"
+              checked={formData.is_active}
+              onChange={(e) =>
+                setFormData({ ...formData, is_active: e.target.checked })
+              }
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label
+              htmlFor="is_active"
+              className="text-sm text-gray-700 dark:text-gray-200"
+            >
+              Template is active
+            </label>
+          </div>
+        </div>
+      </form>
+
+      {/* Fixed Footer */}
+      <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-8 py-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting
+              ? "Saving..."
+              : template
+              ? "Update Template"
+              : "Create Template"}
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+}

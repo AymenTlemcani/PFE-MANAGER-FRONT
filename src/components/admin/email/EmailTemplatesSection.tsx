@@ -30,6 +30,8 @@ import { Tooltip } from "../../../components/ui/Tooltip";
 import { useState, useCallback } from "react";
 import { emailApi } from "../../../api/emailApi";
 import { EmailTemplate } from "../../../types/email";
+import { EmailTemplateForm } from "./EmailTemplateForm";
+import { useNavigate } from "react-router-dom";
 
 interface EmailTemplatesProps {
   onAddTemplate: () => void;
@@ -41,6 +43,7 @@ interface SortConfig {
 }
 
 export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +60,7 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
   );
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const fetchTemplates = async () => {
     try {
@@ -211,6 +215,14 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
     );
   };
 
+  const handleAddClick = () => {
+    navigate("/dashboard/email-management/templates/new");
+  };
+
+  const handleFormSuccess = () => {
+    fetchTemplates();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -242,7 +254,7 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
             />
             Refresh
           </Button>
-          <Button onClick={onAddTemplate}>
+          <Button onClick={handleAddClick}>
             <Plus className="h-4 w-4 mr-2" />
             Add Template
           </Button>
@@ -310,7 +322,10 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
               : "Create your first email template to get started"}
           </p>
           <div className="mt-6 flex justify-center gap-4">
-            <Button onClick={onAddTemplate} className="flex items-center gap-2">
+            <Button
+              onClick={handleAddClick}
+              className="flex items-center gap-2"
+            >
               <Plus className="h-4 w-4" />
               Add Template
             </Button>
@@ -624,6 +639,14 @@ export function EmailTemplatesSection({ onAddTemplate }: EmailTemplatesProps) {
             </Button>
           </div>
         </div>
+      </Dialog>
+
+      {/* Add Form Dialog */}
+      <Dialog isOpen={isFormOpen} onClose={() => setIsFormOpen(false)}>
+        <EmailTemplateForm
+          onClose={() => setIsFormOpen(false)}
+          onSuccess={handleFormSuccess}
+        />
       </Dialog>
     </div>
   );
