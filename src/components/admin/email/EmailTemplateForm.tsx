@@ -53,17 +53,42 @@ export function EmailTemplateForm({
 
     setIsSubmitting(true);
     try {
+      const formattedData = {
+        ...formData,
+        // Ensure placeholders is an array
+        placeholders: Array.isArray(formData.placeholders)
+          ? formData.placeholders
+          : formData.content
+              .match(/\{([^}]+)\}/g)
+              ?.map((p) => p.replace(/[{}]/g, "")) || [],
+      };
+
+      console.log("📤 Submitting template data:", formattedData);
+
       if (template?.template_id) {
-        await emailApi.updateTemplate(template.template_id, formData);
+        const response = await emailApi.updateTemplate(
+          template.template_id,
+          formattedData
+        );
+        console.log("✅ Template updated:", response);
         showSnackbar("Template updated successfully", "success");
       } else {
-        await emailApi.createTemplate(formData);
+        const response = await emailApi.createTemplate(formattedData);
+        console.log("✅ Template created:", response);
         showSnackbar("Template created successfully", "success");
       }
+
       onSuccess();
       onClose();
     } catch (error: any) {
-      showSnackbar(error.message || "Failed to save template", "error");
+      console.error("❌ Template submission failed:", error);
+
+      const errorMessage = error.validationErrors
+        ? Object.values(error.validationErrors).flat().join(", ")
+        : error.message || "Failed to save template";
+
+      showSnackbar(errorMessage, "error");
+
       if (error.validationErrors) {
         setErrors(error.validationErrors);
       }
@@ -300,12 +325,20 @@ L'équipe PFE Manager`,
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting
-              ? "Saving..."
-              : template
-              ? "Update Template"
-              : "Create Template"}
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="animate-spin mr-2">⏳</span>
+                {template ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              <>{template ? "Update Template" : "Create Template"}</>
+            )}
           </Button>
         </div>
       </div>

@@ -61,20 +61,36 @@ export const emailApi = {
   },
 
   async createTemplate(data: EmailTemplateCreate) {
-    console.log("📤 Creating new template:", data);
+    console.log("📤 Creating new template:", {
+      ...data,
+      content: data.content.substring(0, 100) + "...", // Truncate for logging
+    });
+
     try {
       const response = await axios.post<EmailTemplate>(
         API_ENDPOINTS.emails.templates,
         data
       );
-      console.log("✅ Template created successfully:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("❌ Failed to create template:", {
-        error,
-        data,
-        response: error.response?.data,
+
+      console.log("✅ Template created successfully:", {
+        id: response.data.template_id,
+        name: response.data.name,
+        type: response.data.type,
       });
+
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Failed to create template:", {
+        error: error.message,
+        validationErrors: error.response?.data?.errors,
+        requestData: data,
+      });
+
+      // Enhance error with validation details
+      if (error.response?.data?.errors) {
+        error.validationErrors = error.response.data.errors;
+      }
+
       throw error;
     }
   },
