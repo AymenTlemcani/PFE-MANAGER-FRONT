@@ -72,6 +72,85 @@ export function EmailTemplateForm({
     }
   };
 
+  const testTemplates = [
+    {
+      name: "Welcome Email",
+      subject: "Welcome to PFE Manager Platform",
+      content: `Dear {name},
+
+Welcome to the PFE Manager platform! We're excited to have you join us.
+
+Your account has been successfully created. Here are your login details:
+Email: {email}
+Password: {password}
+
+Please change your password upon your first login for security purposes.
+
+Best regards,
+PFE Manager Team`,
+      description: "Sent to new users when their account is created",
+      type: "System",
+      language: "English",
+      is_active: true,
+      placeholders: ["name", "email", "password"],
+    },
+    {
+      name: "Project Submission Deadline Reminder",
+      subject: "Reminder: PFE Project Submission Deadline Approaching",
+      content: `Dear {name},
+
+This is a reminder that the deadline for submitting your PFE project is approaching. The submission deadline is {deadline}.
+
+Please ensure that you have:
+- Completed your project documentation
+- Reviewed all requirements
+- Prepared necessary attachments
+
+If you have any questions, please don't hesitate to contact your supervisor.
+
+Best regards,
+PFE Manager Team`,
+      description: "Automated reminder for project submission deadlines",
+      type: "Reminder",
+      language: "English",
+      is_active: true,
+      placeholders: ["name", "deadline"],
+    },
+    {
+      name: "Validation de Projet",
+      subject: "Votre projet PFE a été validé",
+      content: `Cher/Chère {name},
+
+Nous avons le plaisir de vous informer que votre projet PFE intitulé "{project_title}" a été validé.
+
+Détails du projet :
+- Titre : {project_title}
+- Superviseur : {supervisor_name}
+- Date de validation : {validation_date}
+
+Vous pouvez maintenant procéder aux prochaines étapes de votre projet.
+
+Cordialement,
+L'équipe PFE Manager`,
+      description: "Notification envoyée lors de la validation d'un projet",
+      type: "Notification",
+      language: "French",
+      is_active: true,
+      placeholders: [
+        "name",
+        "project_title",
+        "supervisor_name",
+        "validation_date",
+      ],
+    },
+  ];
+
+  const fillTestData = () => {
+    const randomTemplate =
+      testTemplates[Math.floor(Math.random() * testTemplates.length)];
+    setFormData({ ...randomTemplate });
+  };
+
   return (
     <>
       {/* Header */}
@@ -80,6 +159,13 @@ export function EmailTemplateForm({
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             {template ? "Edit Email Template" : "New Email Template"}
           </h2>
+          <button
+            type="button"
+            onClick={fillTestData}
+            className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors"
+          >
+            Fill Test Data
+          </button>
         </div>
         <button
           type="button"
