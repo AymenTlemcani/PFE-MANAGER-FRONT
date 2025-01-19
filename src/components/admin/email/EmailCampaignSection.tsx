@@ -108,6 +108,32 @@ export function EmailCampaignSection() {
 
   const statusOptions = ["all", "Draft", "Active", "Completed", "Cancelled"];
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (timeString: string) => {
+    try {
+      // Extract time from full datetime string or use as is if it's just time
+      const time = timeString.includes("T")
+        ? timeString.split("T")[1].substring(0, 5)
+        : timeString.substring(0, 5);
+
+      return new Date(`2000-01-01T${time}`).toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch (error) {
+      console.error("Error formatting time:", error);
+      return timeString;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -208,8 +234,8 @@ export function EmailCampaignSection() {
               <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                 <Calendar className="h-4 w-4 mr-2" />
                 <span>
-                  {new Date(campaign.start_date).toLocaleDateString()} -{" "}
-                  {new Date(campaign.end_date).toLocaleDateString()}
+                  {formatDate(campaign.start_date)} -{" "}
+                  {formatDate(campaign.end_date)}
                 </span>
               </div>
 
@@ -225,11 +251,22 @@ export function EmailCampaignSection() {
                         key={idx}
                         className="flex items-center text-sm text-gray-600 dark:text-gray-300"
                       >
-                        <Clock className="h-4 w-4 mr-2" />
-                        <span>
-                          {reminder.days_before_deadline} days before •{" "}
-                          {reminder.send_time}
-                        </span>
+                        <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">
+                            {reminder.days_before_deadline}
+                          </span>
+                          <span className="text-gray-500">
+                            {reminder.days_before_deadline === 1
+                              ? "day"
+                              : "days"}{" "}
+                            before
+                          </span>
+                          <span className="text-gray-400 mx-1">•</span>
+                          <span className="text-gray-500">
+                            {formatTime(reminder.send_time)}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
